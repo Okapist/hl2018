@@ -78,6 +78,22 @@ public class NewAccFilter {
             } else {
                 if(fname.length == 1) {
                     filter.add(AllLists.fnameAccounts.get(new String(fname[0])), 0, AllLists.fnameAccounts.get(new String(fname[0])).size()-1, false);
+                } else {
+                    List<List<Integer>> toAdd = new ArrayList<>(fname.length);
+                    List<Integer> starts = new ArrayList<>(fname.length);
+                    List<Integer> ends = new ArrayList<>(fname.length);
+                    for(char[] fn : fname) {
+                        List<Integer> tempList = AllLists.fnameAccounts.get(new String(fn));
+                        if(tempList != null && tempList.size() > 0) {
+                            int tempStart = 0;
+                            int tempEnd = AllLists.fnameAccounts.get(new String(fn)).size() - 1;
+
+                            toAdd.add(tempList);
+                            starts.add(tempStart);
+                            ends.add(tempEnd);
+                        }
+                    }
+                    filter.addList(toAdd, starts, ends, false);
                 }
             }
         }
@@ -129,10 +145,10 @@ public class NewAccFilter {
 
         if(email != null && emailLt!= null) {
             if(emailLt) {
-                filter.add(AllLists.emailSortedAccounts, 0,
-                        AllLists.emailSortedAccounts.get(email[0]=='z'?AllLists.emailSortedAccounts.size()-1:AllLists.emailFirst[email[0] - 'a' + 1]) -1, true);
+                if(email[0]!='z')
+                    filter.add(AllLists.emailSortedAccounts, 0, AllLists.emailFirst[email[0] - 'a' + 1] -1, true);
             } else {
-                filter.add(AllLists.emailSortedAccounts, AllLists.emailSortedAccounts.get(AllLists.emailFirst[email[0] - 'a']), AllLists.emailSortedAccounts.size()-1,true);
+                filter.add(AllLists.emailSortedAccounts, AllLists.emailFirst[email[0] - 'a'], AllLists.emailSortedAccounts.size()-1,true);
             }
         }
 
@@ -185,6 +201,15 @@ public class NewAccFilter {
 
         if (premiumNow != null || premiumNewer != null) {
             ansPremium = true;
+            if(premiumNow != null && premiumNow) {
+                filter.add(AllLists.premiumNowAccounts, 0, AllLists.premiumNowAccounts.size()-1, false);
+            }
+            if(premiumNewer != null) {
+                if(!premiumNewer)
+                    filter.add(AllLists.premiumEverAccounts, 0, AllLists.premiumEverAccounts.size()-1, false);
+                else
+                    filter.add(AllLists.premiumNeverAccounts, 0, AllLists.premiumNeverAccounts.size()-1, false);
+            }
         }
 
         boolean isFirst = true;
@@ -396,7 +421,8 @@ public class NewAccFilter {
                         }
                     }
                     if(!founded) {
-                        continue;
+                        isAdd = false;
+                        break;
                     }
                 }
             }
@@ -409,17 +435,22 @@ public class NewAccFilter {
                     isFirst = false;
                     ++totalAdded;
 
-                    if(totalAdded > limit)
+                    if(totalAdded >= limit)
                         break;
                 }
             }
         }
         if(filter.unsorted) {
             int t = accauntCollector.size();
+            Account[] list = new Account[t];
             for(int i=0; i<t; ++i) {
-                buildResult(isFirst, accauntCollector.poll(), ansSex, ansStatus, ansFname, ansSname, ansPhone, ansCountry, ansCity, ansBirth, ansPremium, buf);
+                list[i] = accauntCollector.poll();
+            }
+            for(int i=t-1; i>=0; --i) {
+                buildResult(isFirst, list[i], ansSex, ansStatus, ansFname, ansSname, ansPhone, ansCountry, ansCity, ansBirth, ansPremium, buf);
                 isFirst = false;
             }
+
         }
 
         return true;

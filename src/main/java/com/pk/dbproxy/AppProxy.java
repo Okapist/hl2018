@@ -1,5 +1,6 @@
 package com.pk.dbproxy;
 
+import com.pk.Runner;
 import com.pk.dao.Utils;
 import com.pk.jsonmodel.Account;
 import com.pk.jsonmodel.Accounts;
@@ -287,6 +288,19 @@ public class AppProxy {
                     AllLists.birthSortedAccounts.add(null);
                 AllLists.birthSortedAccounts.set(i, i);
 
+
+                while (AllLists.joinedSortedAccounts.size() <= i)
+                    AllLists.joinedSortedAccounts.add(null);
+                AllLists.joinedSortedAccounts.set(i, i);
+
+                if(AllLists.allAccounts[i].premiumStart < Runner.curDate && AllLists.allAccounts[i].premiumEnd > Runner.curDate)
+                    AllLists.premiumNowAccounts.add(i);
+
+                if(AllLists.allAccounts[i].premiumStart > 0 && AllLists.allAccounts[i].premiumEnd > 0)
+                    AllLists.premiumEverAccounts.add(i);
+                else
+                    AllLists.premiumNeverAccounts.add(i);
+
             }
         }
 
@@ -314,20 +328,38 @@ public class AppProxy {
         int year = 1931;
         for (int i = 0; i < AllLists.birthSortedAccounts.size(); i++) {
             if(AllLists.birthSortedAccounts.get(i) != null) {
-                if(AllLists.allAccounts[AllLists.birthSortedAccounts.get(i)].birth >Utils.getTimestamp(year)) {
-                    while (AllLists.allAccounts[AllLists.birthSortedAccounts.get(i)].birth > Utils.getTimestamp(year))
+                if(AllLists.allAccounts[AllLists.birthSortedAccounts.get(i)].birth >=Utils.getTimestamp(year)) {
+                    while (AllLists.allAccounts[AllLists.birthSortedAccounts.get(i)].birth >= Utils.getTimestamp(year))
                         ++year;
 
                     AllLists.birthYears[year - 1 - 1930] = i;
                 }
             }
         }
-/*
-        for(int i=1; i<AllLists.birthYears.length; ++i) {
-            if(AllLists.birthYears[i-1] < AllLists.birthYears[i])
-                Collections.sort(AllLists.birthSortedAccounts.subList(AllLists.birthYears[i-1], AllLists.birthYears[i]));
+
+        Collections.sort(AllLists.joinedSortedAccounts, (p1,p2) -> {
+            if(p1 == null && p2 == null)
+                return 0;
+            if(p1 == null)
+                return -1;
+            if(p2 == null)
+                return 1;
+
+            return AllLists.allAccounts[p1].joined - AllLists.allAccounts[p2].joined;
+        });
+
+        year = 1931;
+        for (int i = 0; i < AllLists.joinedSortedAccounts.size(); i++) {
+            if(AllLists.joinedSortedAccounts.get(i) != null) {
+                if(AllLists.allAccounts[AllLists.joinedSortedAccounts.get(i)].joined >=Utils.getTimestamp(year)) {
+                    while (AllLists.allAccounts[AllLists.joinedSortedAccounts.get(i)].joined >= Utils.getTimestamp(year))
+                        ++year;
+
+                    AllLists.joinedYears[year - 1 - 1930] = i;
+                }
+            }
         }
-*/
+
 
         char search = 'a';
         for (int i = 0; i < AllLists.emailSortedAccounts.size(); i++) {
@@ -338,12 +370,10 @@ public class AppProxy {
                 }
             }
         }
-/*
-        for(int i=1; i<AllLists.emailFirst.length; ++i) {
-            if(AllLists.emailFirst[i-1] < AllLists.emailFirst[i])
-                Collections.sort(AllLists.emailSortedAccounts.subList(AllLists.emailFirst[i-1], AllLists.emailFirst[i]));
-        }
-*/
+
+
+
+
         int i =0;
     }
 }

@@ -147,6 +147,6 @@ public class Utils {
             else
                 return mid; // key found
         }
-        return low + 1;  // key not found
+        return low;  // key not found
     }
 }

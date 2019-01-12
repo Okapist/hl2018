@@ -22,11 +22,21 @@ public class AllLists {
 
     public static final List<List<Integer>> interestAccounts = new ArrayList<>(); //аккаунты с указанным интересом
 
+    public static final List<Integer> premiumNowAccounts = new ArrayList<>();
+    public static final List<Integer> premiumEverAccounts = new ArrayList<>();
+    public static final List<Integer> premiumNeverAccounts = new ArrayList<>();
+
+    //unsorted
     public static final List<Integer> emailSortedAccounts = new ArrayList<>();
     public static final int[] emailFirst = new int[26]; //First email letter index
 
+    //unsorted
     public static final List<Integer> birthSortedAccounts = new ArrayList<>();
     public static final int[] birthYears = new int[100];
+
+    //unsorted
+    public static final List<Integer> joinedSortedAccounts = new ArrayList<>();
+    public static final int[] joinedYears = new int[100];
 
     public static final List<String> citiesList = new ArrayList<>();
     public static final List<String> countriesList = new ArrayList<>();

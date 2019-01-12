@@ -44,11 +44,30 @@ public class NewAccGroup {
         if(birth != null) {
             int min=AllLists.birthYears[birth-1930];
             int max=AllLists.birthYears[birth+1-1930];
-            filters.add(AllLists.birthSortedAccounts, min, max-1, false);
+
+            int i = 1;
+            while (max == 0 && birth + 1 - 1930 + i < AllLists.birthYears.length) {
+                max = AllLists.birthYears[birth + 1 - 1930 + i];
+                ++i;
+            }
+
+            filters.add(AllLists.birthSortedAccounts, min, max==0?AllLists.birthSortedAccounts.size()-1:max-1, false);
         }
 
+        if(joined != null) {
+            int min=AllLists.joinedYears[joined-1930];
+            int max=AllLists.joinedYears[joined+1-1930];
+            int i = 1;
+            while (max == 0 && joined + 1 - 1930 + i < AllLists.joinedYears.length) {
+                max = AllLists.joinedYears[joined + 1 - 1930 + i];
+                ++i;
+            }
+
+            filters.add(AllLists.joinedSortedAccounts, min, max==0?AllLists.joinedSortedAccounts.size()-1:max-1, false);
+        }
+        Integer likeId = null;
         if (likes != null) {
-            Integer likeId = Integer.parseInt(likes);
+            likeId = Integer.parseInt(likes);
             if(likeId > AllLists.likesTO.size()) {
                 return true;
             }
@@ -86,7 +105,7 @@ public class NewAccGroup {
         HashMap<Integer, Group> formedGroups = new HashMap<>();
         while (filters.hasNext()) {
             Integer possibleId = filters.next();
-            if(possibleId == null && possibleId < 1)
+            if(possibleId == null || possibleId < 1)
                 continue;
 
             boolean isAdd = true;
@@ -107,11 +126,17 @@ public class NewAccGroup {
                 if(possible.sex != sex)
                     isAdd = false;
             }
+
+            if(isAdd && status != null) {
+                if(possible.status != status)
+                    isAdd = false;
+            }
+
             if(isAdd && birth != null) {
                 int bStart = getTimestamp(birth);
                 int bEnd = getTimestamp(birth + 1) - 1;
 
-                if (possible.birth == 0 || possible.birth<bStart || possible.birth>bEnd)
+                if (possible.birth == 0 || possible.birth < bStart || possible.birth > bEnd)
                     isAdd = false;
             }
 
@@ -120,6 +145,27 @@ public class NewAccGroup {
                 int bEnd = getTimestamp(joined + 1) - 1;
 
                 if (possible.joined<bStart || possible.joined>bEnd)
+                    isAdd = false;
+            }
+
+            if(isAdd && interests != null) {
+
+                if (possible.interests == null || !possible.interests.contains(AllLists.interests.get(interests)))
+                    isAdd = false;
+            }
+
+            if(isAdd && likes != null) {
+                if(likeId > AllLists.likesTO.size()) {
+                    return true;
+                }
+                boolean founded = false;
+                for(int likeTo : AllLists.likesAccounts.get(possibleId)) {
+                    if(likeTo == likeId) {
+                        founded = true;
+                        break;
+                    }
+                }
+                if(!founded)
                     isAdd = false;
             }
 
