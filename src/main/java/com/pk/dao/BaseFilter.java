@@ -1,5 +1,6 @@
 package com.pk.dao;
 
+import com.pk.model.Account;
 import com.pk.model.AllLists;
 
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ public class BaseFilter {
     }
 
     public Integer next() {
-        if(llaLst != null) {
+        if (llaLst != null) {
             int curList = getNextPointer();
             int valToReturn = llaLst.get(curList).get(curPointers.get(curList));
 
@@ -68,23 +69,20 @@ public class BaseFilter {
             return valToReturn;
         }
 
-        if(!useAll) {
-            --curPointer;
-            if(lla != null) {
-                if (lla.get(curPointer + 1) != null)
-                    return lla.get(curPointer + 1);
-                else
-                    return null;
+        if (!useAll) {
+            Integer toReturn;
+            if (lla != null) {
+                toReturn = lla.get(curPointer);
             } else {
-                    return ids[curPointer+1];
+                toReturn = ids[curPointer];
             }
-        } else {
-            while (curPointer>= startPointer && AllLists.allAccounts[curPointer] == null)
-                --curPointer;
-
             --curPointer;
-            if(curPointer >= startPointer && AllLists.allAccounts[curPointer+1] != null)
-                return AllLists.allAccounts[curPointer+1].id;
+            return toReturn;
+        } else {
+            Account toReturn = AllLists.allAccounts[curPointer];
+            --curPointer;
+            if (toReturn != null)
+                return toReturn.id;
             else
                 return null;
         }
@@ -103,6 +101,16 @@ public class BaseFilter {
                 }
             }
         }
+
+        for (int i = 0; i < llaLst.size(); i++) {
+            List<Integer> li = llaLst.get(i);
+            if (curPointers.get(i) >= startPointerList.get(i)) {
+                if(i!=maxListIndex && li.get(curPointers.get(i)) == maxListValue) {
+                    curPointers.set(i, curPointers.get(i) - 1);
+                }
+            }
+        }
+
         return maxListIndex;
     }
 
@@ -207,5 +215,10 @@ public class BaseFilter {
                 this.filterSize = totalSize;
             }
         }
+    }
+
+    public void resetCounters() {
+        curPointers = null;
+        curPointer = Integer.MAX_VALUE;
     }
 }

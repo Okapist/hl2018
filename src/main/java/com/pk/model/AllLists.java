@@ -3,7 +3,7 @@ package com.pk.model;
 import java.util.*;
 
 public class AllLists {
-    public static final Account[] allAccounts = new Account[1400000];
+    public static final Account[] allAccounts = new Account[1_400_000];
 
     public static final List<int[]> likesAccounts = new ArrayList<>(); //кого аккаунт лайкал hm<accId, ts>
     public static final List<List<Integer>> likesTO = new ArrayList<>(); //кто лайкал данный аккаунт

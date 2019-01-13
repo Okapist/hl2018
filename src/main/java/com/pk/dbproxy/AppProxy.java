@@ -124,6 +124,7 @@ public class AppProxy {
                     account.interestsArray[i] = intId;
                 }
             }
+            //Arrays.sort(account.interestsArray);
             addLikes(jsonAccount);
         }
     }

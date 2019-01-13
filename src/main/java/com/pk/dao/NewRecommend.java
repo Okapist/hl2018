@@ -35,6 +35,11 @@ public class NewRecommend {
             filters.add(tempCity, 0, tempCity.size()-1, false);
         }
 
+        if(city==null && country == null) {
+            int[] tempList = buildRecommend(baseAccount);
+            filters.add(tempList, 0, tempList.length-1, false);
+        }
+
         //store in reverse order to remove extra
         PriorityQueue<Account> heap = new PriorityQueue<>(limit, (p1,p2)-> {
 
@@ -46,7 +51,7 @@ public class NewRecommend {
             }
 
             if(p1.status != p2.status)
-                return Integer.compare(p2.status, p1.status);
+                return p2.status - p1.status;
 
             int common1 = 0;
             int common2 = 0;
@@ -63,67 +68,85 @@ public class NewRecommend {
                 return common1 - common2;
             }
 
-/*
-            if(commonInt.get(p1.id) != commonInt.get(p2.id)) {
-               return Integer.compare(commonInt.get(p1.id), commonInt.get(p2.id));
-            }
-*/
-
-            return Integer.compare(Math.abs(p2.birth-baseAccount.birth), Math.abs(p1.birth-baseAccount.birth));
-
+            return Math.abs(p2.birth-baseAccount.birth) - Math.abs(p1.birth-baseAccount.birth);
         });
 
-        while (filters.hasNext()) {
-            Integer possibleId = filters.next();//1299980
-            if(possibleId==null || possibleId < 1)
-                continue;
-
-            final Account possible = AllLists.allAccounts[possibleId];
-            if(possible == null || possible.id < 1 || possible.interests == null)
-                continue;
-
-            if(city != null) {
-                if(possible.city ==0 || possible.city != city)
+        boolean searchPremium = true;
+        int searchStatus = 1;
+        while(true) {
+            filters.resetCounters();
+            while (filters.hasNext()) {
+                Integer possibleId = filters.next();
+                if (possibleId == null || possibleId < 1)
                     continue;
-            }
 
-            if(country != null) {
-                if(possible.country == 0 || possible.country != country)
+                final Account possible = AllLists.allAccounts[possibleId];
+
+                if (possible.status != searchStatus)
                     continue;
-            }
 
-            if(possible.sex == baseAccount.sex)
-                continue;
-
-            boolean founded = false;
-            //if(commonInt.get(possible.id) == null) {
-                for (int intId : baseInterestsArray) {
-                    if(possible.interests.contains(intId)) {
-                        founded = true;
-                        break;
-                    }
+                if (searchPremium) {
+                    if (possible.premiumEnd < Runner.curDate || possible.premiumStart > Runner.curDate)
+                        continue;
+                } else {
+                    if (possible.premiumStart < Runner.curDate && possible.premiumEnd > Runner.curDate)
+                        continue;
                 }
-                //if (common > 0)
-                    //commonInt.put(possible.id, common);
-            //}
-            if(!founded)
-                continue;
 
-            heap.add(possible);
+                if (possible.interests == null)
+                    continue;
 
-            while (heap.size() > limit) {
-                Account extra = heap.poll();
-                //commonInt.remove(extra.id);
+                if (city != null) {
+                    if (possible.city == 0 || possible.city != city)
+                        continue;
+                }
+
+                if (country != null) {
+                    if (possible.country == 0 || possible.country != country)
+                        continue;
+                }
+
+                if (possible.sex == baseAccount.sex)
+                    continue;
+
+                if (city != null || country != null) {
+                    boolean founded = false;
+                    for (int intId : baseInterestsArray) {
+                        if (possible.interests.contains(intId)) {
+                            founded = true;
+                            break;
+                        }
+                    }
+                    if (!founded)
+                        continue;
+                }
+
+                heap.add(possible);
+
+                while (heap.size() > limit) {
+                    heap.poll();
+                }
+            }
+
+            if(heap.size() >= limit)
+                break;
+
+            if(searchStatus<3) {
+                ++searchStatus;
+            } else {
+                if(searchPremium) {
+                    searchPremium = false;
+                    searchStatus = 1;
+                } else {
+                    break;
+                }
             }
         }
 
         while (heap.size() > limit) {
-            //Account extra =
-                    heap.poll();
-            //commonInt.remove(extra.id);
+            heap.poll();
         }
 
-        //commonInt.clear();
         buildResult(heap, limit, buf);
         return true;
     }
@@ -187,5 +210,16 @@ public class NewRecommend {
             buf.append("}");
             --limit;
         }
+    }
+
+    private int[] buildRecommend(Account account) {
+        //List<Integer> res = new ArrayList<>(10000);
+        Set<Integer> res = new TreeSet<>();
+
+        for (Integer interest : account.interestsArray) {
+            List<Integer> tempArr = AllLists.interestAccounts.get(interest);
+            res.addAll(tempArr);
+        }
+        return res.stream().mapToInt(Integer::intValue).toArray();
     }
 }

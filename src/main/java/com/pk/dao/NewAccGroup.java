@@ -37,11 +37,18 @@ public class NewAccGroup {
             filters.add(AllLists.snameAccounts.get(sname), 0, AllLists.snameAccounts.get(sname).size()-1, false);
         }
 
+        Integer interestId = null;
         if (interests != null) {
-            filters.add(AllLists.interestAccounts.get(AllLists.interests.get(interests)), 0, AllLists.interestAccounts.get(AllLists.interests.get(interests)).size()-1, false);
+            interestId = AllLists.interests.get(interests);
+            filters.add(AllLists.interestAccounts.get(interestId), 0, AllLists.interestAccounts.get(interestId).size()-1, false);
         }
 
+        int bStart = 0;
+        int bEnd = 0;
         if(birth != null) {
+            bStart = getTimestamp(birth);
+            bEnd = getTimestamp(birth + 1) - 1;
+
             int min=AllLists.birthYears[birth-1930];
             int max=AllLists.birthYears[birth+1-1930];
 
@@ -54,7 +61,13 @@ public class NewAccGroup {
             filters.add(AllLists.birthSortedAccounts, min, max==0?AllLists.birthSortedAccounts.size()-1:max-1, false);
         }
 
+        int jStart = 0;
+        int jEnd = 0;
         if(joined != null) {
+
+            jStart = getTimestamp(joined);
+            jEnd = getTimestamp(joined + 1) - 1;
+
             int min=AllLists.joinedYears[joined-1930];
             int max=AllLists.joinedYears[joined+1-1930];
             int i = 1;
@@ -66,12 +79,14 @@ public class NewAccGroup {
             filters.add(AllLists.joinedSortedAccounts, min, max==0?AllLists.joinedSortedAccounts.size()-1:max-1, false);
         }
         Integer likeId = null;
+        Set<Integer> searchLikesSet = null;
         if (likes != null) {
             likeId = Integer.parseInt(likes);
             if(likeId > AllLists.likesTO.size()) {
                 return true;
             }
             List<Integer> accToIds = AllLists.likesTO.get(likeId);
+            searchLikesSet = new HashSet<>(accToIds);
             filters.add(accToIds, 0, accToIds.size()-1, false);
         }
 
@@ -102,76 +117,60 @@ public class NewAccGroup {
             }
         }
 
-        HashMap<Integer, Group> formedGroups = new HashMap<>();
+        HashMap<Integer, Group> formedGroups = new HashMap<>(50);
         while (filters.hasNext()) {
             Integer possibleId = filters.next();
-            if(possibleId == null || possibleId < 1)
+            if (possibleId == null || possibleId < 1)
                 continue;
-
-            boolean isAdd = true;
 
             Account possible = AllLists.allAccounts[possibleId];
 
-            if(isAdd && city != null) {
-                if(possible.city ==0 || possible.city != city)
-                    isAdd = false;
+            if (city != null) {
+                if (possible.city == 0 || possible.city != city)
+                    continue;
             }
 
-            if(isAdd && country != null) {
-                if(possible.country == 0 || possible.country != country)
-                    isAdd = false;
+            if (country != null) {
+                if (possible.country == 0 || possible.country != country)
+                    continue;
             }
 
-            if(isAdd && sex != null) {
-                if(possible.sex != sex)
-                    isAdd = false;
+            if (sex != null) {
+                if (possible.sex != sex)
+                    continue;
             }
 
-            if(isAdd && status != null) {
-                if(possible.status != status)
-                    isAdd = false;
+            if (status != null) {
+                if (possible.status != status)
+                    continue;
             }
 
-            if(isAdd && birth != null) {
-                int bStart = getTimestamp(birth);
-                int bEnd = getTimestamp(birth + 1) - 1;
-
+            if (birth != null) {
                 if (possible.birth == 0 || possible.birth < bStart || possible.birth > bEnd)
-                    isAdd = false;
+                    continue;
             }
 
-            if(isAdd && joined != null) {
-                int bStart = getTimestamp(joined);
-                int bEnd = getTimestamp(joined + 1) - 1;
-
-                if (possible.joined<bStart || possible.joined>bEnd)
-                    isAdd = false;
+            if (joined != null) {
+                if (possible.joined < jStart || possible.joined > jEnd)
+                    continue;
             }
 
-            if(isAdd && interests != null) {
-
-                if (possible.interests == null || !possible.interests.contains(AllLists.interests.get(interests)))
-                    isAdd = false;
+            if (interests != null) {
+                if (possible.interests == null || !possible.interests.contains(interestId))
+                    continue;
             }
 
-            if(isAdd && likes != null) {
-                if(likeId > AllLists.likesTO.size()) {
+            if (likes != null) {
+                if (likeId > AllLists.likesTO.size()) {
                     return true;
                 }
-                boolean founded = false;
-                for(int likeTo : AllLists.likesAccounts.get(possibleId)) {
-                    if(likeTo == likeId) {
-                        founded = true;
-                        break;
-                    }
+                if(!searchLikesSet.contains(possible.id)) {
+                    continue;
                 }
-                if(!founded)
-                    isAdd = false;
             }
 
-            if(isAdd) { //        //sex, status, interests, country, city
-                addToGroup(formedGroups, possible, groupSex, groupStatus, groupCountry, groupCity, groupInterests);
-            }
+            //sex, status, interests, country, city
+            addToGroup(formedGroups, possible, groupSex, groupStatus, groupCountry, groupCity, groupInterests);
         }
 
         Group[] sorted = sortGroups(formedGroups, order);
@@ -270,64 +269,54 @@ public class NewAccGroup {
         if (groupInterests && account.interests == null)
             return;
 
-        boolean searchSex = groupSex && account.sex;
-        byte searchStatus = groupStatus ? account.status : 0;
-        short searchCountry = groupCountry ? account.country : 0;
-        short searchCity = groupCity ? account.city : 0;
+        int hash = 0;
+        if(groupSex && account.sex) {
+            hash = 1;
+        }
+        if(groupStatus) {
+            hash |= account.status << 1;
+        }
+        int moveCityIndex = 3;
+        if(groupCountry) {
+            hash |= (int) account.country << 3;
+            moveCityIndex += 10;
+        }
 
-        int moveCityIndex = 3 + (groupCountry?10:0);
-        int moveInterestsIndex = moveCityIndex + (groupCity?10:0);
+        int moveInterestsIndex = moveCityIndex;
+        if (groupCity) {
+            hash |= (int) account.city << moveCityIndex;
+            moveInterestsIndex += 10;
+        }
 
-        if (account.interests == null || !groupInterests) {
-            int hash;
-            hash = searchSex ? 1 : 0;
-            hash |= searchStatus << 1;
-            if(groupCountry)
-                hash |= (int)searchCountry << 3;
-            if(groupCity)
-                hash |= (int)searchCity << moveCityIndex;
-
-
+        if (!groupInterests) {
             if (groups.get(hash) != null) {
-                Group oldG = groups.get(hash);
-                ++oldG.count;
-                groups.put(hash, oldG);
+                ++groups.get(hash).count;
             } else {
                 Group g = new Group();
                 g.count = 1;
-                g.sex = searchSex;
-                g.status = searchStatus;
-                g.country = searchCountry;
-                g.city = searchCity;
+                g.sex = groupSex && account.sex;
+                g.status = groupStatus?account.status:0;
+                g.country = groupCountry?account.country:0;
+                g.city = groupCity?account.city:0;
                 groups.put(hash, g);
             }
         } else {
-            if(groupInterests) {
-                int[] accInterests = account.interestsArray;
-                for (Integer interest : accInterests) {
-                    int hash;
-                    hash = searchSex ? 1 : 0;
-                    hash |= searchStatus << 1;
-                    if(groupCountry)
-                        hash |= (int)searchCountry << 3;
-                    if(groupCity)
-                        hash |= (int)searchCity << moveCityIndex;
-                    hash |= (int) interest << moveInterestsIndex;
+            int[] accInterests = account.interestsArray;
+            final int originalHash = hash;
+            for (Integer interest : accInterests) {
+                hash = originalHash | (int) interest << moveInterestsIndex;
 
-                    if (groups.get(hash) != null) {
-                        Group oldG = groups.get(hash);
-                        ++oldG.count;
-                        groups.put(hash, oldG);
-                    } else {
-                        Group g = new Group();
-                        g.count = 1;
-                        g.sex = searchSex;
-                        g.status = searchStatus;
-                        g.country = searchCountry;
-                        g.city = searchCity;
-                        g.interest = interest;
-                        groups.put(hash, g);
-                    }
+                if (groups.get(hash) != null) {
+                    ++groups.get(hash).count;
+                } else {
+                    Group g = new Group();
+                    g.count = 1;
+                    g.sex = groupSex && account.sex;
+                    g.status = groupStatus?account.status:0;
+                    g.country = groupCountry?account.country:0;
+                    g.city = groupCity?account.city:0;
+                    g.interest = interest;
+                    groups.put(hash, g);
                 }
             }
         }
