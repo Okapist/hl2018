@@ -38,10 +38,24 @@ public class AllLists {
     public static final List<Integer> joinedSortedAccounts = new ArrayList<>();
     public static final int[] joinedYears = new int[100];
 
+    public static List<Short>[] countryCityList; //лист городов в стране
+    public static int[] cityCounryList; //страна для каждого города
+
     public static final List<String> citiesList = new ArrayList<>();
     public static final List<String> countriesList = new ArrayList<>();
     public static final List<char[]> domainList = new ArrayList<>();
 
     public static final int[] yearToTs = new int[100];
     public static final Short shortCache[] = new Short[32000];
+
+    //[premium][status][country]<city><interes><accounts>
+    public static final HashMap<Integer, HashMap<Integer, Set<Integer>>>[][][] recommendInteresFilter = new HashMap[2][3][];
+
+
+    //[sex][status][country][city][interests]<birth> = count;
+    //public static final HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>[][][] groupFilter = new HashMap[3][4][];
+
+    //[sex][status][country]<city><birth><joined><like><interests> = count
+    //public static final HashMap<Integer, HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>[][][] groupFilter = new HashMap[3][4][];
+    //public static final HashMap<Integer, HashMap<Integer, Set<Integer>>>[][][] recommendInteresFilter = new HashMap[2][3][];
 }

@@ -29,14 +29,6 @@ public class NewAccGroup {
             filters.add(AllLists.cityAccounts.get(city), 0, AllLists.cityAccounts.get(city).size()-1, false);
         }
 
-        if (fname != null) {
-            filters.add(AllLists.fnameAccounts.get(fname), 0, AllLists.fnameAccounts.get(fname).size()-1, false);
-        }
-
-        if (sname != null) {
-            filters.add(AllLists.snameAccounts.get(sname), 0, AllLists.snameAccounts.get(sname).size()-1, false);
-        }
-
         Integer interestId = null;
         if (interests != null) {
             interestId = AllLists.interests.get(interests);

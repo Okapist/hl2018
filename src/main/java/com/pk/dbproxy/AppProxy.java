@@ -9,10 +9,11 @@ import com.pk.model.AllLists;
 
 import java.util.*;
 
+import static com.pk.model.AllLists.*;
+
 public class AppProxy {
 
     int maxIntId = 1;
-    //public HashMap<Integer, List<Integer>> tempLikesTO = new HashMap<>(); //кто лайкал данный аккаунт
 
     public void load(Accounts myObjects) {
 
@@ -126,6 +127,26 @@ public class AppProxy {
             }
             //Arrays.sort(account.interestsArray);
             addLikes(jsonAccount);
+        }
+    }
+
+    public void buildCountryCityList() {
+        AllLists.countryCityList = new ArrayList[AllLists.countriesList.size()];
+
+        cityCounryList = new int[AllLists.citiesList.size()];
+        for(com.pk.model.Account account : AllLists.allAccounts) {
+            if(account != null) {
+                if(account.country != 0 && account.city != 0) {
+                    cityCounryList[account.city] = account.country;
+
+                    if(countryCityList[account.country] == null)
+                        countryCityList[account.country] = new ArrayList<>();
+
+                    if(!countryCityList[account.country].contains(account.city)) {
+                        countryCityList[account.country].add(account.city);
+                    }
+                }
+            }
         }
     }
 
@@ -273,8 +294,154 @@ public class AppProxy {
         for(String key : AllLists.interests.keySet()) {
             AllLists.interestsById.put(AllLists.interests.get(key), key);
         }
-
+        System.out.println("CREATE NEW FILTERS");
         createNewFilters();
+        System.gc();
+        System.out.println("CREATE RECOMMEND FILTERS");
+        createRecommendFilter();
+        System.gc();
+        //System.out.println("CREATE GROUP FILTERS");
+        //createGroupFilter();
+        //System.gc();
+        //createGroupFilterSum();
+    }
+
+    //[sex][status][country]<city><birth><joined><interests><like> = count
+ /*   private void createGroupFilterSum() {
+        for(int sex =2; sex>=0; --sex) {
+            for (int status = 3; status >= 0; --status) {
+                for(int country = AllLists.countriesList.size()-1; country>=0; --country) {
+
+                    HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> tmp1 = groupFilter[sex][status][country];
+
+                    for(int cityIndex : tmp1.keySet()) {
+                        HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tmp2 = tmp1.get(cityIndex);
+
+                        for(int birthIndex: tmp2.keySet()) {
+                            HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> tmp3 = tmp2.get(birthIndex);
+
+                            for(int joinedIndex : tmp2.keySet()) {
+                                HashMap<Integer, HashMap<Integer, Integer>> tmp4 = tmp3.get(joinedIndex);
+
+                                int sumInterests = 0;
+                                for(int interestIndex : tmp4.keySet()) {
+                                    HashMap<Integer, Integer> tmp5 = tmp4.get(interestIndex);
+                                    int sumLikes = 0;
+                                    for(int likeIndex : tmp5.keySet()) {
+                                        Integer tmp6 = tmp5.get(likeIndex); //столько у нас в группе по всем условиям
+                                        sumLikes += tmp6;
+                                    }
+                                    tmp5.put(null, sumLikes);
+                                    sumInterests += sumLikes;
+                                }
+                                sumInterests += t
+                                tmp4.put(null, )
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+*/
+/*
+    private void createGroupFilter() {
+        for(int sex =0; sex<3; ++sex) {
+            for (int status = 0; status < 4; ++status) {
+                groupFilter[sex][status] = new HashMap[AllLists.countriesList.size()];
+
+                for (int countryIndex = 0; countryIndex < AllLists.countriesList.size(); ++countryIndex) {
+                    groupFilter[sex][status][countryIndex] = new HashMap<>();
+                }
+            }
+        }
+
+        for (com.pk.model.Account account : allAccounts) {
+            if (account == null)
+                continue;
+            //[sex][status][country]<city><birth><joined><interests><like> = count
+            int sexIndex = account.sex?2:1;
+            int statusIndex = account.status;
+            int countryIndex = cityCounryList[account.city > 0 ? account.city : account.country];
+            int cityIndex = account.city;
+            int birth = getYear(account.birth);
+            int joined = getYear(account.joined);
+            int[] interestsIndex = account.interestsArray;
+            int[] likes = likesAccounts.get(account.id); //нечетные!!!
+
+            //not total :)
+            groupFilter[sexIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p-> new HashMap<>());
+            groupFilter[sexIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(birth, p-> new HashMap<>());
+            groupFilter[sexIndex][statusIndex][countryIndex].get(cityIndex).get(birth).computeIfAbsent(joined, p-> new HashMap<>());
+
+            HashMap<Integer, HashMap<Integer, Integer>> toEdit = groupFilter[sexIndex][statusIndex][countryIndex].get(cityIndex).get(birth).get(joined);
+            if (interestsIndex != null) {
+                for (int interest : interestsIndex) {
+
+                    toEdit.computeIfAbsent(interest, p-> new HashMap<>());
+
+                    if(likes != null) {
+                        for(int likeIndex = 0; likeIndex<likes.length; likeIndex+=2) {
+                            toEdit.get(interest).put(likes[likeIndex], toEdit.get(interest).getOrDefault(likes[likeIndex], 0) + 1);
+                        }
+                    } else {
+                        toEdit.get(interest).put(null, toEdit.get(interest).getOrDefault(null, 0) + 1);
+                    }
+                }
+            } else {
+                toEdit.computeIfAbsent(null, p-> new HashMap<>());
+                if(likes != null) {
+                    for(int likeIndex = 0; likeIndex<likes.length; likeIndex+=2) {
+                        toEdit.get(null).put(likes[likeIndex], toEdit.get(null).getOrDefault(likes[likeIndex], 0) + 1);
+                    }
+                } else {
+                    toEdit.get(null).put(null, toEdit.get(null).getOrDefault(null, 0) + 1);
+                }
+            }
+        }
+    }
+*/
+    Calendar cal = Calendar.getInstance();
+    private int getYear(int timestamp) {
+        cal.setTimeInMillis((long)timestamp*1000);
+        return cal.get(Calendar.YEAR);
+    }
+
+    private void createRecommendFilter() {
+
+        for (int premium = 0; premium < 2; ++premium) {
+            for (int status = 0; status < 3; ++status) {
+                recommendInteresFilter[premium][status] = new HashMap[AllLists.countriesList.size()];
+
+                for (int countryIndex = 0; countryIndex < AllLists.countriesList.size(); ++countryIndex) {
+                    recommendInteresFilter[premium][status][countryIndex] = new HashMap<>();
+                }
+            }
+        }
+
+        for (com.pk.model.Account account : allAccounts) {
+            if(account==null)
+                continue;
+
+            int premiumIndex = account.premiumEnd > Runner.curDate ? 0 : 1;
+            int countryIndex = account.country;
+            int statusIndex = account.status - 1;
+            int cityIndex = account.city;
+            int[] interestsIndex = account.interestsArray;
+
+            recommendInteresFilter[premiumIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p -> new HashMap<>());
+            if (interestsIndex != null) {
+                for (int interest : interestsIndex) {
+                    recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(interest, p -> new HashSet<>());
+                    recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(interest).add(account.id);
+                }
+            } else {
+                recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(0, p -> new HashSet<>());
+                recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(0).add(account.id);
+
+            }
+        }
     }
 
     public void createNewFilters() {
@@ -371,10 +538,5 @@ public class AppProxy {
                 }
             }
         }
-
-
-
-
-        int i =0;
     }
 }

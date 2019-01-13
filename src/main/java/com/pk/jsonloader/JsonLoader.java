@@ -79,6 +79,9 @@ public class JsonLoader {
         System.gc();
 
         appProxy.sortAccounts();
+
+        appProxy.buildCountryCityList();
+
         appProxy.createFilters();
         System.gc();
     }

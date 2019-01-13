@@ -10,133 +10,134 @@ public class NewRecommend {
 
     public boolean recommend(int accId, Short country, Short city, int limit, StringBuilder buf) {
 
-        if(accId >= AllLists.allAccounts.length || AllLists.allAccounts[accId] == null)
+        if (accId >= AllLists.allAccounts.length || AllLists.allAccounts[accId] == null)
             return false;
 
-        if(limit <1)
+        if (limit < 1)
             return false;
 
         Account baseAccount = AllLists.allAccounts[accId];
         Set<Integer> baseInterests = baseAccount.interests;
-        if(baseInterests == null)
+        if (baseInterests == null)
             return true;
 
         int[] baseInterestsArray = baseAccount.interestsArray;
 
-        BaseFilter filters = new BaseFilter();
-
+        int searchCountry = 0;
         if (country != null) {
-            List<Integer> tempCountry = AllLists.countryAccounts.get(country);
-            filters.add(tempCountry, 0, tempCountry.size()-1, false);
+            searchCountry = country;
         }
 
+        int searchCity = 0;
         if (city != null) {
-            List<Integer> tempCity = AllLists.cityAccounts.get(city);
-            filters.add(tempCity, 0, tempCity.size()-1, false);
+            searchCity = city;
+            //searchCity = AllLists.citiesList.indexOf(city);
+            int calcCountry = AllLists.cityCounryList[searchCity];
+            if (calcCountry != searchCountry && searchCountry != 0)
+                return true;
+
+            searchCountry = calcCountry;
         }
 
-        if(city==null && country == null) {
-            int[] tempList = buildRecommend(baseAccount);
-            filters.add(tempList, 0, tempList.length-1, false);
-        }
+        int[] interestsArray = baseAccount.interestsArray;
 
         //store in reverse order to remove extra
-        PriorityQueue<Account> heap = new PriorityQueue<>(limit, (p1,p2)-> {
+        PriorityQueue<Account> heap = new PriorityQueue<>(limit, (p1, p2) -> {
 
-            boolean p1Premium = p1.premiumStart!= 0 && p1.premiumEnd!= 0 && p1.premiumStart < Runner.curDate && p1.premiumEnd> Runner.curDate;
-            boolean p2Premium = p2.premiumStart!= 0 && p2.premiumEnd!= 0 && p2.premiumStart < Runner.curDate && p2.premiumEnd> Runner.curDate;
+            boolean p1Premium = p1.premiumStart != 0 && p1.premiumEnd != 0 && p1.premiumStart < Runner.curDate && p1.premiumEnd > Runner.curDate;
+            boolean p2Premium = p2.premiumStart != 0 && p2.premiumEnd != 0 && p2.premiumStart < Runner.curDate && p2.premiumEnd > Runner.curDate;
 
-            if(p1Premium != p2Premium) {
-                return p1Premium?1:-1;
+            if (p1Premium != p2Premium) {
+                return p1Premium ? 1 : -1;
             }
 
-            if(p1.status != p2.status)
+            if (p1.status != p2.status)
                 return p2.status - p1.status;
 
             int common1 = 0;
             int common2 = 0;
             for (int intId : baseInterestsArray) {
-                if(p1.interests.contains(intId)) {
+                if (p1.interests.contains(intId)) {
                     ++common1;
                 }
-                if(p2.interests.contains(intId)) {
+                if (p2.interests.contains(intId)) {
                     ++common2;
                 }
             }
 
-            if(common1 != common2) {
+            if (common1 != common2) {
                 return common1 - common2;
             }
 
-            return Math.abs(p2.birth-baseAccount.birth) - Math.abs(p1.birth-baseAccount.birth);
+            return Math.abs(p2.birth - baseAccount.birth) - Math.abs(p1.birth - baseAccount.birth);
         });
 
-        boolean searchPremium = true;
-        int searchStatus = 1;
-        while(true) {
-            filters.resetCounters();
-            while (filters.hasNext()) {
-                Integer possibleId = filters.next();
-                if (possibleId == null || possibleId < 1)
-                    continue;
+        //[premium][status][country]<city><interes><accounts>
+        int premium = 0;
+        int status = 0;
+        final int startCountry = country==null?0:searchCountry;
+        final int toAddCountry = searchCountry>0?searchCountry:1;
 
-                final Account possible = AllLists.allAccounts[possibleId];
+        while (true) {
+            HashMap<Integer, HashMap<Integer, Set<Integer>>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
+            int endCountry = searchCountry == 0 ? toSearch.length - 1 : searchCountry;
+            for (int curCountry = startCountry; curCountry <= endCountry; curCountry+=toAddCountry) {
 
-                if (possible.status != searchStatus)
-                    continue;
-
-                if (searchPremium) {
-                    if (possible.premiumEnd < Runner.curDate || possible.premiumStart > Runner.curDate)
-                        continue;
-                } else {
-                    if (possible.premiumStart < Runner.curDate && possible.premiumEnd > Runner.curDate)
-                        continue;
-                }
-
-                if (possible.interests == null)
-                    continue;
-
-                if (city != null) {
-                    if (possible.city == 0 || possible.city != city)
-                        continue;
-                }
-
-                if (country != null) {
-                    if (possible.country == 0 || possible.country != country)
-                        continue;
-                }
-
-                if (possible.sex == baseAccount.sex)
-                    continue;
-
-                if (city != null || country != null) {
-                    boolean founded = false;
-                    for (int intId : baseInterestsArray) {
-                        if (possible.interests.contains(intId)) {
-                            founded = true;
-                            break;
+                if (searchCity != 0) {
+                    HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(searchCity);
+                    if (toSearchInterests != null) {
+                        Set<Integer> alreadyAdded = new HashSet<>();
+                        for (int interes : baseInterestsArray) {
+                            Set<Integer> possibleList = toSearchInterests.get(interes);
+                            if (possibleList != null) {
+                                possibleList.forEach(p -> {
+                                    Account possible = AllLists.allAccounts[p];
+                                    if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
+                                        alreadyAdded.add(possible.id);
+                                        heap.add(possible);
+                                    }
+                                });
+                                while (heap.size() > limit) {
+                                    heap.poll();
+                                }
+                            }
                         }
                     }
-                    if (!founded)
-                        continue;
-                }
-
-                heap.add(possible);
-
-                while (heap.size() > limit) {
-                    heap.poll();
+                } else {
+                    for (Integer curCity : toSearch[curCountry].keySet()) {
+                        HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(curCity);
+                        if (toSearchInterests != null) {
+                            Set<Integer> alreadyAdded = new HashSet<>();
+                            for (int interes : baseInterestsArray) {
+                                Set<Integer> possibleList = toSearchInterests.get(interes);
+                                if (possibleList != null) {
+                                    possibleList.forEach(p -> {
+                                        Account possible = AllLists.allAccounts[p];
+                                        if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
+                                            alreadyAdded.add(possible.id);
+                                            heap.add(possible);
+                                        }
+                                    });
+                                    while (heap.size() > limit) {
+                                        Account acc = heap.poll();
+                                        int i = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            if(heap.size() >= limit)
+            if (heap.size() >= limit)
                 break;
 
-            if(searchStatus<3) {
-                ++searchStatus;
+            if (status < 2) {
+                ++status;
             } else {
-                if(searchPremium) {
-                    searchPremium = false;
-                    searchStatus = 1;
+                if (premium == 0) {
+                    premium = 1;
+                    status = 0;
                 } else {
                     break;
                 }
