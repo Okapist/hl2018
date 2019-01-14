@@ -9,7 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.pk.model.AllLists.groupFilter;
+import static com.pk.model.AllLists.*;
 
 public class NewAccGroup {
 
@@ -47,50 +47,57 @@ public class NewAccGroup {
         }
 
         //new code based on new groupFilter no filter for now
-        if(birth == null && likes == null && joined==null) {
+        if((birth == null && likes == null && joined==null) ||
+                (likes == null && birth!=null && joined==null) ||
+                (likes == null && birth==null && joined!=null)) {
 
             int birthYear = Integer.MAX_VALUE;
-            if (birth != null)
+            if (birth != null) {
                 birthYear = birth;
+                if(birthYear > MAX_BIRTH_YEAR)
+                    return true;
+            }
 
-            int totalGroupCount = 0;
+            int joinedYear = Integer.MAX_VALUE;
+            if (joined != null) {
+                joinedYear = joined;
+                if(joinedYear > MAX_JOINED_YEAR)
+                    return true;
+            }
 
-            int sexIndex = 0;
+            int lastCountry = countriesList.size() - 1;
+            int lastCity = citiesList.size() - 1;
+            int lastSex = 1;
+            int lastStatus = 2;
+
             int startSex = 0;
-            if (groupSex) {
-                sexIndex = 2;
-                startSex = 1;
-                ++totalGroupCount;
+            if (sex != null) {
+                startSex = sex?1:0;
+                lastSex = startSex;
             }
 
-            int statusIndex = 0;
             int startStatus = 0;
-            if (groupStatus) {
-                statusIndex = 3;
-                startStatus = 1;
-                ++totalGroupCount;
+            if (status != null) {
+                startStatus = status-1;
+                lastStatus = status-1;
             }
 
-            int countryIndex = AllLists.countriesList.size();
-            int startCountry = AllLists.countriesList.size();
-            if (groupCountry) {
-                countryIndex = AllLists.countriesList.size()-1;
-                startCountry = 0;
-                ++totalGroupCount;
+            int startCountry = 0;
+            if (country != null) {
+                startCountry = country;
+                lastCountry = country;
             }
 
-            int cityIndex = Integer.MAX_VALUE;
-            if (groupCity) {
-                cityIndex = 0;
-                ++totalGroupCount;
+            int startCity = 0;
+            if (city != null) {
+                startCity = city;
+                lastCity = city;
             }
 
             int interestIndex = Integer.MAX_VALUE;
             if (groupInterests) {
                 interestIndex = 0;
-                ++totalGroupCount;
             }
-
 
             TreeSet<int[]> groupData;
             if(order) {
@@ -113,45 +120,159 @@ public class NewAccGroup {
                         });
             }
 
-            for(int tempSex =startSex; tempSex<=sexIndex; ++tempSex) {
-                for(int tempStatus =startStatus; tempStatus<=statusIndex; ++tempStatus) {
-                    for(int tempCountry =startCountry; tempCountry<=countryIndex; ++tempCountry) {
+            int tempCountry = 0;
+            int tempCity = 0;
+            int tempStatus = 0;
+            int tempSex = 0;
 
-                        Set<Integer> cityKeys;
-                        if(cityIndex == Integer.MAX_VALUE) {
-                            cityKeys = new HashSet<>(); ////[country]<city>[sex][status]<interests> = count;
-                            cityKeys.add(Integer.MAX_VALUE);
-                        }else
-                            cityKeys = groupFilter[tempCountry].keySet();
+            int curSum = 0;
+            while(true) {
 
-                        for(int tempCity : cityKeys) {
-
-                            Set<Integer> interestKeys;
-                            if(interestIndex == Integer.MAX_VALUE) {
-                                interestKeys = new HashSet<>(); ////[country]<city>[sex][status]<interests> = count;
-                                interestKeys.add(Integer.MAX_VALUE);
-                            }else
-                                interestKeys = groupFilter[tempCountry].get(tempCity)[tempSex][tempStatus].keySet();
-
-                            for(int tempInterest : interestKeys) {
-                                Integer count = groupFilter[tempCountry].get(tempCity)[tempSex][tempStatus].get(tempInterest);
-
-                                int[] valToInsert = new int[6];
-                                valToInsert[0] = count;
-                                valToInsert[1] = tempSex;
-                                valToInsert[2] = tempStatus;
-                                valToInsert[3] = tempCountry;
-                                valToInsert[4] = tempCity;
-                                valToInsert[5] = tempInterest;
-
-                                groupData.add(valToInsert);
-                            }
-                        }
+                if(birth!= null) {
+                    curSum += groupFilterBirth[tempCountry][tempCity][tempStatus][tempSex][birthYear-MIN_BIRTH_YEAR];
+                } else {
+                    if(joined != null) {
+                        curSum += groupFilterJoined[tempCountry][tempCity][tempStatus][tempSex][joinedYear-MIN_JOINED_YEAR];
+                    } else {
+                        curSum += groupFilter[tempCountry][tempCity][tempStatus][tempSex];
                     }
                 }
-            }
 
-            int i = 0;
+                if(!groupSex && tempSex < lastSex) {
+                    ++tempSex;
+                    continue;
+                }
+                if(!groupStatus && tempStatus<lastStatus) {
+                    if(!groupSex)
+                        tempSex = startSex;
+
+                    ++tempStatus;
+                    continue;
+                }
+
+                if(!groupCity && tempCity<lastCity) {
+                    ++tempCity;
+
+                    if(!groupSex)
+                        tempSex = startSex;
+                    if(!groupStatus)
+                        tempStatus = startStatus;
+                    continue;
+                }
+
+                if(!groupCountry && tempCountry<lastCountry) {
+                    ++tempCountry;
+                    //lastCity = countryCityList[tempCountry].size() -1;
+
+                    if(!groupSex)
+                        tempSex = startSex;
+                    if(!groupStatus)
+                        tempStatus = startStatus;
+                    if(!groupCity)
+                        tempCity = startCity;
+                    continue;
+                }
+
+                int[] valToInsert = new int[6];
+                valToInsert[0] = curSum;
+                valToInsert[1] = tempSex;
+                valToInsert[2] = tempStatus;
+                valToInsert[3] = tempCountry;
+                valToInsert[4] = tempCity;
+                valToInsert[5] = 0;
+                groupData.add(valToInsert);
+
+                curSum = 0;
+
+                if(groupSex && tempSex < lastSex) {
+                    ++tempSex;
+
+                    if(!groupSex)
+                        tempSex = startSex;
+                    if(!groupStatus)
+                        tempStatus = startStatus;
+                    if(!groupCity)
+                        tempCity = startCity;
+                    if(!groupCountry) {
+                        tempCountry = startCountry;
+                        //lastCity = countryCityList[tempCountry].size() -1;
+                    }
+
+                    continue;
+                }
+                if(groupStatus && tempStatus<lastStatus) {
+                    if(groupSex)
+                        tempSex = startSex;
+
+                    if(!groupSex)
+                        tempSex = startSex;
+                    if(!groupStatus)
+                        tempStatus = startStatus;
+                    if(!groupCity)
+                        tempCity = startCity;
+                    if(!groupCountry) {
+                        tempCountry = startCountry;
+                        //lastCity = countryCityList[tempCountry].size() -1;
+                    }
+
+                    ++tempStatus;
+                    continue;
+                }
+
+                if(groupCity && tempCity<lastCity) {
+                    ++tempCity;
+
+                    //while (groupFilter[tempCountry][tempCity] == null)
+
+                    if(groupSex)
+                        tempSex = startSex;
+                    if(groupStatus)
+                        tempStatus = startStatus;
+
+                    if(!groupSex)
+                        tempSex = startSex;
+                    if(!groupStatus)
+                        tempStatus = startStatus;
+                    if(!groupCity)
+                        tempCity = startCity;
+                    if(!groupCountry) {
+                        tempCountry = startCountry;
+                        //lastCity = countryCityList[tempCountry].size() -1;
+                    }
+
+                    continue;
+                }
+
+                if(groupCountry && tempCountry<lastCountry) {
+                    ++tempCountry;
+                    //lastCity = countryCityList[tempCountry].size() -1;
+
+                    if(groupSex)
+                        tempSex = startSex;
+                    if(groupStatus)
+                        tempStatus = startStatus;
+                    if(groupCity)
+                        tempCity = startCity;
+
+                    if(!groupSex)
+                        tempSex = startSex;
+                    if(!groupStatus)
+                        tempStatus = startStatus;
+                    if(!groupCity)
+                        tempCity = startCity;
+                    if(!groupCountry) {
+                        tempCountry = startCountry;
+                        //lastCity = countryCityList[tempCountry].size() -1;
+                    }
+
+                    continue;
+                }
+
+                break;
+            }
+            int i =0;
+
+            return true;
         }
 
         if (status != null) {

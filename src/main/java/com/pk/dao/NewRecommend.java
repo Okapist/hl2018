@@ -31,15 +31,7 @@ public class NewRecommend {
         int searchCity = 0;
         if (city != null) {
             searchCity = city;
-            //searchCity = AllLists.citiesList.indexOf(city);
-            int calcCountry = AllLists.cityCounryList[searchCity];
-            if (calcCountry != searchCountry && searchCountry != 0)
-                return true;
-
-            searchCountry = calcCountry;
         }
-
-        int[] interestsArray = baseAccount.interestsArray;
 
         //store in reverse order to remove extra
         PriorityQueue<Account> heap = new PriorityQueue<>(limit, (p1, p2) -> {
@@ -75,19 +67,20 @@ public class NewRecommend {
         //[premium][status][country]<city><interes><accounts>
         int premium = 0;
         int status = 0;
-        final int startCountry = country==null?0:searchCountry;
-        final int toAddCountry = searchCountry>0?searchCountry:1;
+        final int startCountry = country == null ? 0 : searchCountry;
+        final int toAddCountry = searchCountry > 0 ? searchCountry : 1;
 
         while (true) {
             HashMap<Integer, HashMap<Integer, Set<Integer>>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
-            int endCountry = searchCountry == 0 ? toSearch.length - 1 : searchCountry;
-            for (int curCountry = startCountry; curCountry <= endCountry; curCountry+=toAddCountry) {
+            final int endCountry = searchCountry == 0 ? toSearch.length - 1 : searchCountry;
+            for (int curCountry = startCountry; curCountry <= endCountry; curCountry += toAddCountry) {
 
                 if (searchCity != 0) {
                     HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(searchCity);
                     if (toSearchInterests != null) {
                         Set<Integer> alreadyAdded = new HashSet<>();
-                        for (int interes : baseInterestsArray) {
+                        for (int i = 0; i < baseInterestsArray.length; i++) {
+                            int interes = baseInterestsArray[i];
                             Set<Integer> possibleList = toSearchInterests.get(interes);
                             if (possibleList != null) {
                                 possibleList.forEach(p -> {
@@ -104,11 +97,15 @@ public class NewRecommend {
                         }
                     }
                 } else {
-                    for (Integer curCity : toSearch[curCountry].keySet()) {
+                    Set<Integer> cityList = toSearch[curCountry].keySet();
+                    Integer[] cityArr = cityList.toArray(new Integer[0]);
+                    for (int i1 = 0; i1 < cityArr.length; i1++) {
+                        Integer curCity = cityArr[i1];
                         HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(curCity);
                         if (toSearchInterests != null) {
                             Set<Integer> alreadyAdded = new HashSet<>();
-                            for (int interes : baseInterestsArray) {
+                            for (int i2 = 0; i2 < baseInterestsArray.length; i2++) {
+                                int interes = baseInterestsArray[i2];
                                 Set<Integer> possibleList = toSearchInterests.get(interes);
                                 if (possibleList != null) {
                                     possibleList.forEach(p -> {
@@ -119,7 +116,7 @@ public class NewRecommend {
                                         }
                                     });
                                     while (heap.size() > limit) {
-                                        Account acc = heap.poll();
+                                        heap.poll();
                                         int i = 0;
                                     }
                                 }
@@ -155,16 +152,16 @@ public class NewRecommend {
     private void buildResult(PriorityQueue<Account> heap, int limit, StringBuilder buf) {
 
         Account[] arr = new Account[heap.size()];
-        for(int i=0; i<arr.length; ++i)
+        for (int i = 0; i < arr.length; ++i)
             arr[i] = heap.poll();
 
         boolean isFirst = true;
-        for(int i= arr.length-1; i>=0; --i) {
+        for (int i = arr.length - 1; i >= 0; --i) {
             Account cur = arr[i];
-            if(cur.id < 1)
+            if (cur.id < 1)
                 continue;
 
-            if(isFirst) {
+            if (isFirst) {
                 buf.append("{\"id\":");
                 isFirst = false;
             } else
@@ -172,7 +169,7 @@ public class NewRecommend {
 
             buf.append(cur.id);
 
-            if(cur.email != null) {
+            if (cur.email != null) {
                 buf.append(",\"email\":\"");
                 buf.append(cur.email).append("@").append(AllLists.domainList.get(cur.emailDomain));
                 buf.append("\"");
@@ -200,7 +197,7 @@ public class NewRecommend {
 
             Integer premStart = cur.premiumStart;
             Integer premEnd = cur.premiumEnd;
-            if (premStart!=null && premEnd!=null && premStart > 0 && premEnd > 0) {
+            if (premStart != null && premEnd != null && premStart > 0 && premEnd > 0) {
                 buf.append(",\"premium\":{\"start\":");
                 buf.append(premStart);
                 buf.append(",\"finish\":");
@@ -209,18 +206,7 @@ public class NewRecommend {
             }
 
             buf.append("}");
-            --limit;
+            //--limit;
         }
-    }
-
-    private int[] buildRecommend(Account account) {
-        //List<Integer> res = new ArrayList<>(10000);
-        Set<Integer> res = new TreeSet<>();
-
-        for (Integer interest : account.interestsArray) {
-            List<Integer> tempArr = AllLists.interestAccounts.get(interest);
-            res.addAll(tempArr);
-        }
-        return res.stream().mapToInt(Integer::intValue).toArray();
     }
 }

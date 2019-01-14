@@ -135,11 +135,11 @@ public class AppProxy {
     public void buildCountryCityList() {
         AllLists.countryCityList = new ArrayList[AllLists.countriesList.size()];
 
-        cityCounryList = new int[AllLists.citiesList.size()];
+        //cityCounryList = new int[AllLists.citiesList.size()];
         for(com.pk.model.Account account : AllLists.allAccounts) {
             if(account != null) {
-                if(account.country != 0 && account.city != 0) {
-                    cityCounryList[account.city] = account.country;
+                //if(account.country != 0 || account.city != 0) {
+                    //cityCounryList[account.city] = account.country;
 
                     if(countryCityList[account.country] == null)
                         countryCityList[account.country] = new ArrayList<>();
@@ -147,7 +147,7 @@ public class AppProxy {
                     if(!countryCityList[account.country].contains(account.city)) {
                         countryCityList[account.country].add(account.city);
                     }
-                }
+                //}
             }
         }
     }
@@ -306,7 +306,7 @@ public class AppProxy {
         createGroupFilter();
         System.gc();
         System.out.println("CREATE GROUP COUNTRY SUMS");
-        createGroupFilterSumCountry();
+        //createGroupFilterSumCountry();
         System.out.println("ALL FILTERS CREATED");
     }
 
@@ -448,58 +448,27 @@ public class AppProxy {
 
     private void createGroupFilter() {
 
-        ALL_COUNTRY_SUM_INDEX = AllLists.countriesList.size();
-        groupFilter = new HashMap[ALL_COUNTRY_SUM_INDEX+1];
-
-        //sum for all country
-        if(groupFilter[ALL_COUNTRY_SUM_INDEX] == null)
-            groupFilter[ALL_COUNTRY_SUM_INDEX] = new HashMap<>();
-
-
+        groupFilter = new int[countriesList.size()][citiesList.size()][3][2];
+        groupFilterBirth = new int[countriesList.size()][citiesList.size()][3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1];
+        groupFilterJoined = new int[countriesList.size()][citiesList.size()][3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1];
 
         for (com.pk.model.Account account : allAccounts) {
             if (account == null)
                 continue;
-            //[country]<city>[sex][status]<interests> = count;
             int countryIndex = account.country;
-            int cityIndex = account.city;
-            int sexIndex = account.sex ? 2 : 1;
-            int statusIndex = account.status;
-            int[] interestsIndex = account.interestsArray;
+            int sexIndex = account.sex ? 1 : 0;
+            int statusIndex = account.status - 1;
 
-            for (int tmpCountry : new int[]{countryIndex, ALL_COUNTRY_SUM_INDEX}) {
+            int birth = getYear(account.birth);
+            int joined = getYear(account.joined);
+            //int fixedCityIndex = countryCityList[account.country].indexOf(account.city);
 
-                if (groupFilter[tmpCountry] == null)
-                    groupFilter[tmpCountry] = new HashMap<>();
-
-                for (int tmpCity : new int[]{cityIndex, ALL_HM_SUM_INDEX}) {
-                    groupFilter[tmpCountry].computeIfAbsent(tmpCity, k -> new HashMap[3][4]);
-
-                    for (int tmpSex : new int[]{sexIndex, 0}) {
-
-                        for (int tmpStatus : new int[]{statusIndex, 0}) {
-
-                            if (groupFilter[tmpCountry].get(tmpCity)[tmpSex][tmpStatus] == null)
-                                groupFilter[tmpCountry].get(tmpCity)[tmpSex][tmpStatus] = new HashMap<>();
-
-                            HashMap<Integer, Integer> toEdit = groupFilter[tmpCountry].get(tmpCity)[tmpSex][tmpStatus];
-
-                            toEdit.put(ALL_HM_SUM_INDEX, toEdit.getOrDefault(ALL_HM_SUM_INDEX, 0) + 1);
-
-                            if (interestsIndex != null) {
-                                for (int interest : interestsIndex) {
-                                    toEdit.put(interest, toEdit.getOrDefault(interest, 0) + 1);
-                                }
-                            } else {
-                                toEdit.put(null, toEdit.getOrDefault(null, 0) + 1);
-                            }
-                        }
-                    }
-                }
-            }
+            ++groupFilter[countryIndex][account.city][statusIndex][sexIndex];
+            ++groupFilterBirth[countryIndex][account.city][statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
+            ++groupFilterJoined[countryIndex][account.city][statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
         }
 
-        int i =0;
+        int i = 0;
     }
 
     Calendar cal = Calendar.getInstance();
@@ -600,6 +569,11 @@ public class AppProxy {
                     while (AllLists.allAccounts[AllLists.birthSortedAccounts.get(i)].birth >= Utils.getTimestamp(year))
                         ++year;
 
+                    if(MIN_BIRTH_YEAR == Integer.MAX_VALUE) {
+                        MIN_BIRTH_YEAR = year-1;
+                    }
+                    MAX_BIRTH_YEAR = year;
+
                     AllLists.birthYears[year - 1 - 1930] = i;
                 }
             }
@@ -622,6 +596,11 @@ public class AppProxy {
                 if(AllLists.allAccounts[AllLists.joinedSortedAccounts.get(i)].joined >=Utils.getTimestamp(year)) {
                     while (AllLists.allAccounts[AllLists.joinedSortedAccounts.get(i)].joined >= Utils.getTimestamp(year))
                         ++year;
+
+                    if(MIN_JOINED_YEAR == Integer.MAX_VALUE) {
+                        MIN_JOINED_YEAR = year-1;
+                    }
+                    MAX_JOINED_YEAR = year;
 
                     AllLists.joinedYears[year - 1 - 1930] = i;
                 }

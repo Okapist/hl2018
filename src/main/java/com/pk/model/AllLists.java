@@ -34,12 +34,16 @@ public class AllLists {
     public static final List<Integer> birthSortedAccounts = new ArrayList<>();
     public static final int[] birthYears = new int[100];
 
+    public static int MIN_BIRTH_YEAR = Integer.MAX_VALUE;
+    public static int MAX_BIRTH_YEAR = Integer.MAX_VALUE;
+    public static int MIN_JOINED_YEAR = Integer.MAX_VALUE;
+    public static int MAX_JOINED_YEAR = Integer.MAX_VALUE;
+
     //unsorted
     public static final List<Integer> joinedSortedAccounts = new ArrayList<>();
     public static final int[] joinedYears = new int[100];
 
     public static List<Short>[] countryCityList; //лист городов в стране
-    public static int[] cityCounryList; //страна для каждого города
 
     public static final List<String> citiesList = new ArrayList<>();
     public static final List<String> countriesList = new ArrayList<>();
@@ -53,8 +57,13 @@ public class AllLists {
 
 
     //[country]<city>[sex][status]<interests> = count;
-    public static HashMap<Integer, HashMap<Integer, Integer>[][]>[] groupFilter;
+    //public static HashMap<Integer, HashMap<Integer, Integer>[][]>[] groupFilter;
 
+    //[country][city][status][sex]
+    public static int[][][][] groupFilter;
+
+    public static int[][][][][] groupFilterBirth;
+    public static int[][][][][] groupFilterJoined;
 
 
     //[sex][status][country]<city><birth><joined><like><interests> = count
