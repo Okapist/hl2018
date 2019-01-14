@@ -52,8 +52,10 @@ public class AllLists {
     public static final HashMap<Integer, HashMap<Integer, Set<Integer>>>[][][] recommendInteresFilter = new HashMap[2][3][];
 
 
-    //[sex][status][country][city][interests]<birth> = count;
-    //public static final HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>[][][] groupFilter = new HashMap[3][4][];
+    //[country]<city>[sex][status]<interests> = count;
+    public static HashMap<Integer, HashMap<Integer, Integer>[][]>[] groupFilter;
+
+
 
     //[sex][status][country]<city><birth><joined><like><interests> = count
     //public static final HashMap<Integer, HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>[][][] groupFilter = new HashMap[3][4][];

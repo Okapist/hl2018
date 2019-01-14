@@ -7,13 +7,9 @@
     <version>1</version>
     <packaging>jar</packaging>
 
-    <licenses>
-        <license>
-            <name>Apache License 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+    <prerequisites>
+        <maven>3.3.1</maven>
+    </prerequisites>
 
     <properties>
         <netty.version>4.1.32.Final</netty.version>
@@ -127,13 +123,6 @@
             <id>release</id>
         </profile>
     </profiles>
-
-    <scm>
-        <connection>scm:git:https://github.com/buremba/netty-rest.git</connection>
-        <developerConnection>scm:git:git@github.com:buremba/netty-rest.git</developerConnection>
-        <url>https://github.com/buremba/netty-rest</url>
-        <tag>HEAD</tag>
-    </scm>
 
     <distributionManagement>
         <repository>

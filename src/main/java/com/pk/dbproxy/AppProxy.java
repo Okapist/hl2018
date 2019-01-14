@@ -13,7 +13,9 @@ import static com.pk.model.AllLists.*;
 
 public class AppProxy {
 
+    private static final Integer ALL_HM_SUM_INDEX = Integer.MAX_VALUE;
     int maxIntId = 1;
+    private int ALL_COUNTRY_SUM_INDEX;
 
     public void load(Accounts myObjects) {
 
@@ -300,108 +302,206 @@ public class AppProxy {
         System.out.println("CREATE RECOMMEND FILTERS");
         createRecommendFilter();
         System.gc();
-        //System.out.println("CREATE GROUP FILTERS");
-        //createGroupFilter();
-        //System.gc();
-        //createGroupFilterSum();
+        System.out.println("CREATE GROUP FILTERS");
+        createGroupFilter();
+        System.gc();
+        System.out.println("CREATE GROUP COUNTRY SUMS");
+        createGroupFilterSumCountry();
+        System.out.println("ALL FILTERS CREATED");
     }
 
-    //[sex][status][country]<city><birth><joined><interests><like> = count
- /*   private void createGroupFilterSum() {
-        for(int sex =2; sex>=0; --sex) {
-            for (int status = 3; status >= 0; --status) {
-                for(int country = AllLists.countriesList.size()-1; country>=0; --country) {
+    //HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>[][][] = count
 
-                    HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> tmp1 = groupFilter[sex][status][country];
+    /*
+    private void createGroupFilterSum() {
+        for (com.pk.model.Account account : allAccounts) {
 
-                    for(int cityIndex : tmp1.keySet()) {
-                        HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tmp2 = tmp1.get(cityIndex);
+            if (account == null)
+                continue;
+            //[country]<city>[sex][status]<birth><interests> = count;
+            int countryIndex = cityCounryList[account.city > 0 ? account.city : account.country];
+            int cityIndex = account.city;
+            int sexIndex = account.sex?2:1;
+            int statusIndex = account.status;
+            //int birth = getYear(account.birth);
+            //int joined = getYear(account.joined);
+            int[] interestsIndex = account.interestsArray;
 
-                        for(int birthIndex: tmp2.keySet()) {
-                            HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> tmp3 = tmp2.get(birthIndex);
+            HashMap<Integer, Integer> toEditGroupInterest = groupFilter[countryIndex].get(cityIndex)[sexIndex][statusIndex];
+            toEditGroupInterest.put(null, toEditGroupInterest.getOrDefault(null, 0) + 1);
 
-                            for(int joinedIndex : tmp2.keySet()) {
-                                HashMap<Integer, HashMap<Integer, Integer>> tmp4 = tmp3.get(joinedIndex);
+            if(groupFilter[ALL_COUNTRY_SUM_INDEX] == null)
+                groupFilter[ALL_COUNTRY_SUM_INDEX] = new HashMap<>();
 
-                                int sumInterests = 0;
-                                for(int interestIndex : tmp4.keySet()) {
-                                    HashMap<Integer, Integer> tmp5 = tmp4.get(interestIndex);
-                                    int sumLikes = 0;
-                                    for(int likeIndex : tmp5.keySet()) {
-                                        Integer tmp6 = tmp5.get(likeIndex); //столько у нас в группе по всем условиям
-                                        sumLikes += tmp6;
-                                    }
-                                    tmp5.put(null, sumLikes);
-                                    sumInterests += sumLikes;
-                                }
-                                sumInterests += t
-                                tmp4.put(null, )
-                            }
-                        }
+            groupFilter[ALL_COUNTRY_SUM_INDEX].computeIfAbsent(cityIndex, k -> new HashMap[3][4]);
+            groupFilter[ALL_COUNTRY_SUM_INDEX].computeIfAbsent(null, k -> new HashMap[3][4]);
+            groupFilter[ALL_COUNTRY_SUM_INDEX].computeIfAbsent(ALL_HM_SUM_INDEX, k -> new HashMap[3][4]);
+            groupFilter[countryIndex].computeIfAbsent(ALL_HM_SUM_INDEX, p-> new HashMap[3][4]);
 
-                    }
+            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex] == null)
+                groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex] = new HashMap<>();
+
+            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][0] == null)
+                groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][0] = new HashMap<>();
+
+            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[0][statusIndex] == null)
+                groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[0][statusIndex] = new HashMap<>();
+
+            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(null)[sexIndex][statusIndex] == null)
+                groupFilter[ALL_COUNTRY_SUM_INDEX].get(null)[sexIndex][statusIndex] = new HashMap<>();
+
+            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex] == null)
+                groupFilter[ALL_COUNTRY_SUM_INDEX].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex] = new HashMap<>();
+
+            if(groupFilter[countryIndex].get(cityIndex)[sexIndex][0] == null)
+                groupFilter[countryIndex].get(cityIndex)[sexIndex][0] = new HashMap<>();
+
+            if(groupFilter[countryIndex].get(cityIndex)[0][statusIndex] == null)
+                groupFilter[countryIndex].get(cityIndex)[0][statusIndex] = new HashMap<>();
+
+            if(groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[0][statusIndex] == null)
+                groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[0][statusIndex] = new HashMap<>();
+
+            //groupFilter[countryIndex].get(cityIndex)[sexIndex][0].computeIfAbsent(birth, p-> new HashMap<>());
+            //groupFilter[countryIndex].get(cityIndex)[0][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
+
+            groupFilter[countryIndex].computeIfAbsent(null, p-> new HashMap[3][4]);
+
+            if(groupFilter[countryIndex].get(null)[sexIndex][statusIndex] == null)
+                groupFilter[countryIndex].get(null)[sexIndex][statusIndex] = new HashMap<>();
+
+            //groupFilter[countryIndex].get(null)[sexIndex][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
+            //groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
+
+            //HashMap<Integer, Integer> toEditStatus = groupFilter[countryIndex].get(cityIndex)[sexIndex][0].get(birth);
+            //HashMap<Integer, Integer> toEditSex = groupFilter[countryIndex].get(cityIndex)[0][statusIndex].get(birth);
+
+            if(groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex] == null) {
+                groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex] = new HashMap<>();
+            }
+
+            //groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
+            //HashMap<Integer, Integer> toEditCity = groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex].get(birth);
+
+            //HashMap<Integer, Integer> toEditCountry = groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex].get(birth);
+
+            groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex].computeIfAbsent(ALL_HM_SUM_INDEX, p-> new HashMap<>());
+            HashMap<Integer, Integer> toEditBirth = groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex].get(ALL_HM_SUM_INDEX);
+
+            if(interestsIndex != null) {
+                for(int interest : interestsIndex) {
+                    toEditStatus.put(interest, toEditStatus.getOrDefault(interestsIndex, 0) + 1);
+                    toEditSex.put(interest, toEditSex.getOrDefault(interestsIndex, 0) + 1);
+                    toEditCity.put(interest, toEditSex.getOrDefault(interestsIndex, 0) + 1);
+                    toEditCountry.put(interest, toEditSex.getOrDefault(interestsIndex, 0) + 1);
+                    toEditBirth.put(interest, toEditSex.getOrDefault(interestsIndex, 0) + 1);
                 }
+            } else {
+                toEditStatus.put(null, toEditStatus.getOrDefault(null, 0) + 1);
+                toEditSex.put(null, toEditSex.getOrDefault(null, 0) + 1);
+                toEditCity.put(null, toEditCity.getOrDefault(null, 0) + 1);
+                toEditCountry.put(null, toEditCountry.getOrDefault(null, 0) + 1);
+                toEditBirth.put(null, toEditSex.getOrDefault(null, 0) + 1);
             }
         }
     }
 */
-/*
-    private void createGroupFilter() {
-        for(int sex =0; sex<3; ++sex) {
-            for (int status = 0; status < 4; ++status) {
-                groupFilter[sex][status] = new HashMap[AllLists.countriesList.size()];
 
-                for (int countryIndex = 0; countryIndex < AllLists.countriesList.size(); ++countryIndex) {
-                    groupFilter[sex][status][countryIndex] = new HashMap<>();
-                }
-            }
-        }
+
+    private void createGroupFilterSumCountry() {
+
+        /*
+        groupFilter[ALL_COUNTRY_SUM_INDEX] = new HashMap<>();
 
         for (com.pk.model.Account account : allAccounts) {
             if (account == null)
                 continue;
-            //[sex][status][country]<city><birth><joined><interests><like> = count
-            int sexIndex = account.sex?2:1;
-            int statusIndex = account.status;
+            //[country]<city>[sex][status]<birth><interests> = count;
             int countryIndex = cityCounryList[account.city > 0 ? account.city : account.country];
             int cityIndex = account.city;
-            int birth = getYear(account.birth);
-            int joined = getYear(account.joined);
+            int sexIndex = account.sex?2:1;
+            int statusIndex = account.status;
             int[] interestsIndex = account.interestsArray;
-            int[] likes = likesAccounts.get(account.id); //нечетные!!!
 
-            //not total :)
-            groupFilter[sexIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p-> new HashMap<>());
-            groupFilter[sexIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(birth, p-> new HashMap<>());
-            groupFilter[sexIndex][statusIndex][countryIndex].get(cityIndex).get(birth).computeIfAbsent(joined, p-> new HashMap<>());
+            if(groupFilter[ALL_COUNTRY_SUM_INDEX] == null)
+                groupFilter[ALL_COUNTRY_SUM_INDEX] = new HashMap<>();
 
-            HashMap<Integer, HashMap<Integer, Integer>> toEdit = groupFilter[sexIndex][statusIndex][countryIndex].get(cityIndex).get(birth).get(joined);
+            groupFilter[ALL_COUNTRY_SUM_INDEX].computeIfAbsent(cityIndex, k -> new HashMap[3][4]);
+            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex] == null)
+                groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex] = new HashMap<>();
+
+            //groupFilter[countryIndex].get(cityIndex)[sexIndex][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
+
+            HashMap<Integer, Integer> toEdit = groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex];
+
             if (interestsIndex != null) {
                 for (int interest : interestsIndex) {
-
-                    toEdit.computeIfAbsent(interest, p-> new HashMap<>());
-
-                    if(likes != null) {
-                        for(int likeIndex = 0; likeIndex<likes.length; likeIndex+=2) {
-                            toEdit.get(interest).put(likes[likeIndex], toEdit.get(interest).getOrDefault(likes[likeIndex], 0) + 1);
-                        }
-                    } else {
-                        toEdit.get(interest).put(null, toEdit.get(interest).getOrDefault(null, 0) + 1);
-                    }
+                    toEdit.put(interest, toEdit.getOrDefault(interest, 0) + 1);
                 }
             } else {
-                toEdit.computeIfAbsent(null, p-> new HashMap<>());
-                if(likes != null) {
-                    for(int likeIndex = 0; likeIndex<likes.length; likeIndex+=2) {
-                        toEdit.get(null).put(likes[likeIndex], toEdit.get(null).getOrDefault(likes[likeIndex], 0) + 1);
+                toEdit.put(null, toEdit.getOrDefault(null, 0) + 1);
+            }
+        }*/
+
+    }
+
+
+    private void createGroupFilter() {
+
+        ALL_COUNTRY_SUM_INDEX = AllLists.countriesList.size();
+        groupFilter = new HashMap[ALL_COUNTRY_SUM_INDEX+1];
+
+        //sum for all country
+        if(groupFilter[ALL_COUNTRY_SUM_INDEX] == null)
+            groupFilter[ALL_COUNTRY_SUM_INDEX] = new HashMap<>();
+
+
+
+        for (com.pk.model.Account account : allAccounts) {
+            if (account == null)
+                continue;
+            //[country]<city>[sex][status]<interests> = count;
+            int countryIndex = account.country;
+            int cityIndex = account.city;
+            int sexIndex = account.sex ? 2 : 1;
+            int statusIndex = account.status;
+            int[] interestsIndex = account.interestsArray;
+
+            for (int tmpCountry : new int[]{countryIndex, ALL_COUNTRY_SUM_INDEX}) {
+
+                if (groupFilter[tmpCountry] == null)
+                    groupFilter[tmpCountry] = new HashMap<>();
+
+                for (int tmpCity : new int[]{cityIndex, ALL_HM_SUM_INDEX}) {
+                    groupFilter[tmpCountry].computeIfAbsent(tmpCity, k -> new HashMap[3][4]);
+
+                    for (int tmpSex : new int[]{sexIndex, 0}) {
+
+                        for (int tmpStatus : new int[]{statusIndex, 0}) {
+
+                            if (groupFilter[tmpCountry].get(tmpCity)[tmpSex][tmpStatus] == null)
+                                groupFilter[tmpCountry].get(tmpCity)[tmpSex][tmpStatus] = new HashMap<>();
+
+                            HashMap<Integer, Integer> toEdit = groupFilter[tmpCountry].get(tmpCity)[tmpSex][tmpStatus];
+
+                            toEdit.put(ALL_HM_SUM_INDEX, toEdit.getOrDefault(ALL_HM_SUM_INDEX, 0) + 1);
+
+                            if (interestsIndex != null) {
+                                for (int interest : interestsIndex) {
+                                    toEdit.put(interest, toEdit.getOrDefault(interest, 0) + 1);
+                                }
+                            } else {
+                                toEdit.put(null, toEdit.getOrDefault(null, 0) + 1);
+                            }
+                        }
                     }
-                } else {
-                    toEdit.get(null).put(null, toEdit.get(null).getOrDefault(null, 0) + 1);
                 }
             }
         }
+
+        int i =0;
     }
-*/
+
     Calendar cal = Calendar.getInstance();
     private int getYear(int timestamp) {
         cal.setTimeInMillis((long)timestamp*1000);

@@ -9,13 +9,150 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static com.pk.model.AllLists.groupFilter;
+
 public class NewAccGroup {
 
     public boolean getGroups(List<String> group, Boolean sex, Byte status, String interests, Short country,
-                                   Short city, String fname, String sname, Integer birth, String likes, Integer joined,
-                                   int limit, boolean order, StringBuilder buf) {
+                             Short city, Integer birth, String likes, Integer joined,
+                             int limit, boolean order, StringBuilder buf) {
 
         BaseFilter filters = new BaseFilter();
+
+        boolean groupSex = false;
+        boolean groupStatus = false;
+        boolean groupInterests = false;
+        boolean groupCountry = false;
+        boolean groupCity = false;
+        for(String g : group) { //sex, status, interests, country, city.
+            switch (g) {
+                case "sex":
+                    groupSex = true;
+                    break;
+                case "status":
+                    groupStatus = true;
+                    break;
+                case "interests":
+                    groupInterests = true;
+                    break;
+                case "country":
+                    groupCountry = true;
+                    break;
+                case "city":
+                    groupCity = true;
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        //new code based on new groupFilter no filter for now
+        if(birth == null && likes == null && joined==null) {
+
+            int birthYear = Integer.MAX_VALUE;
+            if (birth != null)
+                birthYear = birth;
+
+            int totalGroupCount = 0;
+
+            int sexIndex = 0;
+            int startSex = 0;
+            if (groupSex) {
+                sexIndex = 2;
+                startSex = 1;
+                ++totalGroupCount;
+            }
+
+            int statusIndex = 0;
+            int startStatus = 0;
+            if (groupStatus) {
+                statusIndex = 3;
+                startStatus = 1;
+                ++totalGroupCount;
+            }
+
+            int countryIndex = AllLists.countriesList.size();
+            int startCountry = AllLists.countriesList.size();
+            if (groupCountry) {
+                countryIndex = AllLists.countriesList.size()-1;
+                startCountry = 0;
+                ++totalGroupCount;
+            }
+
+            int cityIndex = Integer.MAX_VALUE;
+            if (groupCity) {
+                cityIndex = 0;
+                ++totalGroupCount;
+            }
+
+            int interestIndex = Integer.MAX_VALUE;
+            if (groupInterests) {
+                interestIndex = 0;
+                ++totalGroupCount;
+            }
+
+
+            TreeSet<int[]> groupData;
+            if(order) {
+                groupData = new TreeSet<>(
+                        (p1, p2) -> {
+                            for (int i = 0; i < 6; ++i) {
+                                if (p1[i] != p2[i])
+                                    return p1[i] - p2[i];
+                            }
+                            return 0;
+                        });
+            } else {
+                groupData = new TreeSet<>(
+                        (p2, p1) -> {
+                            for (int i = 0; i < 6; ++i) {
+                                if (p1[i] != p2[i])
+                                    return p1[i] - p2[i];
+                            }
+                            return 0;
+                        });
+            }
+
+            for(int tempSex =startSex; tempSex<=sexIndex; ++tempSex) {
+                for(int tempStatus =startStatus; tempStatus<=statusIndex; ++tempStatus) {
+                    for(int tempCountry =startCountry; tempCountry<=countryIndex; ++tempCountry) {
+
+                        Set<Integer> cityKeys;
+                        if(cityIndex == Integer.MAX_VALUE) {
+                            cityKeys = new HashSet<>(); ////[country]<city>[sex][status]<interests> = count;
+                            cityKeys.add(Integer.MAX_VALUE);
+                        }else
+                            cityKeys = groupFilter[tempCountry].keySet();
+
+                        for(int tempCity : cityKeys) {
+
+                            Set<Integer> interestKeys;
+                            if(interestIndex == Integer.MAX_VALUE) {
+                                interestKeys = new HashSet<>(); ////[country]<city>[sex][status]<interests> = count;
+                                interestKeys.add(Integer.MAX_VALUE);
+                            }else
+                                interestKeys = groupFilter[tempCountry].get(tempCity)[tempSex][tempStatus].keySet();
+
+                            for(int tempInterest : interestKeys) {
+                                Integer count = groupFilter[tempCountry].get(tempCity)[tempSex][tempStatus].get(tempInterest);
+
+                                int[] valToInsert = new int[6];
+                                valToInsert[0] = count;
+                                valToInsert[1] = tempSex;
+                                valToInsert[2] = tempStatus;
+                                valToInsert[3] = tempCountry;
+                                valToInsert[4] = tempCity;
+                                valToInsert[5] = tempInterest;
+
+                                groupData.add(valToInsert);
+                            }
+                        }
+                    }
+                }
+            }
+
+            int i = 0;
+        }
 
         if (status != null) {
             filters.add(AllLists.statusAccounts.get(status), 0, AllLists.statusAccounts.get(status).size()-1, false);
@@ -80,33 +217,6 @@ public class NewAccGroup {
             List<Integer> accToIds = AllLists.likesTO.get(likeId);
             searchLikesSet = new HashSet<>(accToIds);
             filters.add(accToIds, 0, accToIds.size()-1, false);
-        }
-
-        boolean groupSex = false;
-        boolean groupStatus = false;
-        boolean groupInterests = false;
-        boolean groupCountry = false;
-        boolean groupCity = false;
-        for(String g : group) { //sex, status, interests, country, city.
-            switch (g) {
-                case "sex":
-                    groupSex = true;
-                    break;
-                case "status":
-                    groupStatus = true;
-                    break;
-                case "interests":
-                    groupInterests = true;
-                    break;
-                case "country":
-                    groupCountry = true;
-                    break;
-                case "city":
-                    groupCity = true;
-                    break;
-                default:
-                        return false;
-            }
         }
 
         HashMap<Integer, Group> formedGroups = new HashMap<>(50);

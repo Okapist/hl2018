@@ -339,8 +339,8 @@ public class Workers {
         }
 
         buf.append("{\"groups\": [");
-        boolean result = accGroup.getGroups(group, sex, statusToFiler, interests, countryIndex, cityIndex, fname, sname,
-                                            birth, likes, joined, limit, order, buf);
+        boolean result = accGroup.getGroups(group, sex, statusToFiler, interests, countryIndex, cityIndex,
+                birth, likes, joined, limit, order, buf);
         if (result) {
             buf.append("]}");
             return HttpResponseStatus.OK;
