@@ -26,7 +26,7 @@ public class NewAccFilter {
                                 List<String> interests, Boolean interestsAll,
                                 List<String> likes,
                                 Boolean premiumNow, Boolean premiumNewer,
-                                int limit, StringBuilder buf) {
+                                int limit, StringBuilder buf, char[] snameStartWith) {
 
         if(limit <1)
             return false;
@@ -116,6 +116,11 @@ public class NewAccFilter {
             }
         }
 */
+
+        if (status != null) {
+            ansStatus = true;
+        }
+
         if (fname != null) {
             ansFname = true;
             if (fnameExists != null) {
@@ -400,6 +405,9 @@ public class NewAccFilter {
         if(snameExists != null) {
             ansSname = true;
         }
+        if(snameEq != null) {
+            ansSname = true;
+        }
         if(fnameExists != null) {
             ansFname = true;
         }
@@ -415,9 +423,9 @@ public class NewAccFilter {
             filterStartIndex = 0;
         }
 
-        if(filterList != null) {
-            filterArr = filterList.stream().mapToInt(Integer::intValue).toArray();
-        }
+        //if(filterList != null) {
+            //filterArr = filterList.stream().mapToInt(Integer::intValue).toArray();
+        //}
 
         int index = filterEndIndex-1;
         int start = filterStartIndex;
@@ -427,13 +435,17 @@ public class NewAccFilter {
             if(filterArr != null)
                 possibleId = filterArr[index];
             else {
-                while (allAccounts[index] == null && index > 0)
-                    --index;
+                if (filterList != null) {
+                    possibleId = filterList.get(index);
+                } else {
+                    while (allAccounts[index] == null && index > 0)
+                        --index;
 
-                if(allAccounts[index] == null)
-                    break;
+                    if (allAccounts[index] == null)
+                        break;
 
-                possibleId = allAccounts[index].id;
+                    possibleId = allAccounts[index].id;
+                }
             }
             --index;
 
@@ -496,26 +508,26 @@ public class NewAccFilter {
                 }
             }
 
-
-            if(isAdd && sname > 0) {
-                if(snameExists != null) {
-                    if(snameExists) {
-                        if(possible.sname == 0)
-                            continue;
-                    } else {
-                        if(possible.sname != 0)
-                            continue;
-                    }
+            if(snameExists != null) {
+                if(snameExists) {
+                    if(possible.sname == 0)
+                        continue;
                 } else {
-                    if(snameEq != null && snameEq) {
-                        if(possible.sname == 0 || possible.sname != sname)
-                            continue;
-                    } else {
-                        if(possible.sname == 0 || possible.sname != sname)
-                            continue;
-                    }
+                    if(possible.sname != 0)
+                        continue;
                 }
             }
+
+            if(snameEq !=null) {
+                if (snameEq) {
+                    if (possible.sname == 0 || possible.sname != sname)
+                        continue;
+                } else {
+                    if (possible.sname == 0 || !Utils.startWith(snames[possible.sname], snameStartWith))
+                        continue;
+                }
+            }
+
 
             if (isAdd && phoneCode != null) {
                 if(phoneExists != null) {

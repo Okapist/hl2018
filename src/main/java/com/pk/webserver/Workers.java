@@ -1,15 +1,22 @@
 package com.pk.webserver;
 
+import com.google.gson.Gson;
 import com.pk.dao.*;
+import com.pk.jsonmodel.Account;
 import com.pk.model.AllLists;
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.util.CharsetUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static com.pk.model.AllLists.allAccounts;
 
 public class Workers {
 
@@ -210,7 +217,7 @@ public class Workers {
         }
 
         int snameIndex = -666;
-        if(sname != null && snameExists == null)
+        if(sname != null && snameExists == null && snameEq != null && snameEq)
             snameIndex = Utils.getSnameIndex(sname);
         int[] fnameIndex= null;
         if(fname != null) {
@@ -233,7 +240,7 @@ public class Workers {
                 likes,
                 premiumNow, premiumAny,
                 limit,
-                buf);
+                buf, sname==null?null:sname.toCharArray());
 
         buf.append("]}");
         return HttpResponseStatus.OK;
@@ -414,7 +421,7 @@ public class Workers {
             return HttpResponseStatus.BAD_REQUEST;
         }
 
-        if(accId > AllLists.allAccounts.length || AllLists.allAccounts[accId] == null) {
+        if(accId > allAccounts.length || allAccounts[accId] == null) {
             buf.append("{}");
             return HttpResponseStatus.NOT_FOUND;
         }
@@ -494,7 +501,7 @@ public class Workers {
         }
 
         NewSuggest suggest = new NewSuggest();
-        if(accId > AllLists.allAccounts.length || AllLists.allAccounts[accId] == null) {
+        if(accId > allAccounts.length || allAccounts[accId] == null) {
             buf.append("{}");
             return HttpResponseStatus.NOT_FOUND;
         }
@@ -521,6 +528,31 @@ public class Workers {
     }
 
     public HttpResponseStatus newAccount (HttpRequest request, StringBuilder buf) {
+
+        ByteBuf body = ((FullHttpRequest) request).content();
+        Gson gson = new Gson();
+        Account data = gson.fromJson(body.toString(CharsetUtil.UTF_8), Account.class);
+        if(data == null || data.getId() == null || ( data.getId()<allAccounts.length && allAccounts[data.getId()] != null)) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+        byte status;
+        switch (data.getStatus()) {
+            case "свободны":
+                status = 1;
+                break;
+            case "всё сложно":
+                status = 2;
+                break;
+            case "заняты":
+                status = 3;
+            default:
+                return HttpResponseStatus.BAD_REQUEST;
+        }
+
+        //com.pk.model.Account account = new com.pk.model.Account();
+        //account.id = data.getId();
+
+
         buf.append("{}");
         return HttpResponseStatus.CREATED;
     }

@@ -151,6 +151,12 @@ public class Utils {
 
         return (int) (time/1000);
     }
+
+    public static int getCityInCountryIndex(int country, int city) {
+        return AllLists.countryCityList[country].indexOf(city);
+    }
+
+
 /*
     public static int searchBirth(int birth) {
         int low = 0;

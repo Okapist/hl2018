@@ -66,7 +66,6 @@ public class NewAccGroup {
             }
 
             int lastCountry = countriesList.size() - 1;
-            int lastCity = citiesList.size() - 1;
             int lastSex = 1;
             int lastStatus = 2;
 
@@ -91,12 +90,6 @@ public class NewAccGroup {
             int startCity = 0;
             if (city != null) {
                 startCity = city;
-                lastCity = city;
-            }
-
-            int interestIndex = Integer.MAX_VALUE;
-            if (groupInterests) {
-                interestIndex = 0;
             }
 
             TreeSet<int[]> groupData;
@@ -126,15 +119,30 @@ public class NewAccGroup {
             int tempSex = 0;
 
             int curSum = 0;
+            int newStartCity;
+
+            if(startCity != 0)
+                newStartCity = countryCityList[startCountry].indexOf(startCity);
+            else
+                newStartCity = 0;
+
+            int lastCity;
+            if(city != null)
+                lastCity = newStartCity;
+            else
+                lastCity = countryCityList[tempCountry].size() -1;
+
             while(true) {
 
-                if(birth!= null) {
-                    curSum += groupFilterBirth[tempCountry][tempCity][tempStatus][tempSex][birthYear-MIN_BIRTH_YEAR];
-                } else {
-                    if(joined != null) {
-                        curSum += groupFilterJoined[tempCountry][tempCity][tempStatus][tempSex][joinedYear-MIN_JOINED_YEAR];
+                if(tempCity != -1 && tempCity<=lastCity) {
+                    if (birth != null) {
+                        curSum += groupFilterBirth[tempCountry][tempCity][tempStatus][tempSex][birthYear - MIN_BIRTH_YEAR];
                     } else {
-                        curSum += groupFilter[tempCountry][tempCity][tempStatus][tempSex];
+                        if (joined != null) {
+                            curSum += groupFilterJoined[tempCountry][tempCity][tempStatus][tempSex][joinedYear - MIN_JOINED_YEAR];
+                        } else {
+                            curSum += groupFilter[tempCountry][tempCity][tempStatus][tempSex];
+                        }
                     }
                 }
 
@@ -162,27 +170,30 @@ public class NewAccGroup {
 
                 if(!groupCountry && tempCountry<lastCountry) {
                     ++tempCountry;
-                    //lastCity = countryCityList[tempCountry].size() -1;
+                    lastCity = countryCityList[tempCountry].size() -1;
+                    if(startCity != 0)
+                        newStartCity = countryCityList[startCountry].indexOf(startCity);
 
                     if(!groupSex)
                         tempSex = startSex;
                     if(!groupStatus)
                         tempStatus = startStatus;
                     if(!groupCity)
-                        tempCity = startCity;
+                        tempCity = newStartCity;
                     continue;
                 }
 
-                int[] valToInsert = new int[6];
-                valToInsert[0] = curSum;
-                valToInsert[1] = tempSex;
-                valToInsert[2] = tempStatus;
-                valToInsert[3] = tempCountry;
-                valToInsert[4] = tempCity;
-                valToInsert[5] = 0;
-                groupData.add(valToInsert);
-
-                curSum = 0;
+                if(curSum >0) {
+                    int[] valToInsert = new int[6];
+                    valToInsert[0] = curSum;
+                    valToInsert[1] = tempSex;
+                    valToInsert[2] = tempStatus;
+                    valToInsert[3] = tempCountry;
+                    valToInsert[4] = AllLists.countryCityList[tempCountry].get(tempCity);
+                    valToInsert[5] = 0;
+                    groupData.add(valToInsert);
+                    curSum = 0;
+                }
 
                 if(groupSex && tempSex < lastSex) {
                     ++tempSex;
@@ -192,10 +203,12 @@ public class NewAccGroup {
                     if(!groupStatus)
                         tempStatus = startStatus;
                     if(!groupCity)
-                        tempCity = startCity;
+                        tempCity = newStartCity;
                     if(!groupCountry) {
                         tempCountry = startCountry;
-                        //lastCity = countryCityList[tempCountry].size() -1;
+                        lastCity = countryCityList[tempCountry].size() -1;
+                        if(startCity != 0)
+                            newStartCity = countryCityList[startCountry].indexOf(startCity);
                     }
 
                     continue;
@@ -212,7 +225,9 @@ public class NewAccGroup {
                         tempCity = startCity;
                     if(!groupCountry) {
                         tempCountry = startCountry;
-                        //lastCity = countryCityList[tempCountry].size() -1;
+                        lastCity = countryCityList[tempCountry].size() -1;
+                        if(startCity != 0)
+                            newStartCity = countryCityList[startCountry].indexOf(startCity);
                     }
 
                     ++tempStatus;
@@ -222,7 +237,7 @@ public class NewAccGroup {
                 if(groupCity && tempCity<lastCity) {
                     ++tempCity;
 
-                    //while (groupFilter[tempCountry][tempCity] == null)
+                    while (groupFilter[tempCountry] == null)
 
                     if(groupSex)
                         tempSex = startSex;
@@ -234,10 +249,12 @@ public class NewAccGroup {
                     if(!groupStatus)
                         tempStatus = startStatus;
                     if(!groupCity)
-                        tempCity = startCity;
+                        tempCity = newStartCity;
                     if(!groupCountry) {
                         tempCountry = startCountry;
-                        //lastCity = countryCityList[tempCountry].size() -1;
+                        lastCity = countryCityList[tempCountry].size() -1;
+                        if(startCity != 0)
+                            newStartCity = countryCityList[startCountry].indexOf(startCity);
                     }
 
                     continue;
@@ -245,24 +262,28 @@ public class NewAccGroup {
 
                 if(groupCountry && tempCountry<lastCountry) {
                     ++tempCountry;
-                    //lastCity = countryCityList[tempCountry].size() -1;
+                    lastCity = countryCityList[tempCountry].size() -1;
+                    if(startCity != 0)
+                        newStartCity = countryCityList[startCountry].indexOf(startCity);
 
                     if(groupSex)
                         tempSex = startSex;
                     if(groupStatus)
                         tempStatus = startStatus;
                     if(groupCity)
-                        tempCity = startCity;
+                        tempCity = newStartCity;
 
                     if(!groupSex)
                         tempSex = startSex;
                     if(!groupStatus)
                         tempStatus = startStatus;
                     if(!groupCity)
-                        tempCity = startCity;
+                        tempCity = newStartCity;
                     if(!groupCountry) {
                         tempCountry = startCountry;
-                        //lastCity = countryCityList[tempCountry].size() -1;
+                        lastCity = countryCityList[tempCountry].size() -1;
+                        if(startCity != 0)
+                            newStartCity = countryCityList[startCountry].indexOf(startCity);
                     }
 
                     continue;
@@ -270,8 +291,7 @@ public class NewAccGroup {
 
                 break;
             }
-            int i =0;
-
+            buildAnswer(groupData, limit, groupSex, groupStatus, groupCountry, groupCity, groupInterests, buf);
             return true;
         }
 
@@ -401,6 +421,66 @@ public class NewAccGroup {
         buildAnswer(sorted, limit, groupSex, groupStatus, groupCountry, groupCity, groupInterests, buf);
         return true;
     }
+
+    private void buildAnswer(TreeSet<int[]> groups, int limit,
+                             boolean groupSex, boolean groupStatus, boolean groupCountry, boolean groupCity, boolean groupInterests, StringBuilder buf) {
+        int pointer = 0;
+        boolean isFirst = true;
+        while (!groups.isEmpty() && pointer<limit) {
+            //Group group = sorted[pointer];
+            int[] group = groups.pollFirst();
+            if(isFirst) {
+                buf.append("{\"count\":");
+                isFirst = false;
+            }else
+                buf.append(",{\"count\":");
+
+/*
+                int[] valToInsert = new int[6];
+                valToInsert[0] = curSum;
+                valToInsert[1] = tempSex;
+                valToInsert[2] = tempStatus;
+                valToInsert[3] = tempCountry;
+                valToInsert[4] = AllLists.countryCityList[tempCountry].get(tempCity);
+                valToInsert[5] = 0;
+*/
+
+            buf.append(group[0]);
+
+            if(groupCountry && group[3] != 0) {
+                buf.append(",\"country\":\"");
+                buf.append(AllLists.countriesList.get(group[3]));
+                buf.append("\"");
+            }
+            if(groupCity && group[4] != 0) {
+                buf.append(",\"city\":\"");
+                buf.append(AllLists.citiesList.get(group[4]));
+                buf.append("\"");
+            }
+            if(groupStatus) {
+                buf.append(",\"status\":\"");
+                buf.append(Utils.getStatusText((byte) (group[2] +1)));
+                buf.append("\"");
+            }
+            if(groupSex ) {
+                String sexStr = (group[1]==1?"m":"f");
+                buf.append(",\"sex\":\"");
+                buf.append(sexStr);
+                buf.append("\"");
+            }
+/*
+            if(groupInterests && group.interest != 0) {
+                buf.append(",\"interests\":\"");
+                buf.append(AllLists.interestsById.get(group.interest));
+                buf.append("\"");
+            }
+*/
+            buf.append("}");
+            ++pointer;
+        }
+    }
+
+
 
     private void buildAnswer(Group[] sorted, int limit,
                                       boolean groupSex, boolean groupStatus, boolean groupCountry, boolean groupCity, boolean groupInterests, StringBuilder buf) {

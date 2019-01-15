@@ -20,6 +20,11 @@ public class AppProxy {
 
     List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
 
+    public AppProxy() {
+        fnames.add("");
+        snames.add("");
+    }
+
     public void load(Accounts myObjects) {
 
         for (Account jsonAccount : myObjects.getAccounts()) {
@@ -296,9 +301,9 @@ public class AppProxy {
 
         long total = 0;
         long totalInt = 0;
-        groupFilter = new int[countriesList.size()][citiesList.size()][3][2];
-        groupFilterBirth = new int[countriesList.size()][citiesList.size()][3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1];
-        groupFilterJoined = new int[countriesList.size()][citiesList.size()][3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1];
+        groupFilter = new int[countriesList.size()][][][];
+        groupFilterBirth = new int[countriesList.size()][][][][];
+        groupFilterJoined = new int[countriesList.size()][][][][];
 
         for (com.pk.model.Account account : allAccounts) {
             if (account == null)
@@ -309,11 +314,17 @@ public class AppProxy {
 
             int birth = getYear(account.birth);
             int joined = getYear(account.joined);
-            //int fixedCityIndex = countryCityList[account.country].indexOf(account.city);
+            int fixedCityIndex = countryCityList[account.country].indexOf(account.city);
 
-            ++groupFilter[countryIndex][account.city][statusIndex][sexIndex];
-            ++groupFilterBirth[countryIndex][account.city][statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
-            ++groupFilterJoined[countryIndex][account.city][statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
+            if(groupFilter[countryIndex] == null) {
+                groupFilter[countryIndex] = new int[countryCityList[account.country].size()][3][2];
+                groupFilterBirth[countryIndex] = new int[countryCityList[account.country].size()][3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1];
+                groupFilterJoined[countryIndex] = new int[countryCityList[account.country].size()][3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1];
+            }
+
+            ++groupFilter[countryIndex][fixedCityIndex][statusIndex][sexIndex];
+            ++groupFilterBirth[countryIndex][fixedCityIndex][statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
+            ++groupFilterJoined[countryIndex][fixedCityIndex][statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
         }
 
         int i = 0;
