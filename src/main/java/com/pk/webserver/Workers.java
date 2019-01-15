@@ -209,11 +209,22 @@ public class Workers {
             }
         }
 
+        int snameIndex = -666;
+        if(sname != null && snameExists == null)
+            snameIndex = Utils.getSnameIndex(sname);
+        int[] fnameIndex= null;
+        if(fname != null) {
+            fnameIndex = new int[fname.size()];
+            for (int i = 0; i < fname.size(); i++) {
+                String fn = fname.get(i);
+                fnameIndex[i] = Utils.getFnameIndex(fn);
+            }
+        }
         boolean result = accFilter.filter(sex,
                 email==null?null:email.toCharArray(), emailDomain, emailLt,
                 statusToFiler, statusEq,
-                fnameCharArr, fnameExists,
-                sname==null?null:sname.toCharArray(), snameExists, snameEq,
+                fnameIndex, fnameExists,
+                snameIndex, snameExists, snameEq,
                 phoneCode, phoneExists,
                 countryIndex, countryExists,
                 cityIndex, cityExists,

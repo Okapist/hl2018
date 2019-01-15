@@ -6,6 +6,9 @@ import com.pk.model.AllLists;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.pk.model.AllLists.fnames;
+import static com.pk.model.AllLists.snames;
+
 
 public class NewSuggest {
 
@@ -103,14 +106,15 @@ public class NewSuggest {
                 buf.append(cur.getStatusText());
                 buf.append("\"");
 
-                char[] tmp = cur.fname;
-                if (tmp != null) {
+                if(cur.fname > 0) {
+                    char[] tmp = fnames[cur.fname];
                     buf.append(",\"fname\":\"");
                     buf.append(tmp);
                     buf.append("\"");
                 }
-                char[] tmp1 = cur.sname;
-                if (tmp1 != null) {
+
+                if(cur.sname > 0) {
+                    char[] tmp1 = snames[cur.sname];
                     buf.append(",\"sname\":\"");
                     buf.append(tmp1);
                     buf.append("\"");

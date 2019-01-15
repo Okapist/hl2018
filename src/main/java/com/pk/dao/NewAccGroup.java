@@ -276,7 +276,7 @@ public class NewAccGroup {
         }
 
         if (status != null) {
-            filters.add(AllLists.statusAccounts.get(status), 0, AllLists.statusAccounts.get(status).size()-1, false);
+            //filters.add(AllLists.statusAccounts.get(status), 0, AllLists.statusAccounts.get(status).size()-1, false);
         }
 
         if (country != null) {
@@ -290,7 +290,7 @@ public class NewAccGroup {
         Integer interestId = null;
         if (interests != null) {
             interestId = AllLists.interests.get(interests);
-            filters.add(AllLists.interestAccounts.get(interestId), 0, AllLists.interestAccounts.get(interestId).size()-1, false);
+            //filters.add(AllLists.interestAccounts.get(interestId), 0, AllLists.interestAccounts.get(interestId).size()-1, false);
         }
 
         int bStart = 0;
@@ -298,7 +298,7 @@ public class NewAccGroup {
         if(birth != null) {
             bStart = getTimestamp(birth);
             bEnd = getTimestamp(birth + 1) - 1;
-
+/*
             int min=AllLists.birthYears[birth-1930];
             int max=AllLists.birthYears[birth+1-1930];
 
@@ -309,6 +309,7 @@ public class NewAccGroup {
             }
 
             filters.add(AllLists.birthSortedAccounts, min, max==0?AllLists.birthSortedAccounts.size()-1:max-1, false);
+            */
         }
 
         int jStart = 0;

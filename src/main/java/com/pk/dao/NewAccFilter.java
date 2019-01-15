@@ -10,13 +10,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static com.pk.model.AllLists.*;
+
 public class NewAccFilter {
 
     public boolean filter(Boolean sex,
                                 char[] email, Boolean emailDomain, Boolean emailLt,
                                 Byte status, Boolean statusEq,
-                                char[][] fname, Boolean fnameExists,
-                                char[] sname, Boolean snameExists, Boolean snameEq,
+                                int[] fname, Boolean fnameExists,
+                                int sname, Boolean snameExists, Boolean snameEq,
                                 String phoneCode, Boolean phoneExists,
                                 Short country, Boolean countryExists,
                                 List<Short> city, Boolean cityExists,
@@ -43,7 +45,7 @@ public class NewAccFilter {
             }
         }
 
-        BaseFilter filter = new BaseFilter();
+        //BaseFilter filter = new BaseFilter();
 
         boolean ansSex = false;
         boolean ansStatus = false;
@@ -55,118 +57,343 @@ public class NewAccFilter {
         boolean ansBirth = false;
         boolean ansPremium = false;
 
-        if (email != null) {
-            if (emailDomain != null && emailDomain) {
-                Integer emailDomainIndex = Utils.findDomainIndex(email);
-                if(emailDomainIndex == null) {
-                    return true;
-                }
-                filter.add(AllLists.domainAccounts.get(emailDomainIndex), 0, AllLists.domainAccounts.get(emailDomainIndex).size()-1, false);
+        int filterSize = Integer.MAX_VALUE;
+        List<Integer> filterList = null;
+        int[] filterArr = null;
+        int filterStartIndex = 0;
+        int filterEndIndex = 0;
+
+        //email filter
+        if (email != null && emailDomain != null && emailDomain) {
+            Integer emailDomainIndex = Utils.findDomainIndex(email);
+            if (emailDomainIndex == null) {
+                return true;
+            }
+            if(AllLists.domainAccounts.get(emailDomainIndex).size() < filterSize) {
+                filterStartIndex = 0;
+                filterEndIndex = AllLists.domainAccounts.get(emailDomainIndex).size();
+                filterArr = null;
+                filterList = AllLists.domainAccounts.get(emailDomainIndex);
+                filterSize = AllLists.domainAccounts.get(emailDomainIndex).size();
             }
         }
+        /*
+        if(email != null && emailLt!= null) {
+            if(!emailLt) {
+                int tempStart = 0;
+                int tempEnd = emailAscAccounts[email[0] - 'a'].length;
+                if(tempEnd - tempStart < filterSize) {
+                    filterStartIndex = tempStart;
+                    filterEndIndex = tempEnd;
+                    filterList = null;
+                    filterArr = emailAscAccounts[email[0] - 'a'];
+                    filterSize = tempEnd - tempStart;
+                }
+            } else {
+                int tempStart = 0;
+                int tempEnd = emailDescAccounts[email[0] - 'a'].length;
+                if(tempEnd - tempStart < filterSize) {
+                    filterStartIndex = tempStart;
+                    filterEndIndex = tempEnd;
+                    filterList = null;
+                    filterArr = emailDescAccounts[email[0] - 'a'];
+                    filterSize = tempEnd - tempStart;
+                }
+            }
+        }
+        */
+/*
         if (status != null) {
             ansStatus = true;
-            if(statusEq)
-                filter.add(AllLists.statusAccounts.get(status), 0, AllLists.statusAccounts.get(status).size()-1, false);
+            if(statusEq) {
+                if(statusAccounts[status-1].length < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = statusAccounts[status-1].length;
+                    filterList = null;
+                    filterArr = statusAccounts[status-1];
+                    filterSize = statusAccounts[status-1].length;
+                }
+            }
         }
-
+*/
         if (fname != null) {
             ansFname = true;
             if (fnameExists != null) {
-                if(!fnameExists)
-                    filter.add(AllLists.fnameAccounts.get(null), 0, AllLists.fnameAccounts.get(null).size()-1, false);
+                if(!fnameExists) {
+                    int tempStart = 0;
+                    int tempEnd = AllLists.fnameAccounts[0].length;
+                    if(tempEnd - tempStart < filterSize) {
+                        filterStartIndex = 0;
+                        filterEndIndex = AllLists.fnameAccounts[0].length;
+                        filterList = null;
+                        filterArr = fnameAccounts[0];
+                        filterSize = tempEnd - tempStart;
+                    }
+                } else {
+                    int i = 0;
+                }
             } else {
                 if(fname.length == 1) {
-                    filter.add(AllLists.fnameAccounts.get(new String(fname[0])), 0, AllLists.fnameAccounts.get(new String(fname[0])).size()-1, false);
-                } else {
-                    List<List<Integer>> toAdd = new ArrayList<>(fname.length);
-                    List<Integer> starts = new ArrayList<>(fname.length);
-                    List<Integer> ends = new ArrayList<>(fname.length);
-                    for(char[] fn : fname) {
-                        List<Integer> tempList = AllLists.fnameAccounts.get(new String(fn));
-                        if(tempList != null && tempList.size() > 0) {
-                            int tempStart = 0;
-                            int tempEnd = AllLists.fnameAccounts.get(new String(fn)).size() - 1;
 
-                            toAdd.add(tempList);
-                            starts.add(tempStart);
-                            ends.add(tempEnd);
-                        }
+                    if(fname[0] == -1) {
+                        return true;
                     }
-                    filter.addList(toAdd, starts, ends, false);
+
+                    int tempStart = 0;
+                    int tempEnd = AllLists.fnameAccounts[fname[0]].length;
+                    if(tempEnd - tempStart < filterSize) {
+                        filterStartIndex = 0;
+                        filterEndIndex = AllLists.fnameAccounts[fname[0]].length;
+                        filterList = null;
+                        filterArr = fnameAccounts[fname[0]];
+                        filterSize = tempEnd - tempStart;
+                    }
+                } else {
+                    int i =0;
                 }
             }
         }
 
-        if (sname != null) {
-            ansSname = true;
-            if (snameExists != null) {
-                if (!snameExists)
-                    filter.add(AllLists.snameAccounts.get(null), 0, AllLists.snameAccounts.get(null).size()-1, false);
-            } else {
-                if (snameEq != null && snameEq) {
-                    filter.add(AllLists.snameAccounts.get(sname), 0, AllLists.snameAccounts.get(sname).size()-1, false);
+        if (snameExists != null) {
+            if(!snameExists) {
+                int tempStart = 0;
+                int tempEnd = AllLists.snameAccounts[0].length;
+                if(tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = AllLists.snameAccounts[0].length;
+                    filterList = null;
+                    filterArr = snameAccounts[0];
+                    filterSize = tempEnd - tempStart;
                 }
+            } else {
+                int i =0;
+            }
+        }
+
+        if (sname > 0) {
+            ansSname = true;
+            if (snameEq != null && snameEq) {
+                int tempStart = 0;
+                int tempEnd = AllLists.snameAccounts[sname].length;
+                if(tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = AllLists.snameAccounts[sname].length;
+                    filterList = null;
+                    filterArr = AllLists.snameAccounts[sname];
+                    filterSize = tempEnd - tempStart;
+                }
+            } else {
+                if(snameEq != null && !snameEq) {
+                    int i =0;
+                }
+            }
+        } else {
+            if(sname == -1)
+                return true;
+        }
+
+        if (birth != null) {
+            ansBirth = true;
+            if(birthYear != null) {
+
+                if(birth > MAX_BIRTH_YEAR || birth < MIN_BIRTH_YEAR)
+                    return true;
+
+                int tempStart = 0;
+                int tempEnd = AllLists.birthYearsAccount[birth - MIN_BIRTH_YEAR].length;
+
+                if (tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = AllLists.birthYearsAccount[birth - MIN_BIRTH_YEAR].length;
+                    filterList = null;
+                    filterArr = AllLists.birthYearsAccount[birth - MIN_BIRTH_YEAR];
+                    filterSize = tempEnd - tempStart;
+                }
+            } else {
+                /*if(birthLt != null) {
+                    if(birthLt) {
+                        int tempStart = 0;
+                        int tempEnd = Utils.searchBirth(birth-1);
+                        if (tempEnd - tempStart < filterSize) {
+                            filterStartIndex = 0;
+                            filterEndIndex = tempEnd;
+                            filterList = null;
+                            filterArr = AllLists.birthAccount;
+                            filterSize = tempEnd - tempStart;
+                        }
+                    } else {
+                        int tempStart = AllLists.birthAccount.length;
+                        int tempEnd =  Utils.searchBirth(birth-1) - 1;
+                        if (tempEnd - tempStart < filterSize) {
+                            filterStartIndex = 0;
+                            filterEndIndex = tempEnd;
+                            filterList = null;
+                            filterArr = AllLists.birthAccount;
+                            filterSize = tempEnd - tempStart;
+                        }
+                    }
+                }*/
             }
         }
 
         if (phoneCode != null) {
             ansPhone = true;
-            if(phoneExists == null)
-                filter.add(AllLists.phoneCodeAccounts.get(phoneCode), 0, AllLists.phoneCodeAccounts.get(phoneCode).size()-1, false);
+            if(phoneExists == null){
+                int tempStart = 0;
+                if(AllLists.phoneCodeAccounts.get(phoneCode) == null)
+                    return true;
+
+                int tempEnd =  AllLists.phoneCodeAccounts.get(phoneCode).size();
+                if (tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = tempEnd;
+                    filterList = AllLists.phoneCodeAccounts.get(phoneCode);
+                    filterArr = null;
+                    filterSize = tempEnd - tempStart;
+                }
+            }
         }
         if (phoneExists != null) {
             ansPhone = true;
-            if (!phoneExists)
-                filter.add(AllLists.phoneCodeAccounts.get(null), 0, AllLists.phoneCodeAccounts.get(null).size()-1, false);
+            if (!phoneExists) {
+                int tempStart = 0;
+                int tempEnd =  AllLists.phoneCodeAccounts.get(null).size();
+                if (tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = tempEnd;
+                    filterList = AllLists.phoneCodeAccounts.get(null);
+                    filterArr = null;
+                    filterSize = tempEnd - tempStart;
+                }
+            }
         }
 
         if (country != null) {
             ansCountry = true;
-                filter.add(AllLists.countryAccounts.get(country), 0, AllLists.countryAccounts.get(country).size()-1, false);
+            int tempStart = 0;
+            int tempEnd =  AllLists.countryAccounts.get(country).size();
+            if (tempEnd - tempStart < filterSize) {
+                filterStartIndex = 0;
+                filterEndIndex = tempEnd;
+                filterList = AllLists.countryAccounts.get(country);
+                filterArr = null;
+                filterSize = tempEnd - tempStart;
+            }
         }
         if (countryExists != null) {
             ansCountry = true;
-            if (!countryExists)
-                filter.add(AllLists.countryAccounts.get((short)0), 0, AllLists.countryAccounts.get((short)0).size()-1, false);
+            if(countryExists == false) {
+                int tempStart = 0;
+                int tempEnd = AllLists.countryAccounts.get((short) 0).size();
+                if (tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = tempEnd;
+                    filterList = AllLists.countryAccounts.get((short) 0);
+                    filterArr = null;
+                    filterSize = tempEnd - tempStart;
+                }
+            }
         }
 
         if (city != null) {
             ansCity = true;
             if (cityExists != null) {
-                if (!cityExists)
-                    filter.add(AllLists.cityAccounts.get((short)0), 0, AllLists.cityAccounts.get((short)0).size()-1, false);
+                if (!cityExists) {
+                    int tempStart = 0;
+                    int tempEnd =  AllLists.cityAccounts.get((short)0).size();
+                    if (tempEnd - tempStart < filterSize) {
+                        filterStartIndex = 0;
+                        filterEndIndex = tempEnd;
+                        filterList = AllLists.cityAccounts.get((short)0);
+                        filterArr = null;
+                        filterSize = tempEnd - tempStart;
+                    }
+                }
             } else {
                 if (city.size() == 1) {
-                    filter.add(AllLists.cityAccounts.get(city.get(0)), 0, AllLists.cityAccounts.get(city.get(0)).size()-1, false);
+                    int tempStart = 0;
+                    int tempEnd =  AllLists.cityAccounts.get(city.get(0)).size();
+                    if (tempEnd - tempStart < filterSize) {
+                        filterStartIndex = 0;
+                        filterEndIndex = tempEnd;
+                        filterList = AllLists.cityAccounts.get(city.get(0));
+                        filterArr = null;
+                        filterSize = tempEnd - tempStart;
+                    }
                 }
             }
         }
-
-        if(email != null && emailLt!= null) {
-            if(emailLt) {
-                if(email[0]!='z')
-                    filter.add(AllLists.emailSortedAccounts, 0, AllLists.emailFirst[email[0] - 'a' + 1] -1, true);
-            } else {
-                filter.add(AllLists.emailSortedAccounts, AllLists.emailFirst[email[0] - 'a'], AllLists.emailSortedAccounts.size()-1,true);
-            }
-        }
-
+/*
         if (interests != null) {
-            if (interestsAll != null && interestsAll) {
+            if (interestsAll != null) {
                 for (int interest : interestsInt) {
-                    filter.add(AllLists.interestAccounts.get(interest),0,AllLists.interestAccounts.get(interest).size() - 1, false);
+                    int tempStart = 0;
+                    int tempEnd = AllLists.interestAccounts.get(interest).size();
+                    if (tempEnd - tempStart < filterSize) {
+                        filterStartIndex = 0;
+                        filterEndIndex = tempEnd;
+                        filterList = AllLists.interestAccounts.get(interest);
+                        filterArr = null;
+                        filterSize = tempEnd - tempStart;
+                    }
                 }
             }
         }
-
+*/
         if (likes != null) {
             for (String like : likes) {
                 int likeId = Integer.parseInt(like);
                 if(likeId >= AllLists.likesTO.size())
                     return true;
-                List<Integer> accToIds = AllLists.likesTO.get(Integer.parseInt(like));
-                filter.add(accToIds, 0, accToIds.size()-1, false);
+
+                int tempStart = 0;
+                int tempEnd = AllLists.likesTO.get(likeId).size();
+                if (tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = tempEnd;
+                    filterList = AllLists.likesTO.get(likeId);
+                    filterArr = null;
+                    filterSize = tempEnd - tempStart;
+                }
+            }
+        }
+
+        if (premiumNow != null || premiumNewer != null) {
+            ansPremium = true;
+            if (premiumNow != null && premiumNow) {
+
+                int tempStart = 0;
+                int tempEnd = AllLists.premiumNowAccounts.size();
+                if (tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = tempEnd;
+                    filterList = AllLists.premiumNowAccounts;
+                    filterArr = null;
+                    filterSize = tempEnd - tempStart;
+                }
+            }
+            if (premiumNewer != null) {
+                if (!premiumNewer) {
+                    int tempStart = 0;
+                    int tempEnd = AllLists.premiumEverAccounts.size();
+                    if (tempEnd - tempStart < filterSize) {
+                        filterStartIndex = 0;
+                        filterEndIndex = tempEnd;
+                        filterList = AllLists.premiumEverAccounts;
+                        filterArr = null;
+                        filterSize = tempEnd - tempStart;
+                    }
+                } else {
+                    int tempStart = 0;
+                    int tempEnd = AllLists.premiumNeverAccounts.size();
+                    if (tempEnd - tempStart < filterSize) {
+                        filterStartIndex = 0;
+                        filterEndIndex = tempEnd;
+                        filterList = AllLists.premiumNeverAccounts;
+                        filterArr = null;
+                        filterSize = tempEnd - tempStart;
+                    }
+                }
             }
         }
 
@@ -176,48 +403,40 @@ public class NewAccFilter {
         if(fnameExists != null) {
             ansFname = true;
         }
-        
-        if (birth != null) {
-            ansBirth = true;
-            if(birthYear != null) {
-                int min=AllLists.birthYears[birth-1930];
-                int max=AllLists.birthYears[birth+1-1930];
-                filter.add(AllLists.birthSortedAccounts, min, max-1, true);
-            } else {
-                if(birthLt != null) {
-                    if(birthLt) {
-                        int hight = Utils.searchBirth(birth-1);
-                        filter.add(AllLists.birthSortedAccounts, 0, hight, true);
-                    } else {
-                        int low = Utils.searchBirth(birth+1);
-                        filter.add(AllLists.birthSortedAccounts, low, AllLists.birthSortedAccounts.size()-1, true);
-                    }
-                }
-            }
-        }
 
         if(sex !=null)
             ansSex = true;
 
-        if (premiumNow != null || premiumNewer != null) {
-            ansPremium = true;
-            if(premiumNow != null && premiumNow) {
-                filter.add(AllLists.premiumNowAccounts, 0, AllLists.premiumNowAccounts.size()-1, false);
-            }
-            if(premiumNewer != null) {
-                if(!premiumNewer)
-                    filter.add(AllLists.premiumEverAccounts, 0, AllLists.premiumEverAccounts.size()-1, false);
-                else
-                    filter.add(AllLists.premiumNeverAccounts, 0, AllLists.premiumNeverAccounts.size()-1, false);
-            }
-        }
-
         boolean isFirst = true;
         int totalAdded = 0;
-        AccauntCollector accauntCollector = new AccauntCollector(limit);
-        while (filter.hasNext()) {
 
-            Integer possibleId = filter.next();
+        if(filterArr == null && filterList == null) {
+            filterEndIndex = allAccounts.length;
+            filterStartIndex = 0;
+        }
+
+        if(filterList != null) {
+            filterArr = filterList.stream().mapToInt(Integer::intValue).toArray();
+        }
+
+        int index = filterEndIndex-1;
+        int start = filterStartIndex;
+        while (index >= start) {
+
+            Integer possibleId;
+            if(filterArr != null)
+                possibleId = filterArr[index];
+            else {
+                while (allAccounts[index] == null && index > 0)
+                    --index;
+
+                if(allAccounts[index] == null)
+                    break;
+
+                possibleId = allAccounts[index].id;
+            }
+            --index;
+
             if(possibleId==null || possibleId < 1)
                 continue;
             boolean isAdd = true;
@@ -255,47 +474,44 @@ public class NewAccFilter {
                 }
             }
 
-            if(isAdd && fname != null) {
-                if (possible.fname == null) {
-                    continue;
-                } else {
-                    boolean fnResult = false;
-                    for (char[] fn : fname) {
-                        if (Utils.compareCharArr(fn, possible.fname) == 0) {
-                            fnResult = true;
-                            break;
-                        }
+            if(isAdd && fname != null && fnameExists == null) {
+                boolean fnResult = false;
+                for (int fn : fname) {
+                    if (possible.fname == fn) {
+                        fnResult = true;
+                        break;
                     }
-                    if (!fnResult)
-                        continue;
                 }
+                if (!fnResult)
+                    continue;
             }
+
             if(fnameExists != null) {
                 if(fnameExists) {
-                    if(possible.fname == null)
+                    if(possible.fname == 0)
                         continue;
                 } else {
-                    if(possible.fname != null)
+                    if(possible.fname != 0)
                         continue;
                 }
             }
 
 
-            if(isAdd && sname != null) {
+            if(isAdd && sname > 0) {
                 if(snameExists != null) {
                     if(snameExists) {
-                        if(possible.sname == null)
+                        if(possible.sname == 0)
                             continue;
                     } else {
-                        if(possible.sname != null)
+                        if(possible.sname != 0)
                             continue;
                     }
                 } else {
                     if(snameEq != null && snameEq) {
-                        if(possible.sname == null || Utils.compareCharArr(possible.sname, sname) != 0)
+                        if(possible.sname == 0 || possible.sname != sname)
                             continue;
                     } else {
-                        if(possible.sname == null || !Utils.startWith(possible.sname, sname))
+                        if(possible.sname == 0 || possible.sname != sname)
                             continue;
                     }
                 }
@@ -428,29 +644,13 @@ public class NewAccFilter {
             }
 
             if (isAdd) {
-                if(filter.unsorted) {
-                    accauntCollector.add(possible);
-                } else {
-                    buildResult(isFirst, possible, ansSex, ansStatus, ansFname, ansSname, ansPhone, ansCountry, ansCity, ansBirth, ansPremium, buf);
-                    isFirst = false;
-                    ++totalAdded;
-
-                    if(totalAdded >= limit)
-                        break;
-                }
-            }
-        }
-        if(filter.unsorted) {
-            int t = accauntCollector.size();
-            Account[] list = new Account[t];
-            for(int i=0; i<t; ++i) {
-                list[i] = accauntCollector.poll();
-            }
-            for(int i=t-1; i>=0; --i) {
-                buildResult(isFirst, list[i], ansSex, ansStatus, ansFname, ansSname, ansPhone, ansCountry, ansCity, ansBirth, ansPremium, buf);
+                buildResult(isFirst, possible, ansSex, ansStatus, ansFname, ansSname, ansPhone, ansCountry, ansCity, ansBirth, ansPremium, buf);
                 isFirst = false;
-            }
+                ++totalAdded;
 
+                if (totalAdded >= limit)
+                    break;
+            }
         }
 
         return true;
@@ -483,22 +683,23 @@ public class NewAccFilter {
             buf.append(account.getStatusText());
             buf.append("\"");
         }
-        if (ansFname) {
-            char[] fnameRes = account.fname;
+        if (ansFname && account.fname > 0) {
+            char[] fnameRes = AllLists.fnames[account.fname];
             if (fnameRes != null) {
                 buf.append(",\"fname\":\"");
                 buf.append(fnameRes);
                 buf.append("\"");
             }
         }
-        if (ansSname) {
-            char[] snameRes = account.sname;
+        if (ansSname&& account.sname > 0) {
+            char[] snameRes = AllLists.snames[account.sname];
             if (snameRes != null) {
                 buf.append(",\"sname\":\"");
                 buf.append(snameRes);
                 buf.append("\"");
             }
         }
+
         if (ansPhone) {
             char[] phoneRes = account.phone;
             if (phoneRes != null && !"".equals(phoneRes)) {

@@ -13,9 +13,12 @@ import static com.pk.model.AllLists.*;
 
 public class AppProxy {
 
-    private static final Integer ALL_HM_SUM_INDEX = Integer.MAX_VALUE;
     int maxIntId = 1;
-    private int ALL_COUNTRY_SUM_INDEX;
+
+    private ArrayList<String> fnames = new ArrayList<>();
+    private ArrayList<String> snames = new ArrayList<>();
+
+    List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
 
     public void load(Accounts myObjects) {
 
@@ -38,11 +41,19 @@ public class AppProxy {
                 account.emailDomain = domainIndex;
             }
 
-            if(jsonAccount.getFname() != null)
-                account.fname = jsonAccount.getFname().toCharArray();
+            if(jsonAccount.getFname() != null) {
+                if(fnames.indexOf(jsonAccount.getFname()) == -1) {
+                    fnames.add(jsonAccount.getFname());
+                }
+                account.fname = fnames.indexOf(jsonAccount.getFname());
+            }
 
-            if(jsonAccount.getSname() != null)
-                account.sname = jsonAccount.getSname().toCharArray();
+            if(jsonAccount.getSname() != null) {
+                if(snames.indexOf(jsonAccount.getSname()) == -1) {
+                    snames.add(jsonAccount.getSname());
+                }
+                account.sname = snames.indexOf(jsonAccount.getSname());
+            }
 
             if(jsonAccount.getPhone() != null)
                 account.phone = jsonAccount.getPhone().toCharArray();
@@ -95,13 +106,6 @@ public class AppProxy {
             if(jsonAccount.getPremiumEnd() != null)
                 account.premiumEnd = jsonAccount.getPremiumEnd();
 
-/*
-            while (AllLists.allAccounts.size() <= account.id) {
-                com.pk.model.Account account1 = new com.pk.model.Account();
-                AllLists.allAccounts.add(account1);
-            }
-*/
-
             AllLists.allAccounts[account.id] = account;
 
             if(jsonAccount.getInterests() != null) {
@@ -114,14 +118,16 @@ public class AppProxy {
                     Integer intId = AllLists.interests.get(interest);
 
                     //set interests index
-                    while (AllLists.interestAccounts.size() <= intId)
-                        AllLists.interestAccounts.add(null);
 
-                    if (AllLists.interestAccounts.get(intId) == null) {
-                        AllLists.interestAccounts.set(intId, new ArrayList<>());
+                    while (tempIinterestAccounts.size() <= intId)
+                        tempIinterestAccounts.add(null);
+
+                    if (tempIinterestAccounts.get(intId) == null) {
+                        tempIinterestAccounts.set(intId, new ArrayList<>());
                     }
 
-                    AllLists.interestAccounts.get(intId).add(account.id);
+                    tempIinterestAccounts.get(intId).add(account.id);
+
 
                     account.interests.add(intId);
                     account.interestsArray[i] = intId;
@@ -135,28 +141,26 @@ public class AppProxy {
     public void buildCountryCityList() {
         AllLists.countryCityList = new ArrayList[AllLists.countriesList.size()];
 
-        //cityCounryList = new int[AllLists.citiesList.size()];
-        for(com.pk.model.Account account : AllLists.allAccounts) {
-            if(account != null) {
-                //if(account.country != 0 || account.city != 0) {
-                    //cityCounryList[account.city] = account.country;
+        for (com.pk.model.Account account : AllLists.allAccounts) {
+            if (account != null) {
 
-                    if(countryCityList[account.country] == null)
-                        countryCityList[account.country] = new ArrayList<>();
+                if (countryCityList[account.country] == null)
+                    countryCityList[account.country] = new ArrayList<>();
 
-                    if(!countryCityList[account.country].contains(account.city)) {
-                        countryCityList[account.country].add(account.city);
-                    }
-                //}
+                if (!countryCityList[account.country].contains(account.city)) {
+                    countryCityList[account.country].add(account.city);
+                }
             }
         }
     }
 
     public void sortAccounts() {
-        for(List<Integer> list : AllLists.interestAccounts) {
+
+        for(int[] list : AllLists.interestAccounts) {
             if(list != null)
-                Collections.sort(list);
+                Arrays.sort(list);
         }
+
     }
 
     private void addLikes(Account jsonAccount) {
@@ -244,16 +248,6 @@ public class AppProxy {
 
             AllLists.cityAccounts.get(account.city).add(account.id);
 
-            //set status index
-            while (AllLists.statusAccounts.size() <= account.status)
-                AllLists.statusAccounts.add(null);
-
-            if (AllLists.statusAccounts.get(account.status) == null) {
-                AllLists.statusAccounts.set(account.status, new ArrayList<>());
-            }
-
-            AllLists.statusAccounts.get(account.status).add(account.id);
-
             //set email domain
             int domainIndex = account.emailDomain;
 
@@ -265,22 +259,6 @@ public class AppProxy {
             }
 
             AllLists.domainAccounts.get(domainIndex).add(account.id);
-
-            if (account.fname != null) {
-                AllLists.fnameAccounts.computeIfAbsent(new String(account.fname), p -> new ArrayList<>());
-                AllLists.fnameAccounts.get(new String(account.fname)).add(account.id);
-            } else {
-                AllLists.fnameAccounts.computeIfAbsent(null, p -> new ArrayList<>());
-                AllLists.fnameAccounts.get(null).add(account.id);
-            }
-
-            if (account.sname != null) {
-                AllLists.snameAccounts.computeIfAbsent(new String(account.sname), p -> new ArrayList<>());
-                AllLists.snameAccounts.get(new String(account.sname)).add(account.id);
-            } else {
-                AllLists.snameAccounts.computeIfAbsent(null, p -> new ArrayList<>());
-                AllLists.snameAccounts.get(null).add(account.id);
-            }
 
             if (account.phone != null) {
                 String phone = new String(account.phone);
@@ -310,144 +288,14 @@ public class AppProxy {
         System.out.println("ALL FILTERS CREATED");
     }
 
-    //HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>[][][] = count
-
-    /*
-    private void createGroupFilterSum() {
-        for (com.pk.model.Account account : allAccounts) {
-
-            if (account == null)
-                continue;
-            //[country]<city>[sex][status]<birth><interests> = count;
-            int countryIndex = cityCounryList[account.city > 0 ? account.city : account.country];
-            int cityIndex = account.city;
-            int sexIndex = account.sex?2:1;
-            int statusIndex = account.status;
-            //int birth = getYear(account.birth);
-            //int joined = getYear(account.joined);
-            int[] interestsIndex = account.interestsArray;
-
-            HashMap<Integer, Integer> toEditGroupInterest = groupFilter[countryIndex].get(cityIndex)[sexIndex][statusIndex];
-            toEditGroupInterest.put(null, toEditGroupInterest.getOrDefault(null, 0) + 1);
-
-            if(groupFilter[ALL_COUNTRY_SUM_INDEX] == null)
-                groupFilter[ALL_COUNTRY_SUM_INDEX] = new HashMap<>();
-
-            groupFilter[ALL_COUNTRY_SUM_INDEX].computeIfAbsent(cityIndex, k -> new HashMap[3][4]);
-            groupFilter[ALL_COUNTRY_SUM_INDEX].computeIfAbsent(null, k -> new HashMap[3][4]);
-            groupFilter[ALL_COUNTRY_SUM_INDEX].computeIfAbsent(ALL_HM_SUM_INDEX, k -> new HashMap[3][4]);
-            groupFilter[countryIndex].computeIfAbsent(ALL_HM_SUM_INDEX, p-> new HashMap[3][4]);
-
-            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex] == null)
-                groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex] = new HashMap<>();
-
-            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][0] == null)
-                groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][0] = new HashMap<>();
-
-            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[0][statusIndex] == null)
-                groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[0][statusIndex] = new HashMap<>();
-
-            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(null)[sexIndex][statusIndex] == null)
-                groupFilter[ALL_COUNTRY_SUM_INDEX].get(null)[sexIndex][statusIndex] = new HashMap<>();
-
-            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex] == null)
-                groupFilter[ALL_COUNTRY_SUM_INDEX].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex] = new HashMap<>();
-
-            if(groupFilter[countryIndex].get(cityIndex)[sexIndex][0] == null)
-                groupFilter[countryIndex].get(cityIndex)[sexIndex][0] = new HashMap<>();
-
-            if(groupFilter[countryIndex].get(cityIndex)[0][statusIndex] == null)
-                groupFilter[countryIndex].get(cityIndex)[0][statusIndex] = new HashMap<>();
-
-            if(groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[0][statusIndex] == null)
-                groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[0][statusIndex] = new HashMap<>();
-
-            //groupFilter[countryIndex].get(cityIndex)[sexIndex][0].computeIfAbsent(birth, p-> new HashMap<>());
-            //groupFilter[countryIndex].get(cityIndex)[0][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
-
-            groupFilter[countryIndex].computeIfAbsent(null, p-> new HashMap[3][4]);
-
-            if(groupFilter[countryIndex].get(null)[sexIndex][statusIndex] == null)
-                groupFilter[countryIndex].get(null)[sexIndex][statusIndex] = new HashMap<>();
-
-            //groupFilter[countryIndex].get(null)[sexIndex][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
-            //groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
-
-            //HashMap<Integer, Integer> toEditStatus = groupFilter[countryIndex].get(cityIndex)[sexIndex][0].get(birth);
-            //HashMap<Integer, Integer> toEditSex = groupFilter[countryIndex].get(cityIndex)[0][statusIndex].get(birth);
-
-            if(groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex] == null) {
-                groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex] = new HashMap<>();
-            }
-
-            //groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
-            //HashMap<Integer, Integer> toEditCity = groupFilter[countryIndex].get(ALL_HM_SUM_INDEX)[sexIndex][statusIndex].get(birth);
-
-            //HashMap<Integer, Integer> toEditCountry = groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex].get(birth);
-
-            groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex].computeIfAbsent(ALL_HM_SUM_INDEX, p-> new HashMap<>());
-            HashMap<Integer, Integer> toEditBirth = groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex].get(ALL_HM_SUM_INDEX);
-
-            if(interestsIndex != null) {
-                for(int interest : interestsIndex) {
-                    toEditStatus.put(interest, toEditStatus.getOrDefault(interestsIndex, 0) + 1);
-                    toEditSex.put(interest, toEditSex.getOrDefault(interestsIndex, 0) + 1);
-                    toEditCity.put(interest, toEditSex.getOrDefault(interestsIndex, 0) + 1);
-                    toEditCountry.put(interest, toEditSex.getOrDefault(interestsIndex, 0) + 1);
-                    toEditBirth.put(interest, toEditSex.getOrDefault(interestsIndex, 0) + 1);
-                }
-            } else {
-                toEditStatus.put(null, toEditStatus.getOrDefault(null, 0) + 1);
-                toEditSex.put(null, toEditSex.getOrDefault(null, 0) + 1);
-                toEditCity.put(null, toEditCity.getOrDefault(null, 0) + 1);
-                toEditCountry.put(null, toEditCountry.getOrDefault(null, 0) + 1);
-                toEditBirth.put(null, toEditSex.getOrDefault(null, 0) + 1);
-            }
-        }
-    }
-*/
-
-
     private void createGroupFilterSumCountry() {
-
-        /*
-        groupFilter[ALL_COUNTRY_SUM_INDEX] = new HashMap<>();
-
-        for (com.pk.model.Account account : allAccounts) {
-            if (account == null)
-                continue;
-            //[country]<city>[sex][status]<birth><interests> = count;
-            int countryIndex = cityCounryList[account.city > 0 ? account.city : account.country];
-            int cityIndex = account.city;
-            int sexIndex = account.sex?2:1;
-            int statusIndex = account.status;
-            int[] interestsIndex = account.interestsArray;
-
-            if(groupFilter[ALL_COUNTRY_SUM_INDEX] == null)
-                groupFilter[ALL_COUNTRY_SUM_INDEX] = new HashMap<>();
-
-            groupFilter[ALL_COUNTRY_SUM_INDEX].computeIfAbsent(cityIndex, k -> new HashMap[3][4]);
-            if(groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex] == null)
-                groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex] = new HashMap<>();
-
-            //groupFilter[countryIndex].get(cityIndex)[sexIndex][statusIndex].computeIfAbsent(birth, p-> new HashMap<>());
-
-            HashMap<Integer, Integer> toEdit = groupFilter[ALL_COUNTRY_SUM_INDEX].get(cityIndex)[sexIndex][statusIndex];
-
-            if (interestsIndex != null) {
-                for (int interest : interestsIndex) {
-                    toEdit.put(interest, toEdit.getOrDefault(interest, 0) + 1);
-                }
-            } else {
-                toEdit.put(null, toEdit.getOrDefault(null, 0) + 1);
-            }
-        }*/
-
     }
 
 
     private void createGroupFilter() {
 
+        long total = 0;
+        long totalInt = 0;
         groupFilter = new int[countriesList.size()][citiesList.size()][3][2];
         groupFilterBirth = new int[countriesList.size()][citiesList.size()][3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1];
         groupFilterJoined = new int[countriesList.size()][citiesList.size()][3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1];
@@ -514,17 +362,20 @@ public class AppProxy {
     }
 
     public void createNewFilters() {
+
+        /*
+        for(int i=0; i<AllLists.allAccounts.length; ++i) {
+
+            fnameAccounts = new int[allAccounts.length];
+            snameAccounts = new int[allAccounts.length];
+            emailAscAccounts = new int[allAccounts.length];
+            emailDescAccounts = new int[allAccounts.length];
+            birthAccount = new int[allAccounts.length];
+        }
+        */
+
         for(int i=0; i<AllLists.allAccounts.length; ++i) {
             if(AllLists.allAccounts[i] != null) {
-
-                while (AllLists.emailSortedAccounts.size() <= i)
-                    AllLists.emailSortedAccounts.add(null);
-                AllLists.emailSortedAccounts.set(i, i);
-
-                while (AllLists.birthSortedAccounts.size() <= i)
-                    AllLists.birthSortedAccounts.add(null);
-                AllLists.birthSortedAccounts.set(i, i);
-
 
                 while (AllLists.joinedSortedAccounts.size() <= i)
                     AllLists.joinedSortedAccounts.add(null);
@@ -541,44 +392,6 @@ public class AppProxy {
             }
         }
 
-        Collections.sort(AllLists.emailSortedAccounts, (p1,p2) -> {
-            if(p1 == null && p2 == null)
-                return 0;
-            if(p1 == null)
-                return -1;
-            if(p2 == null)
-                return 1;
-
-            return new String(AllLists.allAccounts[p1].email).compareTo(new String(AllLists.allAccounts[p2].email));
-        });
-
-        Collections.sort(AllLists.birthSortedAccounts, (p1,p2) -> {
-            if(p1 == null && p2 == null)
-                return 0;
-            if(p1 == null)
-                return -1;
-            if(p2 == null)
-                return 1;
-
-            return AllLists.allAccounts[p1].birth - AllLists.allAccounts[p2].birth;
-        });
-        int year = 1931;
-        for (int i = 0; i < AllLists.birthSortedAccounts.size(); i++) {
-            if(AllLists.birthSortedAccounts.get(i) != null) {
-                if(AllLists.allAccounts[AllLists.birthSortedAccounts.get(i)].birth >=Utils.getTimestamp(year)) {
-                    while (AllLists.allAccounts[AllLists.birthSortedAccounts.get(i)].birth >= Utils.getTimestamp(year))
-                        ++year;
-
-                    if(MIN_BIRTH_YEAR == Integer.MAX_VALUE) {
-                        MIN_BIRTH_YEAR = year-1;
-                    }
-                    MAX_BIRTH_YEAR = year;
-
-                    AllLists.birthYears[year - 1 - 1930] = i;
-                }
-            }
-        }
-
         Collections.sort(AllLists.joinedSortedAccounts, (p1,p2) -> {
             if(p1 == null && p2 == null)
                 return 0;
@@ -590,7 +403,7 @@ public class AppProxy {
             return AllLists.allAccounts[p1].joined - AllLists.allAccounts[p2].joined;
         });
 
-        year = 1931;
+        int year = 1931;
         for (int i = 0; i < AllLists.joinedSortedAccounts.size(); i++) {
             if(AllLists.joinedSortedAccounts.get(i) != null) {
                 if(AllLists.allAccounts[AllLists.joinedSortedAccounts.get(i)].joined >=Utils.getTimestamp(year)) {
@@ -606,16 +419,174 @@ public class AppProxy {
                 }
             }
         }
+    }
 
 
-        char search = 'a';
-        for (int i = 0; i < AllLists.emailSortedAccounts.size(); i++) {
-            if(AllLists.emailSortedAccounts.get(i) != null) {
-                if(AllLists.allAccounts[AllLists.emailSortedAccounts.get(i)].email[0] == search) {
-                    AllLists.emailFirst[search-'a'] = i;
-                    ++search;
-                }
+    public void sortEasyIndexes() {
+
+        ArrayList<String> sortedfnames = new ArrayList<>(fnames);
+        ArrayList<String> sortedsnames = new ArrayList<>(snames);
+
+        Collections.sort(sortedfnames);
+        Collections.sort(sortedsnames);
+
+        ArrayList<Integer>[] status = new ArrayList[3];
+
+        for(int i=0; i<3; ++i)
+            status[i] = new ArrayList<>();
+
+        for(com.pk.model.Account account : allAccounts) {
+            if(account != null) {
+                if(account.fname > 0)
+                    account.fname = Collections.binarySearch(sortedfnames, fnames.get(account.fname));
+
+                if(account.sname > 0)
+                    account.sname = Collections.binarySearch(sortedsnames, snames.get(account.sname));
+
+                status[account.status-1].add(account.id);
             }
         }
+
+        AllLists.fnames = new char[fnames.size()][];
+        for (int i = 0; i < fnames.size(); i++) {
+            String fn = sortedfnames.get(i);
+            AllLists.fnames[i] = fn.toCharArray();
+        }
+
+        AllLists.snames = new char[snames.size()][];
+        for (int i = 0; i < sortedsnames.size(); i++) {
+            String sn = sortedsnames.get(i);
+            AllLists.snames[i] = sn.toCharArray();
+        }
+
+        List<com.pk.model.Account> sortedAccount = new ArrayList(Arrays.asList(allAccounts));
+        Collections.sort(sortedAccount, (p1,p2) -> {
+            if(p1 == null && p2 == null)
+                return 0;
+            if(p1 == null)
+                return -1;
+            if(p2==null)
+                return 1;
+
+            if(p1.fname != p2.fname)
+                return p1.fname - p2.fname;
+
+            return p1.id - p2.id;
+        });
+
+        Collections.sort(sortedAccount, (p1,p2) -> {
+            if(p1 == null && p2 == null)
+                return 0;
+            if(p1 == null)
+                return -1;
+            if(p2==null)
+                return 1;
+
+            if(p1.sname != p2.sname)
+                return p1.sname - p2.sname;
+
+            return p1.id - p2.id;
+        });
+    }
+
+    /*
+    public void createEmailIndexes() {
+
+        List<Integer>[] temp = new ArrayList[26];
+        List<Integer>[] temp1 = new ArrayList[26];
+        for(com.pk.model.Account account : allAccounts) {
+            if(account ==null)
+                continue;
+
+            for(char start = 'a'; start<=account.email[0]; ++start) {
+
+                if(temp[start - 'a'] == null)
+                    temp[start - 'a'] = new ArrayList<>();
+
+                temp[start - 'a'].add(account.id);
+            }
+
+            for(char start = 'z'; start>=account.email[0]; --start) {
+
+                if(temp1[start - 'a'] == null)
+                    temp1[start - 'a'] = new ArrayList<>();
+
+                temp1[start - 'a'].add(account.id);
+            }
+        }
+
+        for(int i=0 ;i<26; ++i) {
+            AllLists.emailAscAccounts[i] = temp[i].stream().mapToInt(Integer::intValue).toArray();
+            AllLists.emailDescAccounts[i] = temp1[i].stream().mapToInt(Integer::intValue).toArray();
+        }
+    }
+*/
+
+    public void createNameIndexes() {
+
+        List<Integer>[] temp = new ArrayList[AllLists.fnames.length];
+        List<Integer>[] temp1 = new ArrayList[AllLists.snames.length];
+
+        for(com.pk.model.Account account : allAccounts) {
+            if(account ==null)
+                continue;
+
+            if(temp[account.fname] == null)
+                temp[account.fname] = new ArrayList<>();
+            if(temp1[account.sname] == null)
+                temp1[account.sname] = new ArrayList<>();
+
+            temp[account.fname].add(account.id);
+            temp1[account.sname].add(account.id);
+        }
+
+        AllLists.fnameAccounts = new int[temp.length][];
+        AllLists.snameAccounts = new int[temp1.length][];
+        for(int i=0 ;i<temp.length; ++i) {
+            if(temp[i] != null)
+                AllLists.fnameAccounts[i] = temp[i].stream().mapToInt(Integer::intValue).toArray();
+        }
+        for(int i=0 ;i<temp1.length; ++i) {
+            if(temp1[i] != null)
+            AllLists.snameAccounts[i] = temp1[i].stream().mapToInt(Integer::intValue).toArray();
+        }
+
+    }
+
+    public void createBirthYearIndex() {
+        HashMap<Integer, List<Integer>> temp = new HashMap();
+
+        int minYear = Integer.MAX_VALUE;
+        int maxYear = Integer.MIN_VALUE;
+        for(com.pk.model.Account account : allAccounts) {
+            if (account == null)
+                continue;
+
+            minYear = Math.min(minYear, getYear(account.birth));
+            maxYear = Math.max(maxYear, getYear(account.birth));
+
+            temp.computeIfAbsent(getYear(account.birth), p-> new ArrayList<>());
+            temp.get(getYear(account.birth)).add(account.id);
+        }
+
+        AllLists.birthYearsAccount = new int[maxYear-minYear+1][];
+        for(int year : temp.keySet()) {
+            AllLists.birthYearsAccount[year - minYear] = temp.get(year).stream().mapToInt(Integer::intValue).toArray();
+        }
+        MIN_BIRTH_YEAR = minYear;
+        MAX_BIRTH_YEAR = maxYear;
+    }
+
+    public void commitInterests() {
+
+        AllLists.interestAccounts = new int[tempIinterestAccounts.size()][];
+        for (int i = 0; i < tempIinterestAccounts.size(); i++) {
+            List<Integer> interest = tempIinterestAccounts.get(i);
+            if(interest != null)
+                AllLists.interestAccounts[i] = interest.stream().mapToInt(Integer::intValue).toArray();
+        }
+
+        tempIinterestAccounts.clear();
+        tempIinterestAccounts = null;
     }
 }

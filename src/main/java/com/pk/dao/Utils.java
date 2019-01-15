@@ -9,6 +9,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import static com.pk.model.AllLists.fnames;
+import static com.pk.model.AllLists.snames;
+
 public class Utils {
 
     public static String getStatusText(Byte status) {
@@ -110,6 +113,27 @@ public class Utils {
         return true;
     }
 
+
+    public static int getSnameIndex(String sname) {
+        for (int i = 0; i < snames.length; i++) {
+            char[] sn = snames[i];
+            if (new String(sn).equals(sname))
+                return i;
+
+        }
+        return -1;
+    }
+
+    public static int getFnameIndex(String fname) {
+        for (int i = 0; i < fnames.length; i++) {
+            char[] fn = fnames[i];
+            if (new String(fn).equals(fname))
+                return i;
+
+        }
+        return -1;
+    }
+
     public static int getTimestamp(int year) {
         if(AllLists.yearToTs[year-1930] != 0)
             return AllLists.yearToTs[year-1930];
@@ -127,14 +151,14 @@ public class Utils {
 
         return (int) (time/1000);
     }
-
+/*
     public static int searchBirth(int birth) {
         int low = 0;
-        int high = AllLists.birthSortedAccounts.size()-1;
-        List<Integer> list = AllLists.birthSortedAccounts;
+        int high = AllLists.birthAccount.length-1;
+        int[] list = AllLists.birthAccount;
         while (low <= high) {
             int mid = (low + high) >>> 1;
-            int midVal = list.get(mid);
+            int midVal = list[mid];
 
             int midToCompare = AllLists.allAccounts[midVal].birth;
 
@@ -149,4 +173,5 @@ public class Utils {
         }
         return low;  // key not found
     }
+*/
 }

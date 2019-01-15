@@ -7,20 +7,12 @@ import com.pk.dbproxy.AppProxy;
 import com.pk.jsonmodel.Accounts;
 import com.pk.model.AllLists;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 public class JsonLoader {
 
@@ -76,6 +68,24 @@ public class JsonLoader {
             ++i;
         }
         System.out.println("all files processed");
+        System.gc();
+
+        appProxy.commitInterests();
+        System.gc();
+
+        appProxy.sortEasyIndexes();
+        System.gc();
+        System.out.println("sorted");
+
+        appProxy.createBirthYearIndex();
+        System.out.println("birth index created");
+
+        //appProxy.createEmailIndexes();
+        //System.out.println("email index created");
+
+        appProxy.createNameIndexes();
+        System.out.println("FSname index created");
+
         System.gc();
 
         appProxy.sortAccounts();

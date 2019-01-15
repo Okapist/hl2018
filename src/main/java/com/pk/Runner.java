@@ -16,9 +16,9 @@ public class Runner {
             try {
                 loader.load("/tmp/data/", new AppProxy());
             } catch (Exception ex) {
-                loader.load("d:/hl/bigdata/", new AppProxy());
+                //loader.load("d:/hl/bigdata/", new AppProxy());
                 //loader.load("d:/hl/data/", new AppProxy());
-                //loader.load("C:\\JavaProjects\\external\\hl\\bigdata\\", new AppProxy());
+                loader.load("C:\\JavaProjects\\external\\hl\\bigdata\\", new AppProxy());
                 //loader.load("C:\\JavaProjects\\external\\hl\\data\\", new AppProxy());
             }
             loader = null;

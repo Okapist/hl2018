@@ -25,9 +25,9 @@ public class Account
 
     public int emailDomain;
 
-    public char[] fname;
+    public int fname;
 
-    public char[] sname;
+    public int sname;
 
     public short country;
 
