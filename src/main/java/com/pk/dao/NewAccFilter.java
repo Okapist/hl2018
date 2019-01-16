@@ -205,6 +205,9 @@ public class NewAccFilter {
                     return true;
 
                 int tempStart = 0;
+                if(AllLists.birthYearsAccount[birth - MIN_BIRTH_YEAR] == null)
+                    return true;
+
                 int tempEnd = AllLists.birthYearsAccount[birth - MIN_BIRTH_YEAR].length;
 
                 if (tempEnd - tempStart < filterSize) {
@@ -276,6 +279,9 @@ public class NewAccFilter {
         if (country != null) {
             ansCountry = true;
             int tempStart = 0;
+            if(AllLists.countryAccounts.get(country) == null)
+                return true;
+
             int tempEnd =  AllLists.countryAccounts.get(country).size();
             if (tempEnd - tempStart < filterSize) {
                 filterStartIndex = 0;

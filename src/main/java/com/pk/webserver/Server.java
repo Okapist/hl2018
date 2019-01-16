@@ -1,6 +1,7 @@
 package com.pk.webserver;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -33,7 +34,9 @@ public class Server {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ServerInitializer());
+                    .childHandler(new ServerInitializer())
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);;
+
             Channel ch = b.bind(port).sync().channel();
             ch.closeFuture().sync();
         } finally {
@@ -45,14 +48,21 @@ public class Server {
     private class ServerInitializer extends ChannelInitializer<SocketChannel> {
         @Override
         public void initChannel(SocketChannel ch){
+
+            ch.pipeline().addLast("codec", new HttpServerCodec());
+            ch.pipeline().addLast("aggregator", new HttpObjectAggregator(512*1024));
+            ch.pipeline().addLast("request",new ServerHandler());
+
+/*
             ChannelPipeline p = ch.pipeline();
             p.addLast("decoder", new HttpRequestDecoder());
             p.addLast("encoder", new HttpResponseEncoder());
             p.addLast("handler", new ServerHandler());
+*/
         }
     }
 
-    class ServerHandler extends SimpleChannelInboundHandler<Object> {
+    class ServerHandler extends ChannelInboundHandlerAdapter {
 
         private HttpRequest request;
         private final StringBuilder buf = new StringBuilder();
@@ -62,34 +72,13 @@ public class Server {
         public ServerHandler() {
         }
 
-/*
-        @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-
-            int val = Server.connections.incrementAndGet();
-            if (val <= 4*10) {
-                super.channelActive(ctx);
-            } else {
-                System.out.print("refused");
-                ctx.close();
-            }
-        }
-
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            super.channelInactive(ctx);
-            Server.connections.decrementAndGet();
-        }
-*/
-
-
         @Override
         public void channelReadComplete(ChannelHandlerContext ctx) {
             ctx.flush();
         }
 
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) {
             if (msg instanceof HttpRequest) {
                 HttpRequest request = this.request = (HttpRequest) msg;
                 QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
@@ -124,7 +113,6 @@ public class Server {
                         gcCalled.set(true);
                         System.gc();
                     }
-
                     if (context.startsWith("/accounts/new/")) {
                         status = workers.newAccount(request, buf);
                     } else {
