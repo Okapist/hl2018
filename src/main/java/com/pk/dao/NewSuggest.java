@@ -6,8 +6,7 @@ import com.pk.model.AllLists;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.pk.model.AllLists.fnames;
-import static com.pk.model.AllLists.snames;
+import static com.pk.model.AllLists.*;
 
 
 public class NewSuggest {
@@ -99,7 +98,7 @@ public class NewSuggest {
                 buf.append(cur.id);
 
                 buf.append(",\"email\":\"");
-                buf.append(cur.email).append("@").append(AllLists.domainList.get(cur.emailDomain));
+                buf.append(allEmailList.get(cur.email)).append("@").append(AllLists.domainList.get(cur.emailDomain));
                 buf.append("\"");
 
                 buf.append(",\"status\":\"");

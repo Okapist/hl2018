@@ -146,14 +146,14 @@ public class NewAccGroup {
 
             while(true) {
 
-                if(groupFilterBirth[tempCountry].get((short)tempCity) != null) {
+                if(groupFilterBirth[tempCountry].get(shortCache[tempCity]) != null) {
                     if (birth != null) {
-                        curSum += groupFilterBirth[tempCountry].get((short)tempCity)[tempStatus][tempSex][birthYear - MIN_BIRTH_YEAR];
+                        curSum += groupFilterBirth[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][birthYear - MIN_BIRTH_YEAR];
                     } else {
                         if (joined != null) {
-                            curSum += groupFilterJoined[tempCountry].get((short)tempCity)[tempStatus][tempSex][joinedYear - MIN_JOINED_YEAR];
+                            curSum += groupFilterJoined[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][joinedYear - MIN_JOINED_YEAR];
                         } else {
-                            curSum += groupFilter[tempCountry].get((short)tempCity)[tempStatus][tempSex];
+                            curSum += groupFilter[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex];
                         }
                     }
                 }

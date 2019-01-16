@@ -197,25 +197,48 @@ public class AppProxy {
             }
         }
 
+        temp.clear();
+
+        HashMap<Integer, Integer> tempId = new HashMap<>();
+        for(com.pk.model.Account account : allAccounts) {
+            if(account != null) {
+                tempId.put(account.email, Math.max(temp.getOrDefault(account.email, 0), account.id));
+            }
+        }
+
         //build borders
-        int maxLow = Integer.MIN_VALUE;
-        int maxHight = Integer.MIN_VALUE;
+        int max = Integer.MIN_VALUE;
+        int i =0;
+        for(char f = 'a'; f<='z'; ++f) {
+            for(char s = 'a'; s<='z'; ++s) {
+                for(char t = 'a'; t<='z'; ++t) {
 
-        for (int i = 0; i < allEmailList.size(); i++) {
-            String email = allEmailList.get(i);
-
-            char emailStart = email.charAt(0);
-            emailHightBorder[emailStart-'a'] = Math.max(maxHight, temp.get(email));
-
+                    while (i<allEmailList.size() && (new StringBuilder()).append(f).append(s).append(t).toString().compareTo(allEmailList.get(i)) > 0) {
+                        ++i;
+                        max = Math.max(max, tempId.getOrDefault(i, allEmailList.size()));
+                    }
+                    emailHightBorder[f-'a'][s-'a'][t-'a'] = max;
+                }
+            }
         }
 
-        for (int i = allEmailList.size()-1; i >= 0; i--) {
-            String email = allEmailList.get(i);
+        i = allEmailList.size() - 1;
+        max = Integer.MIN_VALUE;
+        for(char f = 'z'; f>='a'; --f) {
+            for(char s = 'z'; s>='a'; --s) {
+                for(char t = 'z'; t>='a'; --t) {
 
-            char emailStart = email.charAt(0);
-            emailLowBorder[emailStart-'a'] = Math.max(maxLow, temp.get(email));
+                    while (i>=0 && (new StringBuilder()).append(f).append(s).append(t).toString().compareTo(allEmailList.get(i)) < 0) {
+                        --i;
+                        max = Math.max(max, tempId.getOrDefault(i, allEmailList.size()));
+                    }
+                    emailLowBorder[f-'a'][s-'a'][t-'a'] = max;
+                }
+            }
         }
 
+        tempId.clear();
+        tempId = null;
         temp.clear();
         temp = null;
     }
@@ -372,25 +395,15 @@ public class AppProxy {
                 groupFilter[countryIndex] = new HashMap<>();
                 groupFilterBirth[countryIndex] = new HashMap<>();
                 groupFilterJoined[countryIndex] = new HashMap<>();
-
-                //groupFilter[countryIndex] = new int[countryCityList[account.country].size()][3][2];
-                //groupFilterBirth[countryIndex] = new int[countryCityList[account.country].size()][3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1];
-                //groupFilterJoined[countryIndex] = new int[countryCityList[account.country].size()][3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1];
             }
 
-            groupFilter[countryIndex].computeIfAbsent(account.city, p-> new int[3][2]);
-            groupFilterBirth[countryIndex].computeIfAbsent(account.city, p-> new int[3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1]);
-            groupFilterJoined[countryIndex].computeIfAbsent(account.city, p-> new int[3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1]);
-
-            //groupFilter[countryIndex].put(account.city, groupFilter[countryIndex].getOrDefault())
+            groupFilter[countryIndex].computeIfAbsent(account.city, p-> new short[3][2]);
+            groupFilterBirth[countryIndex].computeIfAbsent(account.city, p-> new short[3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1]);
+            groupFilterJoined[countryIndex].computeIfAbsent(account.city, p-> new short[3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1]);
 
             ++groupFilter[countryIndex].get(account.city)[statusIndex][sexIndex];
             ++groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
             ++groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
-
-            //++groupFilter[countryIndex][fixedCityIndex][statusIndex][sexIndex];
-            //++groupFilterBirth[countryIndex][fixedCityIndex][statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
-            //++groupFilterJoined[countryIndex][fixedCityIndex][statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
         }
 
         int i = 0;
@@ -535,12 +548,16 @@ public class AppProxy {
             String fn = sortedfnames.get(i);
             AllLists.fnames[i] = fn.toCharArray();
         }
+        fnames.clear();
+        fnames = null;
 
         AllLists.snames = new char[snames.size()][];
         for (int i = 0; i < sortedsnames.size(); i++) {
             String sn = sortedsnames.get(i);
             AllLists.snames[i] = sn.toCharArray();
         }
+        snames.clear();
+        snames = null;
 
         List<com.pk.model.Account> sortedAccount = new ArrayList(Arrays.asList(allAccounts));
         Collections.sort(sortedAccount, (p1,p2) -> {
@@ -571,39 +588,6 @@ public class AppProxy {
             return p1.id - p2.id;
         });
     }
-
-    /*
-    public void createEmailIndexes() {
-
-        List<Integer>[] temp = new ArrayList[26];
-        List<Integer>[] temp1 = new ArrayList[26];
-        for(com.pk.model.Account account : allAccounts) {
-            if(account ==null)
-                continue;
-
-            for(char start = 'a'; start<=account.email[0]; ++start) {
-
-                if(temp[start - 'a'] == null)
-                    temp[start - 'a'] = new ArrayList<>();
-
-                temp[start - 'a'].add(account.id);
-            }
-
-            for(char start = 'z'; start>=account.email[0]; --start) {
-
-                if(temp1[start - 'a'] == null)
-                    temp1[start - 'a'] = new ArrayList<>();
-
-                temp1[start - 'a'].add(account.id);
-            }
-        }
-
-        for(int i=0 ;i<26; ++i) {
-            AllLists.emailAscAccounts[i] = temp[i].stream().mapToInt(Integer::intValue).toArray();
-            AllLists.emailDescAccounts[i] = temp1[i].stream().mapToInt(Integer::intValue).toArray();
-        }
-    }
-*/
 
     public void createNameIndexes() {
 
@@ -647,6 +631,9 @@ public class AppProxy {
 
             minYear = Math.min(minYear, getYear(account.birth));
             maxYear = Math.max(maxYear, getYear(account.birth));
+
+            MIN_JOINED_YEAR = Math.min(MIN_JOINED_YEAR, getYear(account.joined));
+            MAX_JOINED_YEAR = Math.max(MAX_JOINED_YEAR, getYear(account.joined));
 
             temp.computeIfAbsent(getYear(account.birth), p-> new ArrayList<>());
             temp.get(getYear(account.birth)).add(account.id);

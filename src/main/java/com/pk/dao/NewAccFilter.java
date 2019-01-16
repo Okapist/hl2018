@@ -441,9 +441,9 @@ if (likes != null) {
         if(filterEndIndex == allAccounts.length) {
             if (email != null && emailLt != null) {
                 if (emailLt) {
-                    filterEndIndex = emailHightBorder[email[0] - 'a'] + 1;
+                    filterEndIndex = emailHightBorder[email[0] - 'a'][email.length>1?email[1] - 'a':'a'-'a'][email.length>2?email[2] - 'a':'a'-'a'] + 1;
                 } else {
-                    filterEndIndex = emailLowBorder[email[0] - 'a'] + 1;
+                    filterEndIndex = emailLowBorder[email[0] - 'a'][email.length>1?email[1] - 'a':'z'-'a'][email.length>2?email[2] - 'a':'z'-'a'] + 1;
                 }
             }
         }
@@ -664,10 +664,13 @@ if (likes != null) {
                     isAdd = false;
                 }
                 int[] accLikes = AllLists.likesAccounts.get(possible.id);
+                if(accLikes == null)
+                    continue;
 
                 for (Integer likeInt : likesArr) {
                     boolean founded = false;
-                    for (int likeId : accLikes) {
+                    for (int i = 0; i < accLikes.length; i++) {
+                        int likeId = accLikes[i];
                         if (likeInt == likeId) {
                             founded = true;
                             break;

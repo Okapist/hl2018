@@ -537,10 +537,16 @@ public class Workers {
         try {
             data = gson.fromJson(body.toString(CharsetUtil.UTF_8), Account.class);
         } catch (Exception ex) {
+            body.release();
             return HttpResponseStatus.BAD_REQUEST;
         }
         body.release();
-        String emailParts[] = data.getEmail().split("@");
+        String emailParts[];
+        try {
+            emailParts = data.getEmail().split("@");
+        } catch (Exception ex) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
 
         if(data == null || data.getId() == null || ( data.getId()<allAccounts.length && allAccounts[data.getId()] != null) || emailParts.length != 2 || allEmailList.contains(emailParts[0])) {
             return HttpResponseStatus.BAD_REQUEST;

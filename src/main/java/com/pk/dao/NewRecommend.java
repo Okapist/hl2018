@@ -38,7 +38,7 @@ public class NewRecommend {
         }
 
         //store in reverse order to remove extra
-        PriorityQueue<Account> heap = new PriorityQueue<>(limit, (p1, p2) -> {
+        PriorityQueue<Account> heap = new PriorityQueue<>(limit, (p2, p1) -> {
 
             boolean p1Premium = p1.premiumStart != 0 && p1.premiumEnd != 0 && p1.premiumStart < Runner.curDate && p1.premiumEnd > Runner.curDate;
             boolean p2Premium = p2.premiumStart != 0 && p2.premiumEnd != 0 && p2.premiumStart < Runner.curDate && p2.premiumEnd > Runner.curDate;
@@ -52,7 +52,8 @@ public class NewRecommend {
 
             int common1 = 0;
             int common2 = 0;
-            for (int intId : baseInterestsArray) {
+            for (int i = 0; i < baseInterestsArray.length; i++) {
+                int intId = baseInterestsArray[i];
                 if (p1.interests.contains(intId)) {
                     ++common1;
                 }
@@ -73,58 +74,58 @@ public class NewRecommend {
         int status = 0;
         final int startCountry = country == null ? 0 : searchCountry;
         final int toAddCountry = searchCountry > 0 ? searchCountry : 1;
+        //final Set<Integer> alreadyAdded = new HashSet<>();
 
         while (true) {
-            HashMap<Integer, HashMap<Integer, Set<Integer>>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
+            final HashMap<Integer, HashMap<Integer, Set<Integer>>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
             final int endCountry = searchCountry == 0 ? toSearch.length - 1 : searchCountry;
             for (int curCountry = startCountry; curCountry <= endCountry; curCountry += toAddCountry) {
 
                 if (searchCity != 0) {
-                    HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(searchCity);
+                    final HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(searchCity);
                     if (toSearchInterests != null) {
-                        Set<Integer> alreadyAdded = new HashSet<>();
                         for (int i = 0; i < baseInterestsArray.length; i++) {
                             int interes = baseInterestsArray[i];
-                            Set<Integer> possibleList = toSearchInterests.get(interes);
+                            final Set<Integer> possibleList = toSearchInterests.get(interes);
                             if (possibleList != null) {
-                                possibleList.forEach(p -> {
+                                for (Integer p : possibleList) {
                                     Account possible = AllLists.allAccounts[p];
-                                    if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
-                                        alreadyAdded.add(possible.id);
+                                    if (possible.sex != baseAccount.sex && !heap.contains(possible)) {
+                                        //alreadyAdded.add(possible.id);
                                         heap.add(possible);
                                     }
-                                });
-                                while (heap.size() > limit) {
-                                    heap.poll();
                                 }
+                                //while (heap.size() > limit) {
+                                    //heap.poll();
+                                //}
                             }
                         }
+                        //alreadyAdded.clear();
                     }
                 } else {
-                    Set<Integer> cityList = toSearch[curCountry].keySet();
-                    Integer[] cityArr = cityList.toArray(new Integer[0]);
+                    final Set<Integer> cityList = toSearch[curCountry].keySet();
+                    final Integer[] cityArr = cityList.toArray(new Integer[0]);
                     for (int i1 = 0; i1 < cityArr.length; i1++) {
-                        Integer curCity = cityArr[i1];
-                        HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(curCity);
+                        final Integer curCity = cityArr[i1];
+                        final HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(curCity);
                         if (toSearchInterests != null) {
-                            Set<Integer> alreadyAdded = new HashSet<>();
                             for (int i2 = 0; i2 < baseInterestsArray.length; i2++) {
                                 int interes = baseInterestsArray[i2];
-                                Set<Integer> possibleList = toSearchInterests.get(interes);
+                                final Set<Integer> possibleList = toSearchInterests.get(interes);
                                 if (possibleList != null) {
-                                    possibleList.forEach(p -> {
+                                    for (Integer p : possibleList) {
                                         Account possible = AllLists.allAccounts[p];
-                                        if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
-                                            alreadyAdded.add(possible.id);
+                                        if (possible.sex != baseAccount.sex && !heap.contains(possible)) {
+                                            //alreadyAdded.add(possible.id);
                                             heap.add(possible);
                                         }
-                                    });
-                                    while (heap.size() > limit) {
-                                        heap.poll();
-                                        int i = 0;
                                     }
+                                    //while (heap.size() > limit) {
+                                        //heap.poll();
+                                    //}
                                 }
                             }
+                            //alreadyAdded.clear();
                         }
                     }
                 }
@@ -145,9 +146,9 @@ public class NewRecommend {
             }
         }
 
-        while (heap.size() > limit) {
-            heap.poll();
-        }
+        //while (heap.size() > limit) {
+            //heap.poll();
+        //}
 
         buildResult(heap, limit, buf);
         return true;
@@ -155,15 +156,18 @@ public class NewRecommend {
 
     private void buildResult(PriorityQueue<Account> heap, int limit, StringBuilder buf) {
 
-        Account[] arr = new Account[heap.size()];
-        for (int i = 0; i < arr.length; ++i)
-            arr[i] = heap.poll();
-
+        //Account[] arr = new Account[heap.size()];
+        //for (int i = 0; i < arr.length; ++i)
+            //arr[i] = heap.poll();
+        int added = 0;
         boolean isFirst = true;
-        for (int i = arr.length - 1; i >= 0; --i) {
-            Account cur = arr[i];
+        while(!heap.isEmpty() && added<limit) {
+        //for (int i = arr.length - 1; i >= 0; --i) {
+            Account cur = heap.poll();
             if (cur.id < 1)
                 continue;
+
+            ++added;
 
             if (isFirst) {
                 buf.append("{\"id\":");

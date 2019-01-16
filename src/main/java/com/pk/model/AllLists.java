@@ -19,7 +19,6 @@ public class AllLists {
     public static int[][] fnameAccounts;
     public static int[][] snameAccounts;
 
-    public static int[][] statusAccounts  = new int[3][];
     public static int[][] birthYearsAccount;
 
     public static List<String> allEmailList = new ArrayList<>();
@@ -34,11 +33,7 @@ public class AllLists {
     public static int MIN_BIRTH_YEAR = Integer.MAX_VALUE;
     public static int MAX_BIRTH_YEAR = Integer.MAX_VALUE;
     public static int MIN_JOINED_YEAR = Integer.MAX_VALUE;
-    public static int MAX_JOINED_YEAR = Integer.MAX_VALUE;
-
-    //unsorted
-    //public static final List<Integer> joinedSortedAccounts = new ArrayList<>();
-    //public static final int[] joinedYears = new int[100];
+    public static int MAX_JOINED_YEAR = Integer.MIN_VALUE;
 
     public static List<Short>[] countryCityList; //лист городов в стране
 
@@ -55,37 +50,11 @@ public class AllLists {
     public static final HashMap<Integer, HashMap<Integer, Set<Integer>>>[][][] recommendInteresFilter = new HashMap[2][3][];
 
     //[country][city][status][sex]
-    public static HashMap<Short, int[][]>[] groupFilter;
+    public static HashMap<Short, short[][]>[] groupFilter;
 
-    public static HashMap<Short, int[][][]>[] groupFilterBirth;
-    public static HashMap<Short, int[][][]>[] groupFilterJoined;
+    public static HashMap<Short, short[][][]>[] groupFilterBirth;
+    public static HashMap<Short, short[][][]>[] groupFilterJoined;
 
-
-    public static int[] emailLowBorder = new int[26];
-    public static int[] emailHightBorder = new int[26];
-
-
-/*
-Possible 2 groups
-city, sex
-country, sex
-city, status
-country, status
-*/
-
-/*
-Possible filters
-
-Boolean sex, Byte status, String interests, Short country,
-Short city, Integer birth, String likes, Integer joined,
-
-Possible filters from CityGroups
-    status, interests, birth, likes, joined
-2 of them
- */
-
-
-    //[sex][status][country]<city><birth><joined><like><interests> = count
-    //public static final HashMap<Integer, HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>[][][] groupFilter = new HashMap[3][4][];
-    //public static final HashMap<Integer, HashMap<Integer, Set<Integer>>>[][][] recommendInteresFilter = new HashMap[2][3][];
+    public static int[][][] emailLowBorder = new int[26][26][26];
+    public static int[][][] emailHightBorder = new int[26][26][26];
 }
