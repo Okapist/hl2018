@@ -6,6 +6,7 @@ import com.pk.model.AllLists;
 
 import java.util.*;
 
+import static com.pk.model.AllLists.allEmailList;
 import static com.pk.model.AllLists.fnames;
 import static com.pk.model.AllLists.snames;
 
@@ -172,24 +173,22 @@ public class NewRecommend {
 
             buf.append(cur.id);
 
-            if (cur.email != null) {
-                buf.append(",\"email\":\"");
-                buf.append(cur.email).append("@").append(AllLists.domainList.get(cur.emailDomain));
-                buf.append("\"");
-            }
+            buf.append(",\"email\":\"");
+            buf.append(allEmailList.get(cur.email)).append("@").append(AllLists.domainList.get(cur.emailDomain));
+            buf.append("\"");
 
             buf.append(",\"status\":\"");
             buf.append(cur.getStatusText());
             buf.append("\"");
 
-            if(cur.fname > 0) {
+            if (cur.fname > 0) {
                 char[] tmp = fnames[cur.fname];
                 buf.append(",\"fname\":\"");
                 buf.append(tmp);
                 buf.append("\"");
             }
 
-            if(cur.sname > 0) {
+            if (cur.sname > 0) {
                 char[] tmp1 = snames[cur.sname];
                 buf.append(",\"sname\":\"");
                 buf.append(tmp1);
@@ -210,7 +209,6 @@ public class NewRecommend {
             }
 
             buf.append("}");
-            //--limit;
         }
     }
 }

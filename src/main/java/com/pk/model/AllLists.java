@@ -22,6 +22,8 @@ public class AllLists {
     public static int[][] statusAccounts  = new int[3][];
     public static int[][] birthYearsAccount;
 
+    public static List<String> allEmailList = new ArrayList<>();
+
     public static final HashMap<String, Integer> interests = new HashMap<>(); //прямой и обратный индекс по интересам
     public static final HashMap<Integer,String> interestsById = new HashMap<>();
 
@@ -35,11 +37,10 @@ public class AllLists {
     public static int MAX_JOINED_YEAR = Integer.MAX_VALUE;
 
     //unsorted
-    public static final List<Integer> joinedSortedAccounts = new ArrayList<>();
-    public static final int[] joinedYears = new int[100];
+    //public static final List<Integer> joinedSortedAccounts = new ArrayList<>();
+    //public static final int[] joinedYears = new int[100];
 
     public static List<Short>[] countryCityList; //лист городов в стране
-    //public static Ha<Short>[] countryCityListReversed; //set городов в стране
 
     public static final List<String> citiesList = new ArrayList<>();
     public static final List<String> countriesList = new ArrayList<>();
@@ -58,6 +59,11 @@ public class AllLists {
 
     public static HashMap<Short, int[][][]>[] groupFilterBirth;
     public static HashMap<Short, int[][][]>[] groupFilterJoined;
+
+
+    public static int[] emailLowBorder = new int[26];
+    public static int[] emailHightBorder = new int[26];
+
 
 /*
 Possible 2 groups

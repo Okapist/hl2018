@@ -68,6 +68,8 @@ public class JsonLoader {
             ++i;
         }
         System.out.println("all files processed");
+        appProxy.tempEmailIndex.clear();
+        appProxy.tempEmailIndex = null;
         System.gc();
 
         appProxy.commitInterests();

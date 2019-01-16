@@ -12,6 +12,8 @@ public class Account
 
     public char[] phone;
 
+    public char[] phoneCode;
+
     public boolean sex;
 
     public int joined;
@@ -21,7 +23,7 @@ public class Account
     public Set<Integer> interests;
     public int[] interestsArray;
 
-    public char[] email;
+    public int email;
 
     public int emailDomain;
 

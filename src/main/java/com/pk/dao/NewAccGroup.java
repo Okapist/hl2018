@@ -17,8 +17,6 @@ public class NewAccGroup {
                              Short city, Integer birth, String likes, Integer joined,
                              int limit, boolean order, StringBuilder buf) {
 
-        BaseFilter filters = new BaseFilter();
-
         boolean groupSex = false;
         boolean groupStatus = false;
         boolean groupInterests = false;
@@ -98,26 +96,6 @@ public class NewAccGroup {
                 lastCity = city;
             }
 
-/*
-                    valToInsert[0] = curSum;
-                    valToInsert[1] = groupSex?tempSex:0;
-                    valToInsert[2] = groupStatus?tempStatus:0;
-                    valToInsert[3] = groupCountry?tempCountry:0;
-                    valToInsert[4] = groupCity?tempCity:0;
-
-                    if (o1.count != o2.count)
-                        return o1.count - o2.count;
-                    if (o1.country != o2.country)
-                        return AllLists.countriesList.get(o1.country).compareTo(AllLists.countriesList.get(o2.country));
-                    if (o1.city != o2.city)
-                        return AllLists.citiesList.get(o1.city).compareTo(AllLists.citiesList.get(o2.city));
-                    if (o1.status != o2.status)
-                        return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
-                    if (o1.sex != o2.sex)
-                        return (o1.sex ? "m" : "f").compareTo(o2.sex ? "m" : "f");
-
-*/
-
             TreeSet<int[]> groupData;
             if(order) {
                 groupData = new TreeSet<>(
@@ -165,7 +143,6 @@ public class NewAccGroup {
             int tempSex = startSex;
 
             int curSum = 0;
-            //int newStartCity;
 
             while(true) {
 
@@ -310,60 +287,19 @@ public class NewAccGroup {
             return true;
         }
 
-        if (status != null) {
-            //filters.add(AllLists.statusAccounts.get(status), 0, AllLists.statusAccounts.get(status).size()-1, false);
-        }
+        //OLD CODE
+        //if(1==1)
+            //return true;
 
-        if (country != null) {
-            filters.add(AllLists.countryAccounts.get(country), 0, AllLists.countryAccounts.get(country).size()-1, false);
-        }
-
-        if (city != null) {
-            filters.add(AllLists.cityAccounts.get(city), 0, AllLists.cityAccounts.get(city).size()-1, false);
-        }
 
         Integer interestId = null;
+        int[] list = null;
+        List<Integer> listList = null;
         if (interests != null) {
             interestId = AllLists.interests.get(interests);
-            //filters.add(AllLists.interestAccounts.get(interestId), 0, AllLists.interestAccounts.get(interestId).size()-1, false);
+            list = AllLists.interestAccounts[interestId];
         }
 
-        int bStart = 0;
-        int bEnd = 0;
-        if(birth != null) {
-            bStart = getTimestamp(birth);
-            bEnd = getTimestamp(birth + 1) - 1;
-/*
-            int min=AllLists.birthYears[birth-1930];
-            int max=AllLists.birthYears[birth+1-1930];
-
-            int i = 1;
-            while (max == 0 && birth + 1 - 1930 + i < AllLists.birthYears.length) {
-                max = AllLists.birthYears[birth + 1 - 1930 + i];
-                ++i;
-            }
-
-            filters.add(AllLists.birthSortedAccounts, min, max==0?AllLists.birthSortedAccounts.size()-1:max-1, false);
-            */
-        }
-
-        int jStart = 0;
-        int jEnd = 0;
-        if(joined != null) {
-
-            jStart = getTimestamp(joined);
-            jEnd = getTimestamp(joined + 1) - 1;
-
-            int min=AllLists.joinedYears[joined-1930];
-            int max=AllLists.joinedYears[joined+1-1930];
-            int i = 1;
-            while (max == 0 && joined + 1 - 1930 + i < AllLists.joinedYears.length) {
-                max = AllLists.joinedYears[joined + 1 - 1930 + i];
-                ++i;
-            }
-
-            filters.add(AllLists.joinedSortedAccounts, min, max==0?AllLists.joinedSortedAccounts.size()-1:max-1, false);
-        }
         Integer likeId = null;
         Set<Integer> searchLikesSet = null;
         if (likes != null) {
@@ -371,14 +307,35 @@ public class NewAccGroup {
             if(likeId > AllLists.likesTO.size()) {
                 return true;
             }
-            List<Integer> accToIds = AllLists.likesTO.get(likeId);
-            searchLikesSet = new HashSet<>(accToIds);
-            filters.add(accToIds, 0, accToIds.size()-1, false);
+            listList = AllLists.likesTO.get(likeId);
+            searchLikesSet = new HashSet<>(AllLists.likesTO.get(likeId));
+        }
+
+        if(listList == null && list ==null)
+            return true;
+
+        int bStart = 0;
+        int bEnd = 0;
+        if(birth != null) {
+            bStart = getTimestamp(birth);
+            bEnd = getTimestamp(birth + 1) - 1;
+        }
+
+        int jStart = 0;
+        int jEnd = 0;
+        if(joined != null) {
+            jStart = getTimestamp(joined);
+            jEnd = getTimestamp(joined + 1) - 1;
         }
 
         HashMap<Integer, Group> formedGroups = new HashMap<>(50);
-        while (filters.hasNext()) {
-            Integer possibleId = filters.next();
+        int start = 0;
+        int end = list==null?listList.size():list.length;
+        int cur = start;
+        while (cur<end) {
+            Integer possibleId = list==null?listList.get(cur):list[cur];
+            ++cur;
+
             if (possibleId == null || possibleId < 1)
                 continue;
 
@@ -414,15 +371,12 @@ public class NewAccGroup {
                     continue;
             }
 
-            if (interests != null) {
+            if (interests != null && list == null) {
                 if (possible.interests == null || !possible.interests.contains(interestId))
                     continue;
             }
 
-            if (likes != null) {
-                if (likeId > AllLists.likesTO.size()) {
-                    return true;
-                }
+            if (likes != null && listList == null) {
                 if(!searchLikesSet.contains(possible.id)) {
                     continue;
                 }
@@ -449,16 +403,6 @@ public class NewAccGroup {
                 isFirst = false;
             }else
                 buf.append(",{\"count\":");
-
-/*
-                int[] valToInsert = new int[6];
-                valToInsert[0] = curSum;
-                valToInsert[1] = tempSex;
-                valToInsert[2] = tempStatus;
-                valToInsert[3] = tempCountry;
-                valToInsert[4] = AllLists.countryCityList[tempCountry].get(tempCity);
-                valToInsert[5] = 0;
-*/
 
             buf.append(group[0]);
 
@@ -552,13 +496,13 @@ public class NewAccGroup {
                     if (o1.count != o2.count)
                         return o1.count - o2.count;
                     if (o1.country != o2.country)
-                        return AllLists.countriesList.get(o1.country).compareTo(AllLists.countriesList.get(o2.country));
+                        return o1.country - o2.country;
                     if (o1.city != o2.city)
-                        return AllLists.citiesList.get(o1.city).compareTo(AllLists.citiesList.get(o2.city));
+                        return o1.city - o2.city;
                     if (o1.status != o2.status)
-                        return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
+                        return o1.status - o2.status;
                     if (o1.sex != o2.sex)
-                        return (o1.sex ? "m" : "f").compareTo(o2.sex ? "m" : "f");
+                        return (o1.sex?1:0) - (o2.sex?1:0);
 
                     return AllLists.interestsById.get(o1.interest).compareTo(AllLists.interestsById.get(o2.interest));
                 });
@@ -567,13 +511,13 @@ public class NewAccGroup {
                     if (o1.count != o2.count)
                         return o1.count - o2.count;
                     if (o1.country != o2.country)
-                        return AllLists.countriesList.get(o1.country).compareTo(AllLists.countriesList.get(o2.country));
+                        return o1.country - o2.country;
                     if (o1.city != o2.city)
-                        return AllLists.citiesList.get(o1.city).compareTo(AllLists.citiesList.get(o2.city));
+                        return o1.city - o2.city;
                     if (o1.status != o2.status)
-                        return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
+                        return o1.status - o2.status;
                     if (o1.sex != o2.sex)
-                        return (o1.sex ? "m" : "f").compareTo(o2.sex ? "m" : "f");
+                        return (o1.sex?1:0) - (o2.sex?1:0);
 
                     return AllLists.interestsById.get(o1.interest).compareTo(AllLists.interestsById.get(o2.interest));
                 });

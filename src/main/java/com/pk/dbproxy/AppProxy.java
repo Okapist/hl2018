@@ -18,6 +18,8 @@ public class AppProxy {
     private ArrayList<String> fnames = new ArrayList<>();
     private ArrayList<String> snames = new ArrayList<>();
 
+    public HashMap<String, Integer> tempEmailIndex = new HashMap<>();
+
     List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
 
     public AppProxy() {
@@ -34,7 +36,15 @@ public class AppProxy {
 
             if(jsonAccount.getEmail() != null) {
                 String emailParts[] = jsonAccount.getEmail().split("@");
-                account.email = emailParts[0].toCharArray();
+
+                if(tempEmailIndex.get(emailParts[0]) == null) {
+                    allEmailList.add(emailParts[0]);
+                    account.email = allEmailList.size()-1;
+                    tempEmailIndex.put(emailParts[0], allEmailList.size()-1);
+                } else {
+                    account.email = tempEmailIndex.get(emailParts[0]);
+                }
+
                 Integer domainIndex = Utils.findDomainIndex(emailParts[1].toCharArray());
                 if(domainIndex == null || domainIndex == 0) {
                     if(AllLists.domainList.size() == 0)
@@ -138,7 +148,6 @@ public class AppProxy {
                     account.interestsArray[i] = intId;
                 }
             }
-            //Arrays.sort(account.interestsArray);
             addLikes(jsonAccount);
         }
     }
@@ -172,13 +181,43 @@ public class AppProxy {
         ArrayList<String> tempCityList = new ArrayList<>(citiesList);
         Collections.sort(citiesList);
 
+        ArrayList<String> tempEmailList = new ArrayList<>(allEmailList);
+        Collections.sort(allEmailList);
+        HashMap<String, Integer> temp = new HashMap<>();
+        for (int i = 0; i < allEmailList.size(); i++) {
+            String p = allEmailList.get(i);
+            temp.put(p, i);
+        }
+
         for(com.pk.model.Account account : allAccounts) {
             if(account != null) {
                 account.country = (short) countriesList.indexOf(tempCountryList.get(account.country));
                 account.city = (short) citiesList.indexOf(tempCityList.get(account.city));
+                account.email = temp.get(tempEmailList.get(account.email));
             }
         }
 
+        //build borders
+        int maxLow = Integer.MIN_VALUE;
+        int maxHight = Integer.MIN_VALUE;
+
+        for (int i = 0; i < allEmailList.size(); i++) {
+            String email = allEmailList.get(i);
+
+            char emailStart = email.charAt(0);
+            emailHightBorder[emailStart-'a'] = Math.max(maxHight, temp.get(email));
+
+        }
+
+        for (int i = allEmailList.size()-1; i >= 0; i--) {
+            String email = allEmailList.get(i);
+
+            char emailStart = email.charAt(0);
+            emailLowBorder[emailStart-'a'] = Math.max(maxLow, temp.get(email));
+        }
+
+        temp.clear();
+        temp = null;
     }
 
     private void addLikes(Account jsonAccount) {
@@ -281,6 +320,7 @@ public class AppProxy {
             if (account.phone != null) {
                 String phone = new String(account.phone);
                 String phoneCode = phone.substring(phone.indexOf("(") + 1, phone.indexOf(")"));
+                account.phoneCode = phoneCode.toCharArray();
                 AllLists.phoneCodeAccounts.computeIfAbsent(phoneCode, p -> new ArrayList<>());
                 AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
             } else {
@@ -414,9 +454,11 @@ public class AppProxy {
         for(int i=0; i<AllLists.allAccounts.length; ++i) {
             if(AllLists.allAccounts[i] != null) {
 
+/*
                 while (AllLists.joinedSortedAccounts.size() <= i)
                     AllLists.joinedSortedAccounts.add(null);
                 AllLists.joinedSortedAccounts.set(i, i);
+*/
 
                 if(AllLists.allAccounts[i].premiumStart < Runner.curDate && AllLists.allAccounts[i].premiumEnd > Runner.curDate)
                     AllLists.premiumNowAccounts.add(i);
@@ -429,6 +471,7 @@ public class AppProxy {
             }
         }
 
+/*
         Collections.sort(AllLists.joinedSortedAccounts, (p1,p2) -> {
             if(p1 == null && p2 == null)
                 return 0;
@@ -439,7 +482,9 @@ public class AppProxy {
 
             return AllLists.allAccounts[p1].joined - AllLists.allAccounts[p2].joined;
         });
+*/
 
+/*
         int year = 1931;
         for (int i = 0; i < AllLists.joinedSortedAccounts.size(); i++) {
             if(AllLists.joinedSortedAccounts.get(i) != null) {
@@ -456,6 +501,7 @@ public class AppProxy {
                 }
             }
         }
+*/
     }
 
 

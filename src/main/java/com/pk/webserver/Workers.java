@@ -17,8 +17,14 @@ import java.util.List;
 import java.util.Map;
 
 import static com.pk.model.AllLists.allAccounts;
+import static com.pk.model.AllLists.allEmailList;
 
 public class Workers {
+
+    NewAccFilter accFilter = new NewAccFilter();
+    NewAccGroup accGroup = new NewAccGroup();
+    NewRecommend recommend = new NewRecommend();
+    NewSuggest suggest = new NewSuggest();
 
     public HttpResponseStatus filter(HttpRequest request, StringBuilder buf) {
         QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
@@ -205,7 +211,6 @@ public class Workers {
         }
 
         buf.append("{\"accounts\": [");
-        NewAccFilter accFilter = new NewAccFilter();
 
         char[][] fnameCharArr = null;
         if(fname != null && fname.size() > 0) {
@@ -328,8 +333,6 @@ public class Workers {
             return HttpResponseStatus.BAD_REQUEST;
         }
 
-        NewAccGroup accGroup = new NewAccGroup();
-
         Byte statusToFiler = null;
         if (status != null) {
             switch (status) {
@@ -436,7 +439,6 @@ public class Workers {
             return HttpResponseStatus.OK;
         }
 
-        NewRecommend recommend = new NewRecommend();
         buf.append("{\"accounts\": [");
         boolean result = recommend.recommend(accId, countryIndex, cityIndex, limit, buf);
         if(result) {
@@ -500,7 +502,6 @@ public class Workers {
             return HttpResponseStatus.BAD_REQUEST;
         }
 
-        NewSuggest suggest = new NewSuggest();
         if(accId > allAccounts.length || allAccounts[accId] == null) {
             buf.append("{}");
             return HttpResponseStatus.NOT_FOUND;
@@ -532,8 +533,16 @@ public class Workers {
     public HttpResponseStatus newAccount (HttpRequest request, StringBuilder buf) {
 
         ByteBuf body = ((FullHttpRequest) request).content();
-        Account data = gson.fromJson(body.toString(CharsetUtil.UTF_8), Account.class);
-        if(data == null || data.getId() == null || ( data.getId()<allAccounts.length && allAccounts[data.getId()] != null)) {
+        Account data = null;
+        try {
+            data = gson.fromJson(body.toString(CharsetUtil.UTF_8), Account.class);
+        } catch (Exception ex) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+        body.release();
+        String emailParts[] = data.getEmail().split("@");
+
+        if(data == null || data.getId() == null || ( data.getId()<allAccounts.length && allAccounts[data.getId()] != null) || emailParts.length != 2 || allEmailList.contains(emailParts[0])) {
             return HttpResponseStatus.BAD_REQUEST;
         }
         byte status;
@@ -549,6 +558,9 @@ public class Workers {
             default:
                 return HttpResponseStatus.BAD_REQUEST;
         }
+
+        NewAccount creator = new NewAccount();
+        creator.create(data);
 
         buf.append("{}");
         return HttpResponseStatus.CREATED;

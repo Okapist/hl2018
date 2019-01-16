@@ -64,8 +64,9 @@ public class NewAccFilter {
         int filterEndIndex = 0;
 
         //email filter
+        Integer emailDomainIndex = null;
         if (email != null && emailDomain != null && emailDomain) {
-            Integer emailDomainIndex = Utils.findDomainIndex(email);
+            emailDomainIndex = Utils.findDomainIndex(email);
             if (emailDomainIndex == null) {
                 return true;
             }
@@ -244,6 +245,8 @@ public class NewAccFilter {
             }
         }
 
+        char[] phoneCodeArr = null;
+
         if (phoneCode != null) {
             ansPhone = true;
             if(phoneExists == null){
@@ -251,6 +254,7 @@ public class NewAccFilter {
                 if(AllLists.phoneCodeAccounts.get(phoneCode) == null)
                     return true;
 
+                phoneCodeArr = phoneCode.toCharArray();
                 int tempEnd =  AllLists.phoneCodeAccounts.get(phoneCode).size();
                 if (tempEnd - tempStart < filterSize) {
                     filterStartIndex = 0;
@@ -351,12 +355,15 @@ public class NewAccFilter {
             }
         }
 */
-        if (likes != null) {
+Set<Integer> likesArr = null;
+if (likes != null) {
+    likesArr = new HashSet<>();
             for (String like : likes) {
                 int likeId = Integer.parseInt(like);
                 if(likeId >= AllLists.likesTO.size())
                     return true;
 
+                likesArr.add(likeId);
                 int tempStart = 0;
                 int tempEnd = AllLists.likesTO.get(likeId).size();
                 if (tempEnd - tempStart < filterSize) {
@@ -429,12 +436,19 @@ public class NewAccFilter {
             filterStartIndex = 0;
         }
 
-        //if(filterList != null) {
-            //filterArr = filterList.stream().mapToInt(Integer::intValue).toArray();
-        //}
+        int start = filterStartIndex;
+
+        if(filterEndIndex == allAccounts.length) {
+            if (email != null && emailLt != null) {
+                if (emailLt) {
+                    filterEndIndex = emailHightBorder[email[0] - 'a'] + 1;
+                } else {
+                    filterEndIndex = emailLowBorder[email[0] - 'a'] + 1;
+                }
+            }
+        }
 
         int index = filterEndIndex-1;
-        int start = filterStartIndex;
         while (index >= start) {
 
             Integer possibleId;
@@ -469,16 +483,16 @@ public class NewAccFilter {
 
             if(isAdd && email != null && emailLt != null) {
                 if(emailLt) {
-                    if (possible.email==null || Utils.compareCharArr(possible.email, email) >= 0)
+                    if (Utils.compareCharArr(allEmailList.get(possible.email).toCharArray(), email) >= 0)
                         continue;
                 } else {
-                    if (possible.email==null || Utils.compareCharArr(possible.email, email) <= 0)
+                    if (Utils.compareCharArr(allEmailList.get(possible.email).toCharArray(), email) <= 0)
                         continue;
                 }
             }
 
             if(isAdd && email != null && emailDomain != null) {
-                if(possible.emailDomain == 0 || possible.emailDomain != Utils.findDomainIndex(email))
+                if(possible.emailDomain == 0 || possible.emailDomain != emailDomainIndex)
                     continue;
             }
 
@@ -548,7 +562,7 @@ public class NewAccFilter {
                     }
                 } else {
                     if (possible.phone == null || AllLists.phoneCodeAccounts.get(phoneCode)==null
-                            || !AllLists.phoneCodeAccounts.get(phoneCode).contains(possible.id))
+                            || Utils.compareCharArr(phoneCodeArr, possible.phoneCode) != 0)
                         continue;
                 }
             }
@@ -644,23 +658,24 @@ public class NewAccFilter {
                 }
             }
 
-            if(isAdd && likes != null) {
-                for(String like : likes) {
+            if(isAdd && likes != null && likesArr != null) {
+
+                if (AllLists.likesAccounts.get(possible.id) == null) {
+                    isAdd = false;
+                }
+                int[] accLikes = AllLists.likesAccounts.get(possible.id);
+
+                for (Integer likeInt : likesArr) {
                     boolean founded = false;
-                    int likeInt = Integer.parseInt(like);
-                    if(AllLists.likesAccounts.get(possible.id) == null) {
-                        isAdd = false;
-                    } else {
-                        for (int likeId : AllLists.likesAccounts.get(possible.id)) {
-                            if (likeInt == likeId) {
-                                founded = true;
-                                break;
-                            }
-                        }
-                        if (!founded) {
-                            isAdd = false;
+                    for (int likeId : accLikes) {
+                        if (likeInt == likeId) {
+                            founded = true;
                             break;
                         }
+                    }
+                    if (!founded) {
+                        isAdd = false;
+                        break;
                     }
                 }
             }
@@ -689,11 +704,9 @@ public class NewAccFilter {
         }
         buf.append(account.id);
 
-        if (account.email != null) {
             buf.append(",\"email\":\"");
-            buf.append(account.email).append("@").append(AllLists.domainList.get(account.emailDomain));
+            buf.append(allEmailList.get(account.email)).append("@").append(AllLists.domainList.get(account.emailDomain));
             buf.append("\"");
-        }
 
         if (ansSex) {
             buf.append(",\"sex\":\"");
