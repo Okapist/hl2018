@@ -166,6 +166,19 @@ public class AppProxy {
                 Arrays.sort(list);
         }
 
+        ArrayList<String> tempCountryList = new ArrayList<>(countriesList);
+        Collections.sort(countriesList);
+
+        ArrayList<String> tempCityList = new ArrayList<>(citiesList);
+        Collections.sort(citiesList);
+
+        for(com.pk.model.Account account : allAccounts) {
+            if(account != null) {
+                account.country = (short) countriesList.indexOf(tempCountryList.get(account.country));
+                account.city = (short) citiesList.indexOf(tempCityList.get(account.city));
+            }
+        }
+
     }
 
     private void addLikes(Account jsonAccount) {
@@ -299,11 +312,9 @@ public class AppProxy {
 
     private void createGroupFilter() {
 
-        long total = 0;
-        long totalInt = 0;
-        groupFilter = new int[countriesList.size()][][][];
-        groupFilterBirth = new int[countriesList.size()][][][][];
-        groupFilterJoined = new int[countriesList.size()][][][][];
+        groupFilter = new HashMap[countriesList.size()];
+        groupFilterBirth = new HashMap[countriesList.size()];
+        groupFilterJoined = new HashMap[countriesList.size()];
 
         for (com.pk.model.Account account : allAccounts) {
             if (account == null)
@@ -314,17 +325,32 @@ public class AppProxy {
 
             int birth = getYear(account.birth);
             int joined = getYear(account.joined);
-            int fixedCityIndex = countryCityList[account.country].indexOf(account.city);
+            //int fixedCityIndex = countryCityList[account.country].indexOf(account.city);
 
             if(groupFilter[countryIndex] == null) {
-                groupFilter[countryIndex] = new int[countryCityList[account.country].size()][3][2];
-                groupFilterBirth[countryIndex] = new int[countryCityList[account.country].size()][3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1];
-                groupFilterJoined[countryIndex] = new int[countryCityList[account.country].size()][3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1];
+
+                groupFilter[countryIndex] = new HashMap<>();
+                groupFilterBirth[countryIndex] = new HashMap<>();
+                groupFilterJoined[countryIndex] = new HashMap<>();
+
+                //groupFilter[countryIndex] = new int[countryCityList[account.country].size()][3][2];
+                //groupFilterBirth[countryIndex] = new int[countryCityList[account.country].size()][3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1];
+                //groupFilterJoined[countryIndex] = new int[countryCityList[account.country].size()][3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1];
             }
 
-            ++groupFilter[countryIndex][fixedCityIndex][statusIndex][sexIndex];
-            ++groupFilterBirth[countryIndex][fixedCityIndex][statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
-            ++groupFilterJoined[countryIndex][fixedCityIndex][statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
+            groupFilter[countryIndex].computeIfAbsent(account.city, p-> new int[3][2]);
+            groupFilterBirth[countryIndex].computeIfAbsent(account.city, p-> new int[3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1]);
+            groupFilterJoined[countryIndex].computeIfAbsent(account.city, p-> new int[3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1]);
+
+            //groupFilter[countryIndex].put(account.city, groupFilter[countryIndex].getOrDefault())
+
+            ++groupFilter[countryIndex].get(account.city)[statusIndex][sexIndex];
+            ++groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
+            ++groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
+
+            //++groupFilter[countryIndex][fixedCityIndex][statusIndex][sexIndex];
+            //++groupFilterBirth[countryIndex][fixedCityIndex][statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
+            //++groupFilterJoined[countryIndex][fixedCityIndex][statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
         }
 
         int i = 0;

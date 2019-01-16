@@ -642,15 +642,19 @@ public class NewAccFilter {
                 for(String like : likes) {
                     boolean founded = false;
                     int likeInt = Integer.parseInt(like);
-                    for(int likeId : AllLists.likesAccounts.get(possible.id)) {
-                        if(likeInt == likeId) {
-                            founded = true;
+                    if(AllLists.likesAccounts.get(possible.id) == null) {
+                        isAdd = false;
+                    } else {
+                        for (int likeId : AllLists.likesAccounts.get(possible.id)) {
+                            if (likeInt == likeId) {
+                                founded = true;
+                                break;
+                            }
+                        }
+                        if (!founded) {
+                            isAdd = false;
                             break;
                         }
-                    }
-                    if(!founded) {
-                        isAdd = false;
-                        break;
                     }
                 }
             }

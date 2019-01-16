@@ -528,7 +528,7 @@ public class Workers {
     }
 
     public HttpResponseStatus newAccount (HttpRequest request, StringBuilder buf) {
-
+/*
         ByteBuf body = ((FullHttpRequest) request).content();
         Gson gson = new Gson();
         Account data = gson.fromJson(body.toString(CharsetUtil.UTF_8), Account.class);
@@ -552,7 +552,7 @@ public class Workers {
         //com.pk.model.Account account = new com.pk.model.Account();
         //account.id = data.getId();
 
-
+*/
         buf.append("{}");
         return HttpResponseStatus.CREATED;
     }

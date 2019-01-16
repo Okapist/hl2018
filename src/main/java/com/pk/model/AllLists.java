@@ -19,9 +19,6 @@ public class AllLists {
     public static int[][] fnameAccounts;
     public static int[][] snameAccounts;
 
-    //public static int[][] emailAscAccounts = new int[26][];
-    //public static int[][] emailDescAccounts = new int[26][];
-
     public static int[][] statusAccounts  = new int[3][];
     public static int[][] birthYearsAccount;
 
@@ -42,6 +39,7 @@ public class AllLists {
     public static final int[] joinedYears = new int[100];
 
     public static List<Short>[] countryCityList; //лист городов в стране
+    //public static Ha<Short>[] countryCityListReversed; //set городов в стране
 
     public static final List<String> citiesList = new ArrayList<>();
     public static final List<String> countriesList = new ArrayList<>();
@@ -56,10 +54,10 @@ public class AllLists {
     public static final HashMap<Integer, HashMap<Integer, Set<Integer>>>[][][] recommendInteresFilter = new HashMap[2][3][];
 
     //[country][city][status][sex]
-    public static int[][][][] groupFilter;
+    public static HashMap<Short, int[][]>[] groupFilter;
 
-    public static int[][][][][] groupFilterBirth;
-    public static int[][][][][] groupFilterJoined;
+    public static HashMap<Short, int[][][]>[] groupFilterBirth;
+    public static HashMap<Short, int[][][]>[] groupFilterJoined;
 
 /*
 Possible 2 groups
