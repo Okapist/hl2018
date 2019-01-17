@@ -1,6 +1,11 @@
 package com.pk.webserver;
 
-import com.google.gson.Gson;
+import com.jsoniter.JsonIterator;
+import com.jsoniter.output.EncodingMode;
+import com.jsoniter.output.JsonStream;
+import com.jsoniter.spi.Decoder;
+import com.jsoniter.spi.DecodingMode;
+import com.jsoniter.spi.JsoniterSpi;
 import com.pk.dao.*;
 import com.pk.jsonmodel.Account;
 import com.pk.model.AllLists;
@@ -9,15 +14,13 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.util.CharsetUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 
 import static com.pk.model.AllLists.allAccounts;
 import static com.pk.model.AllLists.allEmailList;
+import static com.pk.model.AllLists.usedEmailDomain;
 
 public class Workers {
 
@@ -25,6 +28,11 @@ public class Workers {
     NewAccGroup accGroup = new NewAccGroup();
     NewRecommend recommend = new NewRecommend();
     NewSuggest suggest = new NewSuggest();
+
+    static {
+        JsonIterator.setMode(DecodingMode.DYNAMIC_MODE_AND_MATCH_FIELD_WITH_HASH);
+        JsonStream.setMode(EncodingMode.DYNAMIC_MODE);
+    }
 
     public HttpResponseStatus filter(HttpRequest request, StringBuilder buf) {
         QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
@@ -528,18 +536,27 @@ public class Workers {
         }
     }
 
-    private static Gson gson = new Gson();
+    private byte[] readBytes(ByteBuf byteBuf) {
+        byte[] bytes = new byte[byteBuf.readableBytes()];
+        byteBuf.readBytes(bytes);
+        return bytes;
+    }
 
     public HttpResponseStatus newAccount (HttpRequest request, StringBuilder buf) {
 
         ByteBuf body = ((FullHttpRequest) request).content();
-        Account data = null;
+
+        byte[] jsonData = readBytes(body);
+
+        JsonIterator iter = JsonIterator.parse(jsonData);
+        Account data;
         try {
-            data = gson.fromJson(body.toString(CharsetUtil.UTF_8), Account.class);
-        } catch (Exception ex) {
+            data = iter.read(Account.class);
+        } catch (Exception e) {
             body.release();
             return HttpResponseStatus.BAD_REQUEST;
         }
+
         body.release();
         String emailParts[];
         if(data==null || data.getEmail() == null || data.getEmail().indexOf('@') < 1)
@@ -551,9 +568,10 @@ public class Workers {
             return HttpResponseStatus.BAD_REQUEST;
         }
 
-        if(data == null || data.getId() == null || ( data.getId()<allAccounts.length && allAccounts[data.getId()] != null) || emailParts.length != 2 || allEmailList.contains(emailParts[0])) {
+        if(data.getId() == null || ( data.getId()<allAccounts.length && allAccounts[data.getId()] != null) || emailParts.length != 2) {
             return HttpResponseStatus.BAD_REQUEST;
         }
+
         byte status;
         switch (data.getStatus()) {
             case "свободны":
@@ -569,18 +587,81 @@ public class Workers {
         }
 
         NewAccount creator = new NewAccount();
-        creator.create(data);
+        HttpResponseStatus toReturn = creator.create(data);
 
         buf.append("{}");
-        return HttpResponseStatus.CREATED;
-    }
-
-    public HttpResponseStatus likes(HttpRequest request, StringBuilder buf) {
-        buf.append("{}");
-        return HttpResponseStatus.ACCEPTED;
+        return toReturn;
     }
 
     public HttpResponseStatus refresh(HttpRequest request, StringBuilder buf) {
+
+        QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
+        Map<String, List<String>> params = queryStringDecoder.parameters();
+        int accId;
+        try{
+            accId = Integer.parseInt(request.uri().toString().split("/")[2]);
+        } catch (Exception ex) {
+            buf.append("{}");
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+        if(accId == 0 || accId>allAccounts.length || allAccounts[accId] == null) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+
+        ByteBuf body = ((FullHttpRequest) request).content();
+
+        byte[] jsonData = readBytes(body);
+
+        JsonIterator iter = JsonIterator.parse(jsonData);
+        Account data;
+        try {
+            data = iter.read(Account.class);
+        } catch (Exception e) {
+            body.release();
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+
+        body.release();
+        String emailParts[] = null;
+        if(data==null)
+            return HttpResponseStatus.BAD_REQUEST;
+
+        if(data.getEmail() == null || data.getEmail().indexOf('@') < 1) {
+            try {
+                emailParts = data.getEmail().split("@");
+            } catch (Exception ex) {
+                return HttpResponseStatus.BAD_REQUEST;
+            }
+        }
+
+        if(data.getEmail()!= null && (emailParts==null || emailParts.length != 2 || allEmailList.contains(emailParts[0]))) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+
+        byte status = -1;
+        if(data.getStatus() != null) {
+            switch (data.getStatus()) {
+                case "свободны":
+                    status = 1;
+                    break;
+                case "всё сложно":
+                    status = 2;
+                    break;
+                case "заняты":
+                    status = 3;
+                default:
+                    return HttpResponseStatus.BAD_REQUEST;
+            }
+        }
+
+        EditAccount editAccount = new EditAccount();
+        HttpResponseStatus toReturn = editAccount.edit(accId, emailParts, status, data);
+
+        buf.append("{}");
+        return toReturn;
+    }
+
+    public HttpResponseStatus likes(HttpRequest request, StringBuilder buf) {
         buf.append("{}");
         return HttpResponseStatus.ACCEPTED;
     }

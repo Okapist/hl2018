@@ -54,6 +54,13 @@ public class AppProxy {
                     domainIndex = AllLists.domainList.size()-1;
                 }
                 account.emailDomain = domainIndex;
+
+                int hash = account.emailDomain;
+                hash |= account.email<<7;
+                if(usedEmailDomain.contains(hash)) {
+                    System.out.println("WHONG HASH CALC " + hash);
+                }
+                usedEmailDomain.add(hash);
             }
 
             if(jsonAccount.getFname() != null) {
@@ -181,6 +188,9 @@ public class AppProxy {
         ArrayList<String> tempCityList = new ArrayList<>(citiesList);
         Collections.sort(citiesList);
 
+        ArrayList<char[]> tempDomainList = new ArrayList<>(domainList);
+        Collections.sort(domainList, Utils::compareCharArr);
+
         ArrayList<String> tempEmailList = new ArrayList<>(allEmailList);
         Collections.sort(allEmailList);
         HashMap<String, Integer> temp = new HashMap<>();
@@ -194,6 +204,8 @@ public class AppProxy {
                 account.country = (short) countriesList.indexOf(tempCountryList.get(account.country));
                 account.city = (short) citiesList.indexOf(tempCityList.get(account.city));
                 account.email = temp.get(tempEmailList.get(account.email));
+
+                account.emailDomain = domainList.indexOf(tempDomainList.get(account.emailDomain));
             }
         }
 

@@ -5,6 +5,7 @@ import com.pk.model.AllLists;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -27,6 +28,26 @@ public class Utils {
             }
         }
         return null;
+    }
+
+    public static Short findCityIndexBinary(String name) {
+
+        if(name == null || "".equals(name))
+            return null;
+
+        List<String> citiesList = AllLists.citiesList;
+        int index = Collections.binarySearch(citiesList, name);
+        return (index>-1?(short)index:null);
+    }
+
+    public static Short findCountryIndexBinary(String name) {
+
+        if(name == null || "".equals(name))
+            return null;
+
+        List<String> countryList = AllLists.countriesList;
+        int index = Collections.binarySearch(countryList, name);
+        return (index>-1?(short)index:null);
     }
 
     public static Short findCityIndex(String name) {
@@ -58,6 +79,17 @@ public class Utils {
         }
         return null;
     }
+
+    public static Integer findDomainIndexBinary(char[] name) {
+
+        if(name == null || "".equals(name))
+            return null;
+
+        List<char[]> domainList = AllLists.domainList;
+        int index = Collections.binarySearch(domainList, name, Utils::compareCharArr);
+        return (index>-1?index:null);
+    }
+
 
     public static Integer findDomainIndex(char[] name) {
 

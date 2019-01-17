@@ -1,9 +1,9 @@
 package com.pk.jsonmodel;
 
-import com.pk.Runner;
 
 public class Account
 {
+
     private Integer id;
 
     private Integer birth;

@@ -65,7 +65,7 @@ public class NewAccFilter {
         //email filter
         Integer emailDomainIndex = null;
         if (email != null && emailDomain != null && emailDomain) {
-            emailDomainIndex = Utils.findDomainIndex(email);
+            emailDomainIndex = Utils.findDomainIndexBinary(email);
             if (emailDomainIndex == null) {
                 return true;
             }

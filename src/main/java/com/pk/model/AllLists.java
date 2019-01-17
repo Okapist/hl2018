@@ -57,4 +57,6 @@ public class AllLists {
 
     public static int[][][] emailLowBorder = new int[26][26][26];
     public static int[][][] emailHightBorder = new int[26][26][26];
+
+    public static Set<Integer> usedEmailDomain = new HashSet<>();
 }
