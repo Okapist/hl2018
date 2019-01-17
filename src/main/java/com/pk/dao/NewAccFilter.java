@@ -1,7 +1,6 @@
 package com.pk.dao;
 
 import com.pk.Runner;
-import com.pk.collectors.AccauntCollector;
 import com.pk.model.Account;
 import com.pk.model.AllLists;
 
@@ -78,45 +77,6 @@ public class NewAccFilter {
                 filterSize = AllLists.domainAccounts.get(emailDomainIndex).size();
             }
         }
-        /*
-        if(email != null && emailLt!= null) {
-            if(!emailLt) {
-                int tempStart = 0;
-                int tempEnd = emailAscAccounts[email[0] - 'a'].length;
-                if(tempEnd - tempStart < filterSize) {
-                    filterStartIndex = tempStart;
-                    filterEndIndex = tempEnd;
-                    filterList = null;
-                    filterArr = emailAscAccounts[email[0] - 'a'];
-                    filterSize = tempEnd - tempStart;
-                }
-            } else {
-                int tempStart = 0;
-                int tempEnd = emailDescAccounts[email[0] - 'a'].length;
-                if(tempEnd - tempStart < filterSize) {
-                    filterStartIndex = tempStart;
-                    filterEndIndex = tempEnd;
-                    filterList = null;
-                    filterArr = emailDescAccounts[email[0] - 'a'];
-                    filterSize = tempEnd - tempStart;
-                }
-            }
-        }
-        */
-/*
-        if (status != null) {
-            ansStatus = true;
-            if(statusEq) {
-                if(statusAccounts[status-1].length < filterSize) {
-                    filterStartIndex = 0;
-                    filterEndIndex = statusAccounts[status-1].length;
-                    filterList = null;
-                    filterArr = statusAccounts[status-1];
-                    filterSize = statusAccounts[status-1].length;
-                }
-            }
-        }
-*/
 
         if (status != null) {
             ansStatus = true;
@@ -338,29 +298,32 @@ public class NewAccFilter {
                 }
             }
         }
-/*
+
         if (interests != null) {
-            if (interestsAll != null) {
+            if (interestsAll != null && interestsAll) {
                 for (int interest : interestsInt) {
+                    if(interest < 0 || interest >= AllLists.interestAccounts.length)
+                        return true;
+
                     int tempStart = 0;
-                    int tempEnd = AllLists.interestAccounts.get(interest).size();
+                    int tempEnd = AllLists.interestAccounts[interest].length;
                     if (tempEnd - tempStart < filterSize) {
                         filterStartIndex = 0;
                         filterEndIndex = tempEnd;
-                        filterList = AllLists.interestAccounts.get(interest);
-                        filterArr = null;
+                        filterList = null;
+                        filterArr = AllLists.interestAccounts[interest];
                         filterSize = tempEnd - tempStart;
                     }
                 }
             }
         }
-*/
-Set<Integer> likesArr = null;
-if (likes != null) {
-    likesArr = new HashSet<>();
+
+        Set<Integer> likesArr = null;
+        if (likes != null) {
+            likesArr = new HashSet<>();
             for (String like : likes) {
                 int likeId = Integer.parseInt(like);
-                if(likeId >= AllLists.likesTO.size())
+                if (likeId >= AllLists.likesTO.size())
                     return true;
 
                 likesArr.add(likeId);

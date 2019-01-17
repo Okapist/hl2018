@@ -52,18 +52,18 @@ public class NewAccGroup {
             int birthYear = Integer.MAX_VALUE;
             if (birth != null) {
                 birthYear = birth;
-                if(birthYear > MAX_BIRTH_YEAR)
+                if (birthYear > MAX_BIRTH_YEAR)
                     return true;
-                if(birthYear < MIN_BIRTH_YEAR)
+                if (birthYear < MIN_BIRTH_YEAR)
                     return true;
             }
 
             int joinedYear = Integer.MAX_VALUE;
             if (joined != null) {
                 joinedYear = joined;
-                if(joinedYear > MAX_JOINED_YEAR)
+                if (joinedYear > MAX_JOINED_YEAR)
                     return true;
-                if(joinedYear < MIN_JOINED_YEAR)
+                if (joinedYear < MIN_JOINED_YEAR)
                     return true;
             }
 
@@ -74,14 +74,14 @@ public class NewAccGroup {
 
             int startSex = 0;
             if (sex != null) {
-                startSex = sex?1:0;
+                startSex = sex ? 1 : 0;
                 lastSex = startSex;
             }
 
             int startStatus = 0;
             if (status != null) {
-                startStatus = status-1;
-                lastStatus = status-1;
+                startStatus = status - 1;
+                lastStatus = status - 1;
             }
 
             int startCountry = 0;
@@ -97,7 +97,7 @@ public class NewAccGroup {
             }
 
             TreeSet<int[]> groupData;
-            if(order) {
+            if (order) {
                 groupData = new TreeSet<>(
                         (p1, p2) -> {
                             if (p1[0] != p2[0])
@@ -110,7 +110,7 @@ public class NewAccGroup {
                                 return p1[4] - p2[4];
 
                             if (p1[2] != p2[2])
-                                return Utils.getStatusText((byte) (p1[2]+1)).compareTo(Utils.getStatusText((byte) (p2[2]+1)));
+                                return Utils.getStatusText((byte) (p1[2] + 1)).compareTo(Utils.getStatusText((byte) (p2[2] + 1)));
 
                             if (p1[1] != p2[1])
                                 return p1[1] - p2[1];
@@ -129,7 +129,7 @@ public class NewAccGroup {
                                 return p1[4] - p2[4];
 
                             if (p1[2] != p2[2])
-                                return Utils.getStatusText((byte) (p1[2]+1)).compareTo(Utils.getStatusText((byte) (p2[2]+1)));
+                                return Utils.getStatusText((byte) (p1[2] + 1)).compareTo(Utils.getStatusText((byte) (p2[2] + 1)));
 
                             if (p1[1] != p2[1])
                                 return p1[1] - p2[1];
@@ -144,144 +144,19 @@ public class NewAccGroup {
 
             int curSum = 0;
 
-            while(true) {
-
-                if(groupFilterBirth[tempCountry].get(shortCache[tempCity]) != null) {
-                    if (birth != null) {
-                        curSum += groupFilterBirth[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][birthYear - MIN_BIRTH_YEAR];
-                    } else {
-                        if (joined != null) {
-                            curSum += groupFilterJoined[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][joinedYear - MIN_JOINED_YEAR];
-                        } else {
-                            curSum += groupFilter[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex];
-                        }
-                    }
-                }
-
-                if(!groupSex && tempSex < lastSex) {
-                    ++tempSex;
-                    continue;
-                }
-                if(!groupStatus && tempStatus<lastStatus) {
-                    if(!groupSex)
-                        tempSex = startSex;
-
-                    ++tempStatus;
-                    continue;
-                }
-
-                if(!groupCity && tempCity<lastCity) {
-                    ++tempCity;
-
-                    if(!groupSex)
-                        tempSex = startSex;
-                    if(!groupStatus)
-                        tempStatus = startStatus;
-                    continue;
-                }
-
-                if(!groupCountry && tempCountry<lastCountry) {
-                    ++tempCountry;
-
-                    if(!groupSex)
-                        tempSex = startSex;
-                    if(!groupStatus)
-                        tempStatus = startStatus;
-                    if(!groupCity)
-                        tempCity = startCity;
-                    continue;
-                }
-
-                if(curSum >0) {
-                    int[] valToInsert = new int[6];
-                    valToInsert[0] = curSum;
-                    valToInsert[1] = groupSex?tempSex:0;
-                    valToInsert[2] = groupStatus?tempStatus:0;
-                    valToInsert[3] = groupCountry?tempCountry:0;
-                    valToInsert[4] = groupCity?tempCity:0;
-                    valToInsert[5] = 0;
-                    groupData.add(valToInsert);
-                    curSum = 0;
-                }
-
-                if(groupSex && tempSex < lastSex) {
-                    ++tempSex;
-
-                    if(!groupSex)
-                        tempSex = startSex;
-                    if(!groupStatus)
-                        tempStatus = startStatus;
-                    if(!groupCity)
-                        tempCity = startCity;
-                    if(!groupCountry) {
-                        tempCountry = startCountry;
-                    }
-
-                    continue;
-                }
-                if(groupStatus && tempStatus<lastStatus) {
-                    if(groupSex)
-                        tempSex = startSex;
-
-                    if(!groupSex)
-                        tempSex = startSex;
-                    if(!groupStatus)
-                        tempStatus = startStatus;
-                    if(!groupCity)
-                        tempCity = startCity;
-                    if(!groupCountry) {
-                        tempCountry = startCountry;
-                    }
-
-                    ++tempStatus;
-                    continue;
-                }
-
-                if(groupCity && tempCity<lastCity) {
-                    ++tempCity;
-
-                    if(groupSex)
-                        tempSex = startSex;
-                    if(groupStatus)
-                        tempStatus = startStatus;
-
-                    if(!groupSex)
-                        tempSex = startSex;
-                    if(!groupStatus)
-                        tempStatus = startStatus;
-                    if(!groupCity)
-                        tempCity = startCity;
-                    if(!groupCountry) {
-                        tempCountry = startCountry;
-                    }
-
-                    continue;
-                }
-
-                if(groupCountry && tempCountry<lastCountry) {
-                    ++tempCountry;
-
-                    if(groupSex)
-                        tempSex = startSex;
-                    if(groupStatus)
-                        tempStatus = startStatus;
-                    if(groupCity)
-                        tempCity = startCity;
-
-                    if(!groupSex)
-                        tempSex = startSex;
-                    if(!groupStatus)
-                        tempStatus = startStatus;
-                    if(!groupCity)
-                        tempCity = startCity;
-                    if(!groupCountry) {
-                        tempCountry = startCountry;
-                    }
-
-                    continue;
-                }
-
-                break;
+            if (!groupCity) {
+                generateNonCityGroup(birth, joined, groupSex, groupStatus, groupCountry, birthYear, joinedYear, lastCountry,
+                        lastSex, lastStatus, startSex, startStatus, startCountry, (startCity==0?-1:startCity), groupData, tempCountry,
+                        tempStatus, tempSex, curSum);
+            } else {
+                if (groupCity && !groupCountry)
+                    generateCityNonCountry(birth, joined, groupSex, groupStatus, birthYear, joinedYear, lastCountry,
+                            lastSex, lastStatus, startSex, startStatus, startCountry, (startCity==0?-1:startCity), groupData, tempCountry,
+                            tempStatus, tempSex, curSum);
+                else
+                    generateCommon(birth, joined, groupSex, groupStatus, groupCountry, groupCity, birthYear, joinedYear, lastCountry, lastCity,
+                            lastSex, lastStatus, startSex, startStatus, startCountry, startCity, groupData, tempCountry, tempCity, tempStatus,
+                            tempSex, curSum);
             }
             buildAnswer(groupData, limit, groupSex, groupStatus, groupCountry, groupCity, groupInterests, buf);
             return true;
@@ -390,6 +265,407 @@ public class NewAccGroup {
         buildAnswer(sorted, limit, groupSex, groupStatus, groupCountry, groupCity, groupInterests, buf);
         return true;
     }
+
+    private void generateCommon(Integer birth, Integer joined, boolean groupSex, boolean groupStatus, boolean groupCountry, boolean groupCity,
+                                int birthYear, int joinedYear, int lastCountry, int lastCity, int lastSex, int lastStatus, int startSex,
+                                int startStatus, int startCountry, int startCity, TreeSet<int[]> groupData, int tempCountry, int tempCity,
+                                int tempStatus, int tempSex, int curSum) {
+        while(true) {
+
+            if(groupFilterBirth[tempCountry].get(shortCache[tempCity]) != null) {
+                if (birth != null) {
+                    curSum += groupFilterBirth[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][birthYear - MIN_BIRTH_YEAR];
+                } else {
+                    if (joined != null) {
+                        curSum += groupFilterJoined[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][joinedYear - MIN_JOINED_YEAR];
+                    } else {
+                        curSum += groupFilter[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex];
+                    }
+                }
+            }
+
+            if(!groupSex && tempSex < lastSex) {
+                ++tempSex;
+                continue;
+            }
+            if(!groupStatus && tempStatus<lastStatus) {
+                if(!groupSex)
+                    tempSex = startSex;
+
+                ++tempStatus;
+                continue;
+            }
+
+            if(!groupCity && tempCity<lastCity) {
+                ++tempCity;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                continue;
+            }
+
+            if(!groupCountry && tempCountry<lastCountry) {
+                ++tempCountry;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                if(!groupCity)
+                    tempCity = startCity;
+                continue;
+            }
+
+            if(curSum >0) {
+                int[] valToInsert = new int[6];
+                valToInsert[0] = curSum;
+                valToInsert[1] = groupSex?tempSex:0;
+                valToInsert[2] = groupStatus?tempStatus:0;
+                valToInsert[3] = groupCountry?tempCountry:0;
+                valToInsert[4] = groupCity?tempCity:0;
+                valToInsert[5] = 0;
+                groupData.add(valToInsert);
+                curSum = 0;
+            }
+
+            if(groupSex && tempSex < lastSex) {
+                ++tempSex;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                if(!groupCity)
+                    tempCity = startCity;
+                if(!groupCountry) {
+                    tempCountry = startCountry;
+                }
+
+                continue;
+            }
+            if(groupStatus && tempStatus<lastStatus) {
+                if(groupSex)
+                    tempSex = startSex;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                if(!groupCity)
+                    tempCity = startCity;
+                if(!groupCountry) {
+                    tempCountry = startCountry;
+                }
+
+                ++tempStatus;
+                continue;
+            }
+
+            if(groupCity && tempCity<lastCity) {
+                ++tempCity;
+
+                if(groupSex)
+                    tempSex = startSex;
+                if(groupStatus)
+                    tempStatus = startStatus;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                if(!groupCity)
+                    tempCity = startCity;
+                if(!groupCountry) {
+                    tempCountry = startCountry;
+                }
+
+                continue;
+            }
+
+            if(groupCountry && tempCountry<lastCountry) {
+                ++tempCountry;
+
+                if(groupSex)
+                    tempSex = startSex;
+                if(groupStatus)
+                    tempStatus = startStatus;
+                if(groupCity)
+                    tempCity = startCity;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                if(!groupCity)
+                    tempCity = startCity;
+                if(!groupCountry) {
+                    tempCountry = startCountry;
+                }
+
+                continue;
+            }
+
+            break;
+        }
+    }
+
+    private void generateCityNonCountry(Integer birth, Integer joined, boolean groupSex, boolean groupStatus,
+                                int birthYear, int joinedYear, int lastCountry, int lastSex, int lastStatus, int startSex,
+                                int startStatus, int startCountry, int filterCity, TreeSet<int[]> groupData, int tempCountry,
+                                int tempStatus, int tempSex, int curSum) {
+
+        int lastCity = citiesList.size()-1;
+        int tempCity = 0;
+        while (true) {
+
+            if ((filterCity==-1 || filterCity==tempCity) && groupFilterBirth[tempCountry].get(shortCache[tempCity]) != null) {
+                if (birth != null) {
+                    curSum += groupFilterBirth[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][birthYear - MIN_BIRTH_YEAR];
+                } else {
+                    if (joined != null) {
+                        curSum += groupFilterJoined[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][joinedYear - MIN_JOINED_YEAR];
+                    } else {
+                        curSum += groupFilter[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex];
+                    }
+                }
+            }
+
+            if (!groupSex && tempSex < lastSex) {
+                ++tempSex;
+                continue;
+            }
+            if (!groupStatus && tempStatus < lastStatus) {
+                if (!groupSex)
+                    tempSex = startSex;
+
+                ++tempStatus;
+                continue;
+            }
+
+            if (tempCountry < lastCountry) {
+                ++tempCountry;
+
+                while (tempCountry < lastCountry && groupFilterBirth[tempCountry].get(shortCache[tempCity]) == null)
+                    ++tempCountry;
+
+                if (!groupSex)
+                    tempSex = startSex;
+                if (!groupStatus)
+                    tempStatus = startStatus;
+                continue;
+            }
+
+            if (curSum > 0) {
+                int[] valToInsert = new int[6];
+                valToInsert[0] = curSum;
+                valToInsert[1] = groupSex ? tempSex : 0;
+                valToInsert[2] = groupStatus ? tempStatus : 0;
+                valToInsert[3] = 0;
+                valToInsert[4] = tempCity;
+                valToInsert[5] = 0;
+                groupData.add(valToInsert);
+                curSum = 0;
+            }
+
+            if (groupSex && tempSex < lastSex) {
+                ++tempSex;
+
+                if (!groupSex)
+                    tempSex = startSex;
+                if (!groupStatus)
+                    tempStatus = startStatus;
+                tempCountry = startCountry;
+
+                while (tempCountry < lastCountry && groupFilterBirth[tempCountry].get(shortCache[tempCity]) == null)
+                    ++tempCountry;
+
+                continue;
+            }
+            if (groupStatus && tempStatus < lastStatus) {
+                if (groupSex)
+                    tempSex = startSex;
+
+                if (!groupSex)
+                    tempSex = startSex;
+                if (!groupStatus)
+                    tempStatus = startStatus;
+
+                tempCountry = startCountry;
+
+                while (tempCountry < lastCountry && groupFilterBirth[tempCountry].get(shortCache[tempCity]) == null)
+                    ++tempCountry;
+
+                ++tempStatus;
+                continue;
+            }
+
+            if (tempCity < lastCity) {
+                ++tempCity;
+
+                if (groupSex)
+                    tempSex = startSex;
+                if (groupStatus)
+                    tempStatus = startStatus;
+
+                if (!groupSex)
+                    tempSex = startSex;
+                if (!groupStatus)
+                    tempStatus = startStatus;
+                tempCountry = startCountry;
+
+                while (tempCountry < lastCountry && groupFilterBirth[tempCountry].get(shortCache[tempCity]) == null)
+                    ++tempCountry;
+
+                continue;
+            }
+
+            break;
+        }
+    }
+
+    private void generateNonCityGroup(Integer birth, Integer joined, boolean groupSex, boolean groupStatus, boolean groupCountry, int birthYear,
+                                      int joinedYear, int lastCountry, int lastSex, int lastStatus, int startSex, int startStatus,
+                                      int startCountry, int filterCity, TreeSet<int[]> groupData, int tempCountry, int tempStatus,
+                                      int tempSex, int curSum) {
+
+        Set<Short> curCountryCityList = groupFilterBirth[tempCountry].keySet();
+        Iterator<Short> cityIterator = curCountryCityList.iterator();
+        int tempCity = cityIterator.next();
+        while(true) {
+
+            while (filterCity != -1 && tempCity!= filterCity && cityIterator.hasNext())
+                tempCity = cityIterator.next();
+
+            if((filterCity==-1 || tempCity==filterCity)) {
+
+                if (groupFilterBirth[tempCountry].get(shortCache[tempCity]) != null) {
+                    if (birth != null) {
+                        curSum += groupFilterBirth[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][birthYear - MIN_BIRTH_YEAR];
+                    } else {
+                        if (joined != null) {
+                            curSum += groupFilterJoined[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex][joinedYear - MIN_JOINED_YEAR];
+                        } else {
+                            curSum += groupFilter[tempCountry].get(shortCache[tempCity])[tempStatus][tempSex];
+                        }
+                    }
+                }
+
+                if (!groupSex && tempSex < lastSex) {
+                    ++tempSex;
+                    continue;
+                }
+                if (!groupStatus && tempStatus < lastStatus) {
+                    if (!groupSex)
+                        tempSex = startSex;
+
+                    ++tempStatus;
+                    continue;
+                }
+            }
+
+            if(cityIterator.hasNext()) {
+                tempCity = cityIterator.next();
+
+                while (filterCity != -1 && tempCity!= filterCity && cityIterator.hasNext())
+                    tempCity = cityIterator.next();
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                continue;
+            }
+
+            if(!groupCountry && tempCountry<lastCountry) {
+                ++tempCountry;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+
+                curCountryCityList = groupFilter[tempCountry].keySet();
+                cityIterator = curCountryCityList.iterator();
+                tempCity = cityIterator.next();
+                continue;
+            }
+
+            if(curSum >0) {
+                int[] valToInsert = new int[6];
+                valToInsert[0] = curSum;
+                valToInsert[1] = groupSex?tempSex:0;
+                valToInsert[2] = groupStatus?tempStatus:0;
+                valToInsert[3] = groupCountry?tempCountry:0;
+                valToInsert[4] = 0;
+                valToInsert[5] = 0;
+                groupData.add(valToInsert);
+                curSum = 0;
+            }
+
+            if(groupSex && tempSex < lastSex) {
+                ++tempSex;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                if(!groupCountry) {
+                    tempCountry = startCountry;
+                }
+
+                curCountryCityList = groupFilter[tempCountry].keySet();
+                cityIterator = curCountryCityList.iterator();
+                tempCity = cityIterator.next();
+
+                continue;
+            }
+            if(groupStatus && tempStatus<lastStatus) {
+                if(groupSex)
+                    tempSex = startSex;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+                if(!groupCountry) {
+                    tempCountry = startCountry;
+                }
+
+                curCountryCityList = groupFilter[tempCountry].keySet();
+                cityIterator = curCountryCityList.iterator();
+                tempCity = cityIterator.next();
+
+                ++tempStatus;
+                continue;
+            }
+
+            if(groupCountry && tempCountry<lastCountry) {
+                ++tempCountry;
+
+                if(groupSex)
+                    tempSex = startSex;
+                if(groupStatus)
+                    tempStatus = startStatus;
+
+                if(!groupSex)
+                    tempSex = startSex;
+                if(!groupStatus)
+                    tempStatus = startStatus;
+
+                curCountryCityList = groupFilter[tempCountry].keySet();
+                cityIterator = curCountryCityList.iterator();
+                tempCity = cityIterator.next();
+
+                continue;
+            }
+
+            break;
+        }
+    }
+
+
 
     private void buildAnswer(TreeSet<int[]> groups, int limit,
                              boolean groupSex, boolean groupStatus, boolean groupCountry, boolean groupCity, boolean groupInterests, StringBuilder buf) {

@@ -542,6 +542,9 @@ public class Workers {
         }
         body.release();
         String emailParts[];
+        if(data==null || data.getEmail() == null || data.getEmail().indexOf('@') < 1)
+            return HttpResponseStatus.BAD_REQUEST;
+
         try {
             emailParts = data.getEmail().split("@");
         } catch (Exception ex) {

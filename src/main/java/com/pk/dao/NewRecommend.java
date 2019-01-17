@@ -74,7 +74,7 @@ public class NewRecommend {
         int status = 0;
         final int startCountry = country == null ? 0 : searchCountry;
         final int toAddCountry = searchCountry > 0 ? searchCountry : 1;
-        //final Set<Integer> alreadyAdded = new HashSet<>();
+        final Set<Integer> alreadyAdded = new HashSet<>();
 
         while (true) {
             final HashMap<Integer, HashMap<Integer, Set<Integer>>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
@@ -90,17 +90,14 @@ public class NewRecommend {
                             if (possibleList != null) {
                                 for (Integer p : possibleList) {
                                     Account possible = AllLists.allAccounts[p];
-                                    if (possible.sex != baseAccount.sex && !heap.contains(possible)) {
-                                        //alreadyAdded.add(possible.id);
+                                    if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
+                                        alreadyAdded.add(possible.id);
                                         heap.add(possible);
                                     }
                                 }
-                                //while (heap.size() > limit) {
-                                    //heap.poll();
-                                //}
                             }
                         }
-                        //alreadyAdded.clear();
+                        alreadyAdded.clear();
                     }
                 } else {
                     final Set<Integer> cityList = toSearch[curCountry].keySet();
@@ -115,17 +112,14 @@ public class NewRecommend {
                                 if (possibleList != null) {
                                     for (Integer p : possibleList) {
                                         Account possible = AllLists.allAccounts[p];
-                                        if (possible.sex != baseAccount.sex && !heap.contains(possible)) {
-                                            //alreadyAdded.add(possible.id);
+                                        if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
+                                            alreadyAdded.add(possible.id);
                                             heap.add(possible);
                                         }
                                     }
-                                    //while (heap.size() > limit) {
-                                        //heap.poll();
-                                    //}
                                 }
                             }
-                            //alreadyAdded.clear();
+                            alreadyAdded.clear();
                         }
                     }
                 }
