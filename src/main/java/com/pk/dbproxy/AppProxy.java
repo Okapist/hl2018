@@ -19,6 +19,7 @@ public class AppProxy {
     private ArrayList<String> snames = new ArrayList<>();
 
     public HashMap<String, Integer> tempEmailIndex = new HashMap<>();
+    private Set<Integer> tempUsedEmails = new HashSet<>(1_100_000);
 
     List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
 
@@ -57,10 +58,10 @@ public class AppProxy {
 
                 int hash = account.emailDomain;
                 hash |= account.email<<7;
-                if(usedEmailDomain.contains(hash)) {
+                if(tempUsedEmails.contains(hash)) {
                     System.out.println("WHONG HASH CALC " + hash);
                 }
-                usedEmailDomain.add(hash);
+                tempUsedEmails.add(hash);
             }
 
             if(jsonAccount.getFname() != null) {
@@ -670,5 +671,17 @@ public class AppProxy {
 
         tempIinterestAccounts.clear();
         tempIinterestAccounts = null;
+    }
+
+    public void commitUsedEmails() {
+        usedEmailDomain = new int[tempUsedEmails.size()];
+        int index = 0;
+        for(Integer i : tempUsedEmails) {
+            usedEmailDomain[index] = i;
+        }
+
+        tempUsedEmails.clear();
+        tempUsedEmails = null;
+        Arrays.sort(usedEmailDomain);
     }
 }

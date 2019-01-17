@@ -1,7 +1,10 @@
 package com.pk.jsonmodel;
 
+import com.jsoniter.annotation.JsonIgnore;
+
 public class Likes
 {
+    @JsonIgnore
     private Integer from;
 
     private Integer id;
@@ -34,10 +37,12 @@ public class Likes
         return "ClassPojo [id = "+id+", ts = "+ts+"]";
     }
 
+    @JsonIgnore
     public Integer getFrom() {
         return from;
     }
 
+    @JsonIgnore
     public void setFrom(Integer from) {
         this.from = from;
     }

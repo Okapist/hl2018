@@ -8,6 +8,7 @@ import com.jsoniter.spi.DecodingMode;
 import com.jsoniter.spi.JsoniterSpi;
 import com.pk.dao.*;
 import com.pk.jsonmodel.Account;
+import com.pk.jsonmodel.AccountEdit;
 import com.pk.model.AllLists;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -31,7 +32,7 @@ public class Workers {
 
     static {
         JsonIterator.setMode(DecodingMode.DYNAMIC_MODE_AND_MATCH_FIELD_WITH_HASH);
-        JsonStream.setMode(EncodingMode.DYNAMIC_MODE);
+        //JsonStream.setMode(EncodingMode.DYNAMIC_MODE);
     }
 
     public HttpResponseStatus filter(HttpRequest request, StringBuilder buf) {
@@ -582,6 +583,7 @@ public class Workers {
                 break;
             case "заняты":
                 status = 3;
+                break;
             default:
                 return HttpResponseStatus.BAD_REQUEST;
         }
@@ -605,7 +607,7 @@ public class Workers {
             return HttpResponseStatus.BAD_REQUEST;
         }
         if(accId == 0 || accId>allAccounts.length || allAccounts[accId] == null) {
-            return HttpResponseStatus.BAD_REQUEST;
+            return HttpResponseStatus.NOT_FOUND;
         }
 
         ByteBuf body = ((FullHttpRequest) request).content();
@@ -626,7 +628,7 @@ public class Workers {
         if(data==null)
             return HttpResponseStatus.BAD_REQUEST;
 
-        if(data.getEmail() == null || data.getEmail().indexOf('@') < 1) {
+        if(data.getEmail() != null && data.getEmail().indexOf('@') > 0) {
             try {
                 emailParts = data.getEmail().split("@");
             } catch (Exception ex) {
@@ -649,6 +651,7 @@ public class Workers {
                     break;
                 case "заняты":
                     status = 3;
+                    break;
                 default:
                     return HttpResponseStatus.BAD_REQUEST;
             }
@@ -659,6 +662,7 @@ public class Workers {
 
         buf.append("{}");
         return toReturn;
+        //return HttpResponseStatus.ACCEPTED;
     }
 
     public HttpResponseStatus likes(HttpRequest request, StringBuilder buf) {

@@ -117,7 +117,7 @@ public class Server {
                         status = workers.newAccount(request, buf);
                     } else {
                         if (context.startsWith("/accounts/likes/")) {
-                            status = workers.newAccount(request, buf);
+                            status = workers.likes(request, buf);
                         } else {
                             status = workers.refresh(request, buf);
                         }

@@ -8,6 +8,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.*;
 
+import static com.pk.model.AllLists.usedEmailDomain;
 import static com.pk.model.PostLists.accIdAdded;
 
 public class EditAccount {
@@ -22,12 +23,12 @@ public class EditAccount {
 
             int hash = domainIndex;
             hash |= emailIndex << 7;
-            if (AllLists.usedEmailDomain.contains(hash))
+            if(!PostLists.freeEmailDomain.contains(hash) && (Arrays.binarySearch(usedEmailDomain, hash) > -1 || PostLists.usedEmailDomain.contains(hash)))
                 return HttpResponseStatus.BAD_REQUEST;
 
-            AllLists.usedEmailDomain.add(hash);
-
-            AllLists.usedEmailDomain.remove(toEdit.emailDomain | toEdit.email << 7);
+            PostLists.usedEmailDomain.add(hash);
+            PostLists.freeEmailDomain.remove(hash);
+            PostLists.freeEmailDomain.add(toEdit.emailDomain | toEdit.email<<7);
 
             toEdit.email = emailIndex;
             toEdit.emailDomain = domainIndex;
@@ -79,7 +80,8 @@ public class EditAccount {
         if (jsonAccount.getBirth() != null)
             toEdit.birth = jsonAccount.getBirth();
 
-        toEdit.joined = jsonAccount.getJoined();
+        if(jsonAccount.getJoined() != null)
+            toEdit.joined = jsonAccount.getJoined();
 
         if (jsonAccount.getPremiumStart() != null)
             toEdit.premiumStart = jsonAccount.getPremiumStart();
@@ -98,9 +100,11 @@ public class EditAccount {
                 toEdit.interestsArray[i] = intId;
             }
         }
+        /*
         if (jsonAccount.getLikes() != null) {
             addLikes(jsonAccount);
         }
+        */
         return HttpResponseStatus.ACCEPTED;
     }
 

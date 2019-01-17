@@ -8,6 +8,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.*;
 
+import static com.pk.model.AllLists.usedEmailDomain;
 import static com.pk.model.PostLists.accIdAdded;
 
 public class NewAccount {
@@ -24,10 +25,10 @@ public class NewAccount {
 
         int hash = domainIndex;
         hash |= emailIndex<<7;
-        if(AllLists.usedEmailDomain.contains(hash))
+        if(!PostLists.freeEmailDomain.contains(hash) && (Arrays.binarySearch(usedEmailDomain, hash) > -1 || PostLists.usedEmailDomain.contains(hash)))
             return HttpResponseStatus.BAD_REQUEST;
 
-        AllLists.usedEmailDomain.add(hash);
+        PostLists.usedEmailDomain.add(hash);
 
         account.email = emailIndex;
         account.emailDomain = domainIndex;
