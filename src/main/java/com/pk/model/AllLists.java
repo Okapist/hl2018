@@ -47,7 +47,7 @@ public class AllLists {
     public static int[][] interestAccounts; //аккаунты с указанным интересом [interest][accountId]
 
     //[premium][status][country]<city><interes><accounts>
-    public static final HashMap<Integer, HashMap<Integer, Set<Integer>>>[][][] recommendInteresFilter = new HashMap[2][3][];
+    public static final HashMap<Integer, HashMap<Integer, int[]>>[][][] recommendInteresFilter = new HashMap[2][3][];
 
     //[country][city][status][sex]
     public static HashMap<Short, short[][]>[] groupFilter;

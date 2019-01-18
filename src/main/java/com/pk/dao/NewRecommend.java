@@ -77,40 +77,20 @@ public class NewRecommend {
         final Set<Integer> alreadyAdded = new HashSet<>();
 
         while (true) {
-            final HashMap<Integer, HashMap<Integer, Set<Integer>>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
+            final HashMap<Integer, HashMap<Integer, int[]>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
             final int endCountry = searchCountry == 0 ? toSearch.length - 1 : searchCountry;
             for (int curCountry = startCountry; curCountry <= endCountry; curCountry += toAddCountry) {
 
                 if (searchCity != 0) {
-                    final HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(searchCity);
-                    if (toSearchInterests != null) {
-                        for (int i = 0; i < baseInterestsArray.length; i++) {
-                            int interes = baseInterestsArray[i];
-                            final Set<Integer> possibleList = toSearchInterests.get(interes);
-                            if (possibleList != null) {
-                                for (Integer p : possibleList) {
-                                    Account possible = AllLists.allAccounts[p];
-                                    if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
-                                        alreadyAdded.add(possible.id);
-                                        heap.add(possible);
-                                    }
-                                }
-                            }
-                        }
-                        alreadyAdded.clear();
-                    }
-                } else {
-                    final Set<Integer> cityList = toSearch[curCountry].keySet();
-                    final Integer[] cityArr = cityList.toArray(new Integer[0]);
-                    for (int i1 = 0; i1 < cityArr.length; i1++) {
-                        final Integer curCity = cityArr[i1];
-                        final HashMap<Integer, Set<Integer>> toSearchInterests = toSearch[curCountry].get(curCity);
+                    if(toSearch[curCountry] != null) {
+                        final HashMap<Integer, int[]> toSearchInterests = toSearch[curCountry].get(searchCity);
                         if (toSearchInterests != null) {
-                            for (int i2 = 0; i2 < baseInterestsArray.length; i2++) {
-                                int interes = baseInterestsArray[i2];
-                                final Set<Integer> possibleList = toSearchInterests.get(interes);
+                            for (int i = 0; i < baseInterestsArray.length; i++) {
+                                int interes = baseInterestsArray[i];
+                                final int[] possibleList = toSearchInterests.get(interes);
                                 if (possibleList != null) {
-                                    for (Integer p : possibleList) {
+                                    for (int i1 = 0; i1 < possibleList.length; i1++) {
+                                        Integer p = possibleList[i1];
                                         Account possible = AllLists.allAccounts[p];
                                         if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
                                             alreadyAdded.add(possible.id);
@@ -120,6 +100,32 @@ public class NewRecommend {
                                 }
                             }
                             alreadyAdded.clear();
+                        }
+                    }
+                } else {
+                    if(toSearch[curCountry] != null) {
+                        final Set<Integer> cityList = toSearch[curCountry].keySet();
+                        final Integer[] cityArr = cityList.toArray(new Integer[0]);
+                        for (int i1 = 0; i1 < cityArr.length; i1++) {
+                            final Integer curCity = cityArr[i1];
+                            final HashMap<Integer, int[]> toSearchInterests = toSearch[curCountry].get(curCity);
+                            if (toSearchInterests != null) {
+                                for (int i2 = 0; i2 < baseInterestsArray.length; i2++) {
+                                    int interes = baseInterestsArray[i2];
+                                    final int[] possibleList = toSearchInterests.get(interes);
+                                    if (possibleList != null) {
+                                        for (int i = 0, possibleListLength = possibleList.length; i < possibleListLength; i++) {
+                                            Integer p = possibleList[i];
+                                            Account possible = AllLists.allAccounts[p];
+                                            if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
+                                                alreadyAdded.add(possible.id);
+                                                heap.add(possible);
+                                            }
+                                        }
+                                    }
+                                }
+                                alreadyAdded.clear();
+                            }
                         }
                     }
                 }

@@ -25,6 +25,7 @@ public class AppProxy {
     private List<List<Integer>> tempCityAccounts = new ArrayList<>();
 
     List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
+    private HashMap<Integer, HashMap<Integer, List<Integer>>>[][][] tempRecommendInteresFilter = new HashMap[2][3][];
 
     public AppProxy() {
         fnames.add("");
@@ -435,10 +436,10 @@ public class AppProxy {
 
         for (int premium = 0; premium < 2; ++premium) {
             for (int status = 0; status < 3; ++status) {
-                recommendInteresFilter[premium][status] = new HashMap[AllLists.countriesList.size()];
+                tempRecommendInteresFilter[premium][status] = new HashMap[AllLists.countriesList.size()];
 
                 for (int countryIndex = 0; countryIndex < AllLists.countriesList.size(); ++countryIndex) {
-                    recommendInteresFilter[premium][status][countryIndex] = new HashMap<>();
+                    tempRecommendInteresFilter[premium][status][countryIndex] = new HashMap<>();
                 }
             }
         }
@@ -453,18 +454,47 @@ public class AppProxy {
             int cityIndex = account.city;
             int[] interestsIndex = account.interestsArray;
 
-            recommendInteresFilter[premiumIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p -> new HashMap<>());
+            tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p -> new HashMap<>());
             if (interestsIndex != null) {
                 for (int interest : interestsIndex) {
-                    recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(interest, p -> new HashSet<>());
-                    recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(interest).add(account.id);
+                    tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(interest, p -> new ArrayList<>());
+                    tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(interest).add(account.id);
                 }
             } else {
-                recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(0, p -> new HashSet<>());
-                recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(0).add(account.id);
+                tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(0, p -> new ArrayList<>());
+                tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(0).add(account.id);
 
             }
         }
+
+        for(int premiumIndex=0; premiumIndex<tempRecommendInteresFilter.length; ++premiumIndex) {
+            for(int statusIndex=0; statusIndex<tempRecommendInteresFilter[premiumIndex].length; ++statusIndex) {
+
+                AllLists.recommendInteresFilter[premiumIndex][statusIndex] = new HashMap[AllLists.countriesList.size()];
+
+                for(int countryIndex=0; countryIndex<tempRecommendInteresFilter[premiumIndex][statusIndex].length; ++countryIndex) {
+
+                    AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex] = new HashMap<>();
+
+                    for(Integer cityIndex : tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].keySet()) {
+                        AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p -> new HashMap<>());
+
+                        HashMap<Integer, List<Integer>> aa = tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex);
+                        for(Integer intId : aa.keySet()) {
+                            AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(intId, p -> new int[aa.get(intId).size()]);
+
+                            List<Integer> get = aa.get(intId);
+                            for (int i = 0; i < get.size(); i++) {
+                                int accId = get.get(i);
+                                AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId)[i] = accId;
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+        tempRecommendInteresFilter = null;
     }
 
     public void createNewFilters() {

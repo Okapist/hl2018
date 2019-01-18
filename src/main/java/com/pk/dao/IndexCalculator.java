@@ -4,6 +4,7 @@ import com.pk.model.AllLists;
 import com.pk.model.PostLists;
 
 import static com.pk.model.PostLists.accIdAdded;
+import static com.pk.model.PostLists.accIdEdited;
 
 public class IndexCalculator {
     public void calculateIndexes() {
@@ -21,6 +22,9 @@ public class IndexCalculator {
 
         accIdAdded.clear();
         //accIdAdded = null;
+
+        accIdEdited.clear();
+        accIdEdited = null;
 
         PostLists.freeEmailDomain.clear();
         //PostLists.freeEmailDomain = null;

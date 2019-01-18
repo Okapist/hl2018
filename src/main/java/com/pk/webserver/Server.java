@@ -127,53 +127,57 @@ public class Server {
                 QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
                 buf.setLength(0);
                 String context = queryStringDecoder.path();
-                if (request.method() == HttpMethod.GET) {
-                    if (context.startsWith("/accounts/filter/")) {
-                        if(!context.equals("/accounts/filter/"))
-                            status = NOT_FOUND;
-                        else
-                            status = workers.filter(request, buf);
-                    } else {
-                        if (context.startsWith("/accounts/group/")) {
-                            if(!context.equals("/accounts/group/"))
+                try {
+                    if (request.method() == HttpMethod.GET) {
+                        if (context.startsWith("/accounts/filter/")) {
+                            if (!context.equals("/accounts/filter/"))
                                 status = NOT_FOUND;
                             else
-                                status = workers.group(request, buf);
+                                status = workers.filter(request, buf);
                         } else {
-                            if (context.endsWith("/recommend/")) {
-                                status = workers.recommend(request, buf);
-                            } else {
-                                if (context.endsWith("/suggest/")) {
-                                    status = workers.suggest(request, buf);
-                                } else {
+                            if (context.startsWith("/accounts/group/")) {
+                                if (!context.equals("/accounts/group/"))
                                     status = NOT_FOUND;
+                                else
+                                    status = workers.group(request, buf);
+                            } else {
+                                if (context.endsWith("/recommend/")) {
+                                    status = workers.recommend(request, buf);
+                                } else {
+                                    if (context.endsWith("/suggest/")) {
+                                        status = workers.suggest(request, buf);
+                                    } else {
+                                        status = NOT_FOUND;
+                                    }
                                 }
                             }
                         }
-                    }
-                } else {
-                    anyPostCalled.set(true);
-                    if (context.startsWith("/accounts/new/")) {
-                        if(context.equals("/accounts/new/"))
-                            status = workers.newAccount(request, buf);
-                        else
-                            status = NOT_FOUND;
                     } else {
-                        if (context.startsWith("/accounts/likes/")) {
-                            if(context.equals("/accounts/likes/"))
-                                status = workers.likes(request, buf);
+                        anyPostCalled.set(true);
+                        if (context.startsWith("/accounts/new/")) {
+                            if (context.equals("/accounts/new/"))
+                                status = workers.newAccount(request, buf);
                             else
                                 status = NOT_FOUND;
                         } else {
-                            status = workers.refresh(request, buf);
+                            if (context.startsWith("/accounts/likes/")) {
+                                if (context.equals("/accounts/likes/"))
+                                    status = workers.likes(request, buf);
+                                else
+                                    status = NOT_FOUND;
+                            } else {
+                                status = workers.refresh(request, buf);
+                            }
                         }
                     }
+                } finally {
+                    try {
+                        ((FullHttpRequest) request).content().release();
+                    } catch (Exception ex) {
+                    }
+
                 }
             }
-
-            try{
-                ((FullHttpRequest) request).content().release();
-            } catch (Exception ex) {}
 
             if (msg instanceof LastHttpContent) {
                 FullHttpResponse response = new DefaultFullHttpResponse (
