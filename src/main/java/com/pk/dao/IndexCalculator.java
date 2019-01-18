@@ -24,7 +24,7 @@ public class IndexCalculator {
         //accIdAdded = null;
 
         accIdEdited.clear();
-        accIdEdited = null;
+        //accIdEdited = null;
 
         PostLists.freeEmailDomain.clear();
         //PostLists.freeEmailDomain = null;

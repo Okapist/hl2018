@@ -67,13 +67,23 @@ public class Server {
             long curTime = Calendar.getInstance().getTimeInMillis();
 
             if (curTime - lastQueryTime.get() > 200) {
+
+                long stored = lastQueryTime.get();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if(stored != lastQueryTime.get())
+                    continue;
+
                 if (phase.get() == 0)
                     continue;
 
                 if(phase.get() == 1 && oldPhase.get() == 0) {
                     oldPhase.set(1);
                     System.gc();
-                    System.out.println("FIRST PHASE END");
+                    System.out.println("FIRST PHASE END " + curTime);
                 }
 
                 if(phase.get() == 2 && oldPhase.get() == 1 && anyPostCalled.get()) {
@@ -83,11 +93,8 @@ public class Server {
                     id.clearTempData();
 
                     System.gc();
-                    System.out.println("SECOND PHASE END");
+                    System.out.println("SECOND PHASE END " + curTime);
                 }
-            } else {
-                if(phase.get() == oldPhase.get())
-                    phase.set(phase.get() + 1);
             }
         }
     }
@@ -121,7 +128,8 @@ public class Server {
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
             if (msg instanceof HttpRequest) {
 
-                lastQueryTime.set(Calendar.getInstance().getTimeInMillis());
+                long curTime = Calendar.getInstance().getTimeInMillis();
+                lastQueryTime.set(curTime);
 
                 HttpRequest request = this.request = (HttpRequest) msg;
                 QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
@@ -129,31 +137,54 @@ public class Server {
                 String context = queryStringDecoder.path();
                 try {
                     if (request.method() == HttpMethod.GET) {
-                        if (context.startsWith("/accounts/filter/")) {
-                            if (!context.equals("/accounts/filter/"))
-                                status = NOT_FOUND;
-                            else
-                                status = workers.filter(request, buf);
+
+                        if(phase.get()==0) {
+                            phase.set(1);
+                            System.out.println("FIRST PHASE START " + curTime);
+                        }
+                        if(phase.get()==2) {
+                            phase.set(3);
+                            System.out.println("THIRD PHASE START " + curTime);
+                        }
+
+                        if(anyPostCalled.get()) { //PHASE 3 IGNORING
+                            buf.append("{\"accounts\": []}");
+                            status = OK;
                         } else {
-                            if (context.startsWith("/accounts/group/")) {
-                                if (!context.equals("/accounts/group/"))
+
+                            if (context.startsWith("/accounts/filter/")) {
+                                if (!context.equals("/accounts/filter/"))
                                     status = NOT_FOUND;
                                 else
-                                    status = workers.group(request, buf);
+                                    status = workers.filter(request, buf);
                             } else {
-                                if (context.endsWith("/recommend/")) {
-                                    status = workers.recommend(request, buf);
-                                } else {
-                                    if (context.endsWith("/suggest/")) {
-                                        status = workers.suggest(request, buf);
-                                    } else {
+                                if (context.startsWith("/accounts/group/")) {
+                                    if (!context.equals("/accounts/group/"))
                                         status = NOT_FOUND;
+                                    else
+                                        status = workers.group(request, buf);
+                                } else {
+                                    if (context.endsWith("/recommend/")) {
+                                        status = workers.recommend(request, buf);
+                                    } else {
+                                        if (context.endsWith("/suggest/")) {
+                                            status = workers.suggest(request, buf);
+                                        } else {
+                                            status = NOT_FOUND;
+                                        }
                                     }
                                 }
                             }
                         }
                     } else {
+
+                        if(phase.get()==1) {
+                            phase.set(2);
+                            System.out.println("SECOND PHASE START " + curTime);
+                        }
+
                         anyPostCalled.set(true);
+
                         if (context.startsWith("/accounts/new/")) {
                             if (context.equals("/accounts/new/"))
                                 status = workers.newAccount(request, buf);
