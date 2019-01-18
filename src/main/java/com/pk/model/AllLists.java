@@ -9,8 +9,8 @@ public class AllLists {
     public static final List<List<Integer>> likesTO = new ArrayList<>(); //кто лайкал данный аккаунт
 
     public static final List<List<Integer>> domainAccounts = new ArrayList<>();
-    public static final List<List<Integer>> cityAccounts = new ArrayList<>();
-    public static final List<List<Integer>> countryAccounts = new ArrayList<>();
+    public static int[][]cityAccounts;
+    public static int[][] countryAccounts;
     public static final HashMap<String, List<Integer>> phoneCodeAccounts = new HashMap<>();
 
     public static char[][] fnames;

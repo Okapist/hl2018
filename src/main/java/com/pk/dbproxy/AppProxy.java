@@ -21,6 +21,9 @@ public class AppProxy {
     public HashMap<String, Integer> tempEmailIndex = new HashMap<>();
     private Set<Integer> tempUsedEmails = new HashSet<>(1_100_000);
 
+    private List<List<Integer>> tempCountryAccounts = new ArrayList<>();
+    private List<List<Integer>> tempCityAccounts = new ArrayList<>();
+
     List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
 
     public AppProxy() {
@@ -322,24 +325,24 @@ public class AppProxy {
                 continue;
 
             //set country index
-            while (AllLists.countryAccounts.size() <= account.country)
-                AllLists.countryAccounts.add(null);
+            while (tempCountryAccounts.size() <= account.country)
+                tempCountryAccounts.add(null);
 
-            if (AllLists.countryAccounts.get(account.country) == null) {
-                AllLists.countryAccounts.set(account.country, new ArrayList<>());
+            if (tempCountryAccounts.get(account.country) == null) {
+                tempCountryAccounts.set(account.country, new ArrayList<>());
             }
 
-            AllLists.countryAccounts.get(account.country).add(account.id);
+            tempCountryAccounts.get(account.country).add(account.id);
 
             //set city index
-            while (AllLists.cityAccounts.size() <= account.city)
-                AllLists.cityAccounts.add(null);
+            while (tempCityAccounts.size() <= account.city)
+                tempCityAccounts.add(null);
 
-            if (AllLists.cityAccounts.get(account.city) == null) {
-                AllLists.cityAccounts.set(account.city, new ArrayList<>());
+            if (tempCityAccounts.get(account.city) == null) {
+                tempCityAccounts.set(account.city, new ArrayList<>());
             }
 
-            AllLists.cityAccounts.get(account.city).add(account.id);
+            tempCityAccounts.get(account.city).add(account.id);
 
             //set email domain
             int domainIndex = account.emailDomain;
@@ -683,5 +686,39 @@ public class AppProxy {
         tempUsedEmails.clear();
         tempUsedEmails = null;
         Arrays.sort(usedEmailDomain);
+    }
+
+    public void commitCountryCityAccounts() {
+
+
+        AllLists.countryAccounts = new int[AllLists.countriesList.size()][];
+        for (int i = 0; i < tempCountryAccounts.size(); i++) {
+            List<Integer> acList = tempCountryAccounts.get(i);
+
+            AllLists.countryAccounts[i] = new int[acList.size()];
+
+            for (int i1 = 0; i1 < acList.size(); i1++) {
+                int cId = acList.get(i1);
+                AllLists.countryAccounts[i][i1] = cId;
+            }
+        }
+
+        tempCountryAccounts.clear();
+        tempCountryAccounts = null;
+
+        AllLists.cityAccounts = new int[tempCityAccounts.size()][];
+        for (int i = 0; i < tempCityAccounts.size(); i++) {
+            List<Integer> acList = tempCityAccounts.get(i);
+
+            AllLists.cityAccounts[i] = new int[acList.size()];
+
+            for (int i1 = 0; i1 < acList.size(); i1++) {
+                int cId = acList.get(i1);
+                AllLists.cityAccounts[i][i1] = cId;
+            }
+        }
+        tempCityAccounts.clear();
+        tempCityAccounts = null;
+
     }
 }

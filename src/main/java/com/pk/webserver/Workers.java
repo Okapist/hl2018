@@ -9,7 +9,9 @@ import com.jsoniter.spi.JsoniterSpi;
 import com.pk.dao.*;
 import com.pk.jsonmodel.Account;
 import com.pk.jsonmodel.AccountEdit;
+import com.pk.jsonmodel.PostLikes;
 import com.pk.model.AllLists;
+//import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
@@ -545,20 +547,18 @@ public class Workers {
 
     public HttpResponseStatus newAccount (HttpRequest request, StringBuilder buf) {
 
-        ByteBuf body = ((FullHttpRequest) request).content();
-
-        byte[] jsonData = readBytes(body);
+        byte[] jsonData = readBytes(((FullHttpRequest) request).content());
 
         JsonIterator iter = JsonIterator.parse(jsonData);
         Account data;
         try {
             data = iter.read(Account.class);
         } catch (Exception e) {
-            body.release();
+            ((FullHttpRequest) request).content().release();
             return HttpResponseStatus.BAD_REQUEST;
         }
+        ((FullHttpRequest) request).content().release();
 
-        body.release();
         String emailParts[];
         if(data==null || data.getEmail() == null || data.getEmail().indexOf('@') < 1)
             return HttpResponseStatus.BAD_REQUEST;
@@ -604,26 +604,24 @@ public class Workers {
             accId = Integer.parseInt(request.uri().toString().split("/")[2]);
         } catch (Exception ex) {
             buf.append("{}");
-            return HttpResponseStatus.BAD_REQUEST;
+            return HttpResponseStatus.NOT_FOUND;
         }
         if(accId == 0 || accId>allAccounts.length || allAccounts[accId] == null) {
             return HttpResponseStatus.NOT_FOUND;
         }
 
-        ByteBuf body = ((FullHttpRequest) request).content();
-
-        byte[] jsonData = readBytes(body);
+        byte[] jsonData = readBytes(((FullHttpRequest) request).content());
 
         JsonIterator iter = JsonIterator.parse(jsonData);
         Account data;
         try {
             data = iter.read(Account.class);
         } catch (Exception e) {
-            body.release();
+            ((FullHttpRequest) request).content().release();
             return HttpResponseStatus.BAD_REQUEST;
         }
+        ((FullHttpRequest) request).content().release();
 
-        body.release();
         String emailParts[] = null;
         if(data==null)
             return HttpResponseStatus.BAD_REQUEST;
@@ -657,6 +655,11 @@ public class Workers {
             }
         }
 
+        if(data.getSex() != null) {
+            if(!"m".equals(data.getSex()) && !"f".equals(data.getSex()))
+                return HttpResponseStatus.BAD_REQUEST;
+        }
+
         EditAccount editAccount = new EditAccount();
         HttpResponseStatus toReturn = editAccount.edit(accId, emailParts, status, data);
 
@@ -666,8 +669,24 @@ public class Workers {
     }
 
     public HttpResponseStatus likes(HttpRequest request, StringBuilder buf) {
+
+        byte[] jsonData = readBytes(((FullHttpRequest) request).content());
+
+        JsonIterator iter = JsonIterator.parse(jsonData);
+        PostLikes data;
+        try {
+            data = iter.read(PostLikes.class);
+        } catch (Exception e) {
+            ((FullHttpRequest) request).content().release();
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+        ((FullHttpRequest) request).content().release();
+
+        AddLikes al = new AddLikes();
+        HttpResponseStatus result = al.addLikes(data);
+
         buf.append("{}");
-        return HttpResponseStatus.ACCEPTED;
+        return result;
     }
 
     private List<Short> convertCityListToIndex(List<String> city) {

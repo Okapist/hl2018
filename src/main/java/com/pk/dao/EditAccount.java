@@ -10,16 +10,38 @@ import java.util.*;
 
 import static com.pk.model.AllLists.usedEmailDomain;
 import static com.pk.model.PostLists.accIdAdded;
+import static com.pk.model.PostLists.accIdEdited;
 
 public class EditAccount {
 
     public HttpResponseStatus edit(int accId, String[] emailParts, byte status, com.pk.jsonmodel.Account jsonAccount) {
 
-
         Account toEdit = AllLists.allAccounts[accId];
         if (emailParts != null) {
+
             int emailIndex = Collections.binarySearch(AllLists.allEmailList, emailParts[0]);
+            if(emailIndex < 0) {
+
+                emailIndex = PostLists.newEmails.indexOf(emailParts[0]);
+                if(emailIndex == -1) {
+                    PostLists.newEmails.add(emailParts[0]);
+                    emailIndex = AllLists.allEmailList.size() + PostLists.newEmails.size();
+                } else {
+                    emailIndex += AllLists.allEmailList.size() + 1;
+                }
+            }
+
             Integer domainIndex = Utils.findDomainIndexBinary(emailParts[1].toCharArray());
+            if(domainIndex==null || domainIndex < 0) {
+
+                domainIndex = PostLists.newEmailDomains.indexOf(emailParts[1]);
+                if(domainIndex == -1) {
+                    PostLists.newEmailDomains.add(emailParts[1]);
+                    domainIndex = AllLists.domainList.size() + PostLists.newEmailDomains.size();
+                } else {
+                    domainIndex += AllLists.domainList.size() + 1;
+                }
+            }
 
             int hash = domainIndex;
             hash |= emailIndex << 7;
@@ -100,15 +122,18 @@ public class EditAccount {
                 toEdit.interestsArray[i] = intId;
             }
         }
-        /*
-        if (jsonAccount.getLikes() != null) {
-            addLikes(jsonAccount);
+
+        boolean goodLikes = addLikes(jsonAccount);
+        if(goodLikes) {
+            //AllLists.allAccounts[account.id] = account;
+            accIdEdited.add(toEdit.id);
+            return HttpResponseStatus.ACCEPTED;
+        } else {
+            return HttpResponseStatus.BAD_REQUEST;
         }
-        */
-        return HttpResponseStatus.ACCEPTED;
     }
 
-    private void addLikes(com.pk.jsonmodel.Account jsonAccount) {
+    private boolean addLikes(com.pk.jsonmodel.Account jsonAccount) {
 
         if (jsonAccount.getLikes() != null) {
 
@@ -123,7 +148,7 @@ public class EditAccount {
             for (Likes like : jsonAccount.getLikes()) {
                 if (like.getId() != prevLikeId) {
                     if (totalSame != 0) {
-                        clearList.get(clearList.size() - 1).setTs((int) ((clearList.get(clearList.size() - 1).getTs() + totalTs) / (totalSame + 1)));
+                        clearList.get(clearList.size()-1).setTs((int)((clearList.get(clearList.size()-1).getTs() + totalTs) / (totalSame+1)));
                         totalSame = 0;
                         totalTs = 0;
                     }
@@ -134,32 +159,40 @@ public class EditAccount {
                     totalTs += like.getTs();
                 }
             }
+/*
 
             while (AllLists.likesAccounts.size() <= jsonAccount.getId()) {
                 AllLists.likesAccounts.add(null);
             }
+*/
 
-            for (int i = 0; i < clearList.size() * 2; i += 2) {
-                Likes like = clearList.get(i / 2);
+            for (int i = 0; i < clearList.size()*2; i+=2) {
+                Likes like = clearList.get(i/2);
                 int likeId = like.getId();
                 int likeTs = like.getTs();
 
-                if (AllLists.likesAccounts.get(jsonAccount.getId()) == null) {
-                    AllLists.likesAccounts.set(jsonAccount.getId(), new int[clearList.size() * 2]);
+                if(likeId > AllLists.allAccounts.length && AllLists.allAccounts[likeId] == null)
+                    return false;
+
+/*
+                if(AllLists.likesAccounts.get(jsonAccount.getId()) == null) {
+                    AllLists.likesAccounts.set(jsonAccount.getId(), new int[clearList.size()*2]);
                 }
 
                 AllLists.likesAccounts.get(jsonAccount.getId())[i] = likeId;
-                AllLists.likesAccounts.get(jsonAccount.getId())[i + 1] = likeTs;
+                AllLists.likesAccounts.get(jsonAccount.getId())[i+1] = likeTs;
 
                 while (AllLists.likesTO.size() <= likeId)
                     AllLists.likesTO.add(null);
 
-                if (AllLists.likesTO.get(likeId) == null) {
+                if(AllLists.likesTO.get(likeId) == null) {
                     AllLists.likesTO.set(likeId, new ArrayList<>());
                 }
 
                 AllLists.likesTO.get(likeId).add(jsonAccount.getId());
+*/
             }
         }
+        return true;
     }
 }

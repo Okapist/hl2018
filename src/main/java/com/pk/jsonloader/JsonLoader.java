@@ -98,5 +98,7 @@ public class JsonLoader {
 
         appProxy.createFilters();
         System.gc();
+
+        appProxy.commitCountryCityAccounts();
     }
 }

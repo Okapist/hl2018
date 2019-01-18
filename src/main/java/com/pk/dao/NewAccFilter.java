@@ -243,15 +243,15 @@ public class NewAccFilter {
         if (country != null) {
             ansCountry = true;
             int tempStart = 0;
-            if(AllLists.countryAccounts.get(country) == null)
+            if(country >= AllLists.countryAccounts.length || AllLists.countryAccounts[country] == null)
                 return true;
 
-            int tempEnd =  AllLists.countryAccounts.get(country).size();
+            int tempEnd =  AllLists.countryAccounts[country].length;
             if (tempEnd - tempStart < filterSize) {
                 filterStartIndex = 0;
                 filterEndIndex = tempEnd;
-                filterList = AllLists.countryAccounts.get(country);
-                filterArr = null;
+                filterList = null;
+                filterArr = AllLists.countryAccounts[country];
                 filterSize = tempEnd - tempStart;
             }
         }
@@ -259,12 +259,12 @@ public class NewAccFilter {
             ansCountry = true;
             if(countryExists == false) {
                 int tempStart = 0;
-                int tempEnd = AllLists.countryAccounts.get((short) 0).size();
+                int tempEnd = AllLists.countryAccounts[0].length;
                 if (tempEnd - tempStart < filterSize) {
                     filterStartIndex = 0;
                     filterEndIndex = tempEnd;
-                    filterList = AllLists.countryAccounts.get((short) 0);
-                    filterArr = null;
+                    filterList = null;
+                    filterArr = AllLists.countryAccounts[0];
                     filterSize = tempEnd - tempStart;
                 }
             }
@@ -275,24 +275,24 @@ public class NewAccFilter {
             if (cityExists != null) {
                 if (!cityExists) {
                     int tempStart = 0;
-                    int tempEnd =  AllLists.cityAccounts.get((short)0).size();
+                    int tempEnd =  AllLists.cityAccounts[0].length;
                     if (tempEnd - tempStart < filterSize) {
                         filterStartIndex = 0;
                         filterEndIndex = tempEnd;
-                        filterList = AllLists.cityAccounts.get((short)0);
-                        filterArr = null;
+                        filterList = null;
+                        filterArr = AllLists.cityAccounts[0];
                         filterSize = tempEnd - tempStart;
                     }
                 }
             } else {
                 if (city.size() == 1) {
                     int tempStart = 0;
-                    int tempEnd =  AllLists.cityAccounts.get(city.get(0)).size();
+                    int tempEnd =  AllLists.cityAccounts[city.get(0)].length;
                     if (tempEnd - tempStart < filterSize) {
                         filterStartIndex = 0;
                         filterEndIndex = tempEnd;
-                        filterList = AllLists.cityAccounts.get(city.get(0));
-                        filterArr = null;
+                        filterList = null;
+                        filterArr = AllLists.cityAccounts[city.get(0)];
                         filterSize = tempEnd - tempStart;
                     }
                 }
