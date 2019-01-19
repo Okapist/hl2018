@@ -2,12 +2,11 @@ package com.pk.webserver;
 
 import com.pk.dao.IndexCalculator;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 
@@ -22,6 +21,15 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class Server {
 
+/*
+
+    NioEventLoopGroup → EpollEventLoopGroup
+    NioEventLoop → EpollEventLoop
+    NioServerSocketChannel → EpollServerSocketChannel
+    NioSocketChannel → EpollSocketChannel
+    
+*/
+    
     public final static AtomicInteger connections = new AtomicInteger();
     public final static AtomicBoolean anyPostCalled = new AtomicBoolean(false);
 
@@ -39,12 +47,12 @@ public class Server {
         phaseChangeThread.start();
 
 
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        EventLoopGroup bossGroup = new EpollEventLoopGroup();
+        EventLoopGroup workerGroup = new EpollEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(EpollServerSocketChannel.class)
                     .childHandler(new ServerInitializer())
                     .childOption(ChannelOption.SO_KEEPALIVE, true);;
 
