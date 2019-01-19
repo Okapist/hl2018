@@ -1,6 +1,8 @@
 package com.pk.jsonmodel;
 
-public class PostLikes {
+import java.util.ArrayList;
+import java.util.List;
 
-    public PostLike[] likes;
+public class PostLikes {
+    public List<int[]> likeData = new ArrayList<>(); //кто кого когда
 }

@@ -55,6 +55,7 @@ public class EditAccount {
             toEdit.email = emailIndex;
             toEdit.emailDomain = domainIndex;
         }
+/*
 
         if (status > -1) {
             toEdit.status = status;
@@ -122,6 +123,7 @@ public class EditAccount {
                 toEdit.interestsArray[i] = intId;
             }
         }
+*/
 
         boolean goodLikes = addLikes(jsonAccount);
         if(goodLikes) {

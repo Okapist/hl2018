@@ -88,12 +88,14 @@ public class Server {
 
                 if(phase.get() == 2 && oldPhase.get() == 1 && anyPostCalled.get()) {
                     oldPhase.set(2);
+                    System.gc();
                     IndexCalculator id = new IndexCalculator();
                     id.calculateIndexes();
                     id.clearTempData();
 
                     System.gc();
                     System.out.println("SECOND PHASE END " + curTime);
+                    return;
                 }
             }
         }

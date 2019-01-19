@@ -1,9 +1,7 @@
 package com.pk.dao;
 
-import com.pk.jsonmodel.PostLike;
 import com.pk.jsonmodel.PostLikes;
 import com.pk.model.AllLists;
-import com.pk.model.PostLists;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class AddLikes {
@@ -21,17 +19,17 @@ public class AddLikes {
 
     private boolean validate(PostLikes data) {
 
-        if(data.likes == null)
+        if(data.likeData == null)
             return false;
 
-        for(PostLike postLike : data.likes) {
+        for(int[] postLike : data.likeData) {
 
             if(postLike == null)
                 return false;
 
-            if(postLike.likee <0 || postLike.liker<0 || postLike.likee >= AllLists.allAccounts.length ||
-                    postLike.likee >= AllLists.allAccounts.length || postLike.liker >= AllLists.allAccounts.length ||
-                    AllLists.allAccounts[postLike.likee] == null || AllLists.allAccounts[postLike.liker] == null)
+            if(postLike[1] <=0 || postLike[0]<=0 || postLike[0] >= AllLists.allAccounts.length ||
+                    postLike[1] >= AllLists.allAccounts.length ||
+                    AllLists.allAccounts[postLike[1]] == null || AllLists.allAccounts[postLike[0]] == null)
             return false;
         }
         return true;

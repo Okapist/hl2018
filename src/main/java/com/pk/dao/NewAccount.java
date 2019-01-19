@@ -54,6 +54,7 @@ public class NewAccount {
 
         account.email = emailIndex;
         account.emailDomain = domainIndex;
+/*
 
         if(jsonAccount.getFname() != null) {
 
@@ -138,6 +139,7 @@ public class NewAccount {
                 account.interestsArray[i] = intId;
             }
         }
+*/
 
         boolean goodLikes = addLikes(jsonAccount);
         if(goodLikes) {

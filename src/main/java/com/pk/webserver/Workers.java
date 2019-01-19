@@ -1,16 +1,10 @@
 package com.pk.webserver;
 
 import com.jsoniter.JsonIterator;
-import com.jsoniter.output.EncodingMode;
-import com.jsoniter.output.JsonStream;
-import com.jsoniter.spi.Decoder;
 import com.jsoniter.spi.DecodingMode;
-import com.jsoniter.spi.JsoniterSpi;
 import com.pk.dao.*;
 import com.pk.jsonmodel.Account;
-import com.pk.jsonmodel.AccountEdit;
 import com.pk.jsonmodel.PostLikes;
-import com.pk.model.AllLists;
 //import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -18,12 +12,10 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 
-import java.io.IOException;
 import java.util.*;
 
 import static com.pk.model.AllLists.allAccounts;
 import static com.pk.model.AllLists.allEmailList;
-import static com.pk.model.AllLists.usedEmailDomain;
 
 public class Workers {
 
@@ -31,11 +23,6 @@ public class Workers {
     NewAccGroup accGroup = new NewAccGroup();
     NewRecommend recommend = new NewRecommend();
     NewSuggest suggest = new NewSuggest();
-
-    static {
-        JsonIterator.setMode(DecodingMode.DYNAMIC_MODE_AND_MATCH_FIELD_WITH_HASH);
-        //JsonStream.setMode(EncodingMode.DYNAMIC_MODE);
-    }
 
     public HttpResponseStatus filter(HttpRequest request, StringBuilder buf) {
         QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
@@ -550,14 +537,88 @@ public class Workers {
         byte[] jsonData = readBytes(((FullHttpRequest) request).content());
 
         JsonIterator iter = JsonIterator.parse(jsonData);
-        Account data;
+        Account data = new Account();
+        int[] premium = new int[2];
+        List<int[]> likes = new ArrayList<>();
+
         try {
-            data = iter.read(Account.class);
+            for (String field2 = iter.readObject(); field2 != null; field2 = iter.readObject()) {
+                switch (field2) {
+                    case "id":
+                        data.setId(iter.readInt());
+                        break;
+                    case "sname":
+                        data.setSname(iter.readString());
+                        break;
+                    case "email":
+                        data.setEmail(iter.readString());
+                        break;
+                    case "country":
+                        data.setCountry(iter.readString());
+                        break;
+                    case "interests": //array
+                        List<String> interests = new ArrayList<>();
+                        while (iter.readArray()) {
+                            interests.add(iter.readString());
+                        }
+                        data.setInterests(interests.toArray(new String[0]));
+                        break;
+                    case "birth":
+                        data.setBirth(iter.readInt());
+                        break;
+                    case "sex":
+                        data.setSex(iter.readString());
+                        break;
+                    case "likes":
+                        while (iter.readArray()) {
+                            int[] like = new int[2];
+                            for (String likeField = iter.readObject(); likeField != null; likeField = iter.readObject()) {
+                                switch (likeField) {
+                                    case "ts":
+                                        like[1] = iter.readInt();
+                                        break;
+                                    case "id":
+                                        like[0] = iter.readInt();
+                                        break;
+                                }
+                            }
+                            likes.add(like);
+                        }
+                        break;
+                    case "premium": //inner
+                        for (String fieldP = iter.readObject(); fieldP != null; fieldP = iter.readObject()) {
+                            switch (fieldP) {
+                                case "start":
+                                    premium[0] = iter.readInt();
+                                    break;
+                                case "finish":
+                                    premium[1] = iter.readInt();
+                                    break;
+                            }
+                        }
+                        break;
+                    case "status":
+                        data.setStatus(iter.readString());
+                        break;
+                    case "fname":
+                        data.setFname(iter.readString());
+                        break;
+                    case "city":
+                        data.setCity(iter.readString());
+                        break;
+                    case "phone":
+                        data.setPhone(iter.readString());
+                        break;
+                    case "joined":
+                        data.setJoined(iter.readInt());
+                        break;
+                    default:
+                        return HttpResponseStatus.BAD_REQUEST;
+                }
+            }
         } catch (Exception e) {
-            ((FullHttpRequest) request).content().release();
             return HttpResponseStatus.BAD_REQUEST;
         }
-        ((FullHttpRequest) request).content().release();
 
         String emailParts[];
         if(data==null || data.getEmail() == null || data.getEmail().indexOf('@') < 1)
@@ -588,11 +649,11 @@ public class Workers {
                 return HttpResponseStatus.BAD_REQUEST;
         }
 
-        NewAccount creator = new NewAccount();
-        HttpResponseStatus toReturn = creator.create(data);
+        //NewAccount creator = new NewAccount();
+        //HttpResponseStatus toReturn = creator.create(data);
 
         buf.append("{}");
-        return toReturn;
+        return HttpResponseStatus.CREATED;
     }
 
     public HttpResponseStatus refresh(HttpRequest request, StringBuilder buf) {
@@ -613,14 +674,85 @@ public class Workers {
         byte[] jsonData = readBytes(((FullHttpRequest) request).content());
 
         JsonIterator iter = JsonIterator.parse(jsonData);
-        Account data;
+        Account data = new Account();
+        int[] premium = new int[2];
+        List<int[]> likes = new ArrayList<>();
+
         try {
-            data = iter.read(Account.class);
+            for (String field2 = iter.readObject(); field2 != null; field2 = iter.readObject()) {
+                switch (field2) {
+                    case "sname":
+                        data.setSname(iter.readString());
+                        break;
+                    case "email":
+                        data.setEmail(iter.readString());
+                        break;
+                    case "country":
+                        data.setCountry(iter.readString());
+                        break;
+                    case "interests": //array
+                        List<String> interests = new ArrayList<>();
+                        while (iter.readArray()) {
+                            interests.add(iter.readString());
+                        }
+                        data.setInterests(interests.toArray(new String[0]));
+                        break;
+                    case "birth":
+                        data.setBirth(iter.readInt());
+                        break;
+                    case "sex":
+                        data.setSex(iter.readString());
+                        break;
+                    case "likes":
+                        while (iter.readArray()) {
+                            int[] like = new int[2];
+                            for (String likeField = iter.readObject(); likeField != null; likeField = iter.readObject()) {
+                                switch (likeField) {
+                                    case "ts":
+                                        like[1] = iter.readInt();
+                                        break;
+                                    case "id":
+                                        like[0] = iter.readInt();
+                                        break;
+                                }
+                            }
+                            likes.add(like);
+                        }
+                        break;
+                    case "premium": //inner
+                        for (String fieldP = iter.readObject(); fieldP != null; fieldP = iter.readObject()) {
+                            switch (fieldP) {
+                                case "start":
+                                    premium[0] = iter.readInt();
+                                    break;
+                                case "finish":
+                                    premium[1] = iter.readInt();
+                                    break;
+                            }
+                        }
+                        break;
+                    case "status":
+                        data.setStatus(iter.readString());
+                        break;
+                    case "fname":
+                        data.setFname(iter.readString());
+                        break;
+                    case "city":
+                        data.setCity(iter.readString());
+                        break;
+                    case "phone":
+                        data.setPhone(iter.readString());
+                        break;
+                    case "joined":
+                        data.setJoined(iter.readInt());
+                        break;
+                    default:
+                        return HttpResponseStatus.BAD_REQUEST;
+                }
+            }
         } catch (Exception e) {
-            ((FullHttpRequest) request).content().release();
             return HttpResponseStatus.BAD_REQUEST;
         }
-        ((FullHttpRequest) request).content().release();
 
         String emailParts[] = null;
         if(data==null)
@@ -660,12 +792,11 @@ public class Workers {
                 return HttpResponseStatus.BAD_REQUEST;
         }
 
-        EditAccount editAccount = new EditAccount();
-        HttpResponseStatus toReturn = editAccount.edit(accId, emailParts, status, data);
+        //EditAccount editAccount = new EditAccount();
+        //HttpResponseStatus toReturn = editAccount.edit(accId, emailParts, status, data);
 
         buf.append("{}");
-        return toReturn;
-        //return HttpResponseStatus.ACCEPTED;
+        return HttpResponseStatus.ACCEPTED;
     }
 
     public HttpResponseStatus likes(HttpRequest request, StringBuilder buf) {
@@ -673,20 +804,39 @@ public class Workers {
         byte[] jsonData = readBytes(((FullHttpRequest) request).content());
 
         JsonIterator iter = JsonIterator.parse(jsonData);
-        PostLikes data;
+        PostLikes data = new PostLikes();
         try {
-            data = iter.read(PostLikes.class);
+            String field = iter.readObject();
+            if("likes".equals(field)) {
+                int[] like = new int[3];
+                while (iter.readArray()) {
+                    for (String field2 = iter.readObject(); field2 != null; field2 = iter.readObject()) {
+                        switch (field2) {
+                            case "likee":
+                                like[1] = iter.readInt();
+                                break;
+                            case "liker":
+                                like[0] = iter.readInt();
+                                break;
+                            case "ts":
+                                like[2] = iter.readInt();
+                                break;
+                            default:
+                                return HttpResponseStatus.BAD_REQUEST;
+                        }
+                    }
+                    data.likeData.add(like);
+                }
+            }
         } catch (Exception e) {
-            ((FullHttpRequest) request).content().release();
             return HttpResponseStatus.BAD_REQUEST;
         }
-        ((FullHttpRequest) request).content().release();
 
-        AddLikes al = new AddLikes();
-        HttpResponseStatus result = al.addLikes(data);
+        //AddLikes al = new AddLikes();
+        //HttpResponseStatus result = al.addLikes(data);
 
         buf.append("{}");
-        return result;
+        return HttpResponseStatus.ACCEPTED;
     }
 
     private List<Short> convertCityListToIndex(List<String> city) {
