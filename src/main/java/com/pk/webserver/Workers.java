@@ -532,7 +532,7 @@ public class Workers {
         return bytes;
     }
 
-    public HttpResponseStatus newAccount (HttpRequest request, StringBuilder buf) {
+    public HttpResponseStatus newAccount (HttpRequest request) {
 
         byte[] jsonData = readBytes(((FullHttpRequest) request).content());
 
@@ -652,11 +652,10 @@ public class Workers {
         //NewAccount creator = new NewAccount();
         //HttpResponseStatus toReturn = creator.create(data);
 
-        buf.append("{}");
         return HttpResponseStatus.CREATED;
     }
 
-    public HttpResponseStatus refresh(HttpRequest request, StringBuilder buf) {
+    public HttpResponseStatus refresh(HttpRequest request) {
 
         QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
         Map<String, List<String>> params = queryStringDecoder.parameters();
@@ -664,7 +663,6 @@ public class Workers {
         try{
             accId = Integer.parseInt(request.uri().toString().split("/")[2]);
         } catch (Exception ex) {
-            buf.append("{}");
             return HttpResponseStatus.NOT_FOUND;
         }
         if(accId == 0 || accId>allAccounts.length || allAccounts[accId] == null) {
@@ -795,11 +793,10 @@ public class Workers {
         //EditAccount editAccount = new EditAccount();
         //HttpResponseStatus toReturn = editAccount.edit(accId, emailParts, status, data);
 
-        buf.append("{}");
         return HttpResponseStatus.ACCEPTED;
     }
 
-    public HttpResponseStatus likes(HttpRequest request, StringBuilder buf) {
+    public HttpResponseStatus likes(HttpRequest request) {
 
         byte[] jsonData = readBytes(((FullHttpRequest) request).content());
 
@@ -835,7 +832,6 @@ public class Workers {
         //AddLikes al = new AddLikes();
         //HttpResponseStatus result = al.addLikes(data);
 
-        buf.append("{}");
         return HttpResponseStatus.ACCEPTED;
     }
 

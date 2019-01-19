@@ -46,15 +46,15 @@ public class Server {
         final Thread phaseChangeThread = new Thread(this::phaseChangeMonitor);
         phaseChangeThread.start();
 
-
         EventLoopGroup bossGroup = new EpollEventLoopGroup();
-        EventLoopGroup workerGroup = new EpollEventLoopGroup();
+        EventLoopGroup workerGroup = new EpollEventLoopGroup(8);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                     .channel(EpollServerSocketChannel.class)
                     .childHandler(new ServerInitializer())
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);;
+                    .option(ChannelOption.SO_BACKLOG, 128)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             Channel ch = b.bind(port).sync().channel();
             ch.closeFuture().sync();
@@ -136,104 +136,100 @@ public class Server {
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
-            if (msg instanceof HttpRequest) {
 
-                long curTime = Calendar.getInstance().getTimeInMillis();
-                lastQueryTime.set(curTime);
+            long curTime = Calendar.getInstance().getTimeInMillis();
+            lastQueryTime.set(curTime);
 
-                HttpRequest request = this.request = (HttpRequest) msg;
-                QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
-                buf.setLength(0);
-                String context = queryStringDecoder.path();
-                try {
-                    if (request.method() == HttpMethod.GET) {
+            HttpRequest request = this.request = (HttpRequest) msg;
+            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
+            buf.setLength(0);
+            String context = queryStringDecoder.path();
+            try {
+                if (request.method() == HttpMethod.GET) {
 
-                        if(phase.get()==0) {
-                            phase.set(1);
-                            System.out.println("FIRST PHASE START " + curTime);
-                        }
-                        if(phase.get()==2) {
-                            phase.set(3);
-                            System.out.println("THIRD PHASE START " + curTime);
-                        }
+                    if (phase.get() == 0) {
+                        phase.set(1);
+                        System.out.println("FIRST PHASE START " + curTime);
+                    }
+                    if (phase.get() == 2) {
+                        phase.set(3);
+                        System.out.println("THIRD PHASE START " + curTime);
+                    }
 
-                        if(anyPostCalled.get()) { //PHASE 3 IGNORING
-                            buf.append("{\"accounts\": []}");
-                            status = OK;
+                    if (anyPostCalled.get()) { //PHASE 3 IGNORING
+                        buf.append("{\"accounts\": []}");
+                        status = OK;
+                    } else {
+
+                        if (context.startsWith("/accounts/filter/")) {
+                            if (!context.equals("/accounts/filter/"))
+                                status = NOT_FOUND;
+                            else
+                                status = workers.filter(request, buf);
                         } else {
-
-                            if (context.startsWith("/accounts/filter/")) {
-                                if (!context.equals("/accounts/filter/"))
+                            if (context.startsWith("/accounts/group/")) {
+                                if (!context.equals("/accounts/group/"))
                                     status = NOT_FOUND;
                                 else
-                                    status = workers.filter(request, buf);
+                                    status = workers.group(request, buf);
                             } else {
-                                if (context.startsWith("/accounts/group/")) {
-                                    if (!context.equals("/accounts/group/"))
-                                        status = NOT_FOUND;
-                                    else
-                                        status = workers.group(request, buf);
+                                if (context.endsWith("/recommend/")) {
+                                    status = workers.recommend(request, buf);
                                 } else {
-                                    if (context.endsWith("/recommend/")) {
-                                        status = workers.recommend(request, buf);
+                                    if (context.endsWith("/suggest/")) {
+                                        status = workers.suggest(request, buf);
                                     } else {
-                                        if (context.endsWith("/suggest/")) {
-                                            status = workers.suggest(request, buf);
-                                        } else {
-                                            status = NOT_FOUND;
-                                        }
+                                        status = NOT_FOUND;
                                     }
                                 }
                             }
                         }
+                    }
+                } else {
+
+                    if (phase.get() == 1) {
+                        phase.set(2);
+                        System.out.println("SECOND PHASE START " + curTime);
+                    }
+
+                    anyPostCalled.set(true);
+
+                    if (context.startsWith("/accounts/new/")) {
+                        if (context.equals("/accounts/new/"))
+                            status = workers.newAccount(request);
+                        else
+                            status = NOT_FOUND;
                     } else {
-
-                        if(phase.get()==1) {
-                            phase.set(2);
-                            System.out.println("SECOND PHASE START " + curTime);
-                        }
-
-                        anyPostCalled.set(true);
-
-                        if (context.startsWith("/accounts/new/")) {
-                            if (context.equals("/accounts/new/"))
-                                status = workers.newAccount(request, buf);
+                        if (context.startsWith("/accounts/likes/")) {
+                            if (context.equals("/accounts/likes/"))
+                                status = workers.likes(request);
                             else
                                 status = NOT_FOUND;
                         } else {
-                            if (context.startsWith("/accounts/likes/")) {
-                                if (context.equals("/accounts/likes/"))
-                                    status = workers.likes(request, buf);
-                                else
-                                    status = NOT_FOUND;
-                            } else {
-                                status = workers.refresh(request, buf);
-                            }
+                            status = workers.refresh(request);
                         }
                     }
-                } finally {
-                    try {
-                        ((FullHttpRequest) request).content().release();
-                    } catch (Exception ex) {
-                    }
-
+                    buf.append("{}");
                 }
+            } finally {
+                try {
+                    ((FullHttpRequest) request).content().release();
+                } catch (Exception ex) {
+                }
+
             }
 
-            if (msg instanceof LastHttpContent) {
-                FullHttpResponse response = new DefaultFullHttpResponse (
-                        HTTP_1_1,
-                        status,
-                        Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8)
-                );
-                //response.c
-                response.headers().set(SERVER,"PK");
-                response.headers().set(CONTENT_TYPE,"application/json");
-                response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+            FullHttpResponse response = new DefaultFullHttpResponse(
+                    HTTP_1_1,
+                    status,
+                    Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8)
+            );
+            response.headers().set(SERVER, "PK");
+            response.headers().set(CONTENT_TYPE, "application/json");
+            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
-                ctx.writeAndFlush(response);
-            }
+            ctx.writeAndFlush(response);
         }
 
         @Override
