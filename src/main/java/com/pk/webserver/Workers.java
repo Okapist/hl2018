@@ -538,9 +538,9 @@ public class Workers {
 
         JsonIterator iter = JsonIterator.parse(jsonData);
         Account data = new Account();
-        int[] premium = new int[2];
-        List<int[]> likes = new ArrayList<>();
-
+        int[] premium;
+        List<int[]> likes;
+        List<String> interests;
         try {
             for (String field2 = iter.readObject(); field2 != null; field2 = iter.readObject()) {
                 switch (field2) {
@@ -557,7 +557,7 @@ public class Workers {
                         data.setCountry(iter.readString());
                         break;
                     case "interests": //array
-                        List<String> interests = new ArrayList<>();
+                        interests = new ArrayList<>();
                         while (iter.readArray()) {
                             interests.add(iter.readString());
                         }
@@ -570,6 +570,7 @@ public class Workers {
                         data.setSex(iter.readString());
                         break;
                     case "likes":
+                        likes = new ArrayList<>();
                         while (iter.readArray()) {
                             int[] like = new int[2];
                             for (String likeField = iter.readObject(); likeField != null; likeField = iter.readObject()) {
@@ -586,6 +587,7 @@ public class Workers {
                         }
                         break;
                     case "premium": //inner
+                        premium = new int[2];
                         for (String fieldP = iter.readObject(); fieldP != null; fieldP = iter.readObject()) {
                             switch (fieldP) {
                                 case "start":
@@ -658,10 +660,9 @@ public class Workers {
     public HttpResponseStatus refresh(HttpRequest request) {
 
         QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
-        Map<String, List<String>> params = queryStringDecoder.parameters();
         int accId;
         try{
-            accId = Integer.parseInt(request.uri().toString().split("/")[2]);
+            accId = Integer.parseInt(request.uri().split("/")[2]);
         } catch (Exception ex) {
             return HttpResponseStatus.NOT_FOUND;
         }
@@ -673,8 +674,8 @@ public class Workers {
 
         JsonIterator iter = JsonIterator.parse(jsonData);
         Account data = new Account();
-        int[] premium = new int[2];
-        List<int[]> likes = new ArrayList<>();
+        int[] premium;
+        List<int[]> likes;
 
         try {
             for (String field2 = iter.readObject(); field2 != null; field2 = iter.readObject()) {
@@ -702,6 +703,7 @@ public class Workers {
                         data.setSex(iter.readString());
                         break;
                     case "likes":
+                        likes = new ArrayList<>();
                         while (iter.readArray()) {
                             int[] like = new int[2];
                             for (String likeField = iter.readObject(); likeField != null; likeField = iter.readObject()) {
@@ -718,6 +720,7 @@ public class Workers {
                         }
                         break;
                     case "premium": //inner
+                        premium = new int[2];
                         for (String fieldP = iter.readObject(); fieldP != null; fieldP = iter.readObject()) {
                             switch (fieldP) {
                                 case "start":

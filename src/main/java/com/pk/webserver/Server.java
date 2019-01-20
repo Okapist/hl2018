@@ -6,7 +6,9 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 
@@ -46,12 +48,12 @@ public class Server {
         final Thread phaseChangeThread = new Thread(this::phaseChangeMonitor);
         phaseChangeThread.start();
 
-        EventLoopGroup bossGroup = new EpollEventLoopGroup();
-        EventLoopGroup workerGroup = new EpollEventLoopGroup(8);
+        NioEventLoopGroup bossGroup = new NioEventLoopGroup();
+        NioEventLoopGroup workerGroup = new NioEventLoopGroup(8);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                    .channel(EpollServerSocketChannel.class)
+                    .channel(NioServerSocketChannel.class)
                     .childHandler(new ServerInitializer())
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
@@ -129,10 +131,33 @@ public class Server {
         public ServerHandler() {
         }
 
+/*
+        private AtomicInteger connections = new AtomicInteger(0);
+
+        @Override
+        public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            //if(connections < 4) {
+                connections.set(connections.get() +1);
+                System.out.println(connections.get());
+                super.channelActive(ctx);
+            //} else
+                //ctx.close();
+        }
+
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            super.channelInactive(ctx);
+            connections.set(connections.get() -1);
+        }
+
+*/
+
+/*
         @Override
         public void channelReadComplete(ChannelHandlerContext ctx) {
             ctx.flush();
         }
+*/
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -186,30 +211,38 @@ public class Server {
                         }
                     }
                 } else {
+                    try {
+                        if (phase.get() == 1) {
+                            phase.set(2);
+                            System.out.println("SECOND PHASE START " + curTime);
+                        }
 
-                    if (phase.get() == 1) {
-                        phase.set(2);
-                        System.out.println("SECOND PHASE START " + curTime);
-                    }
+                        anyPostCalled.set(true);
 
-                    anyPostCalled.set(true);
-
-                    if (context.startsWith("/accounts/new/")) {
-                        if (context.equals("/accounts/new/"))
-                            status = workers.newAccount(request);
-                        else
-                            status = NOT_FOUND;
-                    } else {
-                        if (context.startsWith("/accounts/likes/")) {
-                            if (context.equals("/accounts/likes/"))
-                                status = workers.likes(request);
+                        if (context.startsWith("/accounts/new/")) {
+                            if (context.equals("/accounts/new/"))
+                                status = workers.newAccount(request);
+                                //status = CREATED;//workers.newAccount(request);
                             else
                                 status = NOT_FOUND;
                         } else {
-                            status = workers.refresh(request);
+                            if (context.startsWith("/accounts/likes/")) {
+                                if (context.equals("/accounts/likes/"))
+                                    status = workers.likes(request);
+                                    //status = ACCEPTED;//workers.refresh(request);
+                                else
+                                    status = NOT_FOUND;
+                            } else {
+                                status = workers.refresh(request);
+                                //status = ACCEPTED;//workers.refresh(request);
+                            }
                         }
+                    } catch (Exception ex){
+                        status = BAD_REQUEST;
                     }
-                    buf.append("{}");
+                    finally {
+                        buf.append("{}");
+                    }
                 }
             } finally {
                 try {
