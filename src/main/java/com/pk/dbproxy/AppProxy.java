@@ -210,8 +210,8 @@ public class AppProxy {
             if(account != null) {
                 account.country = (short) countriesList.indexOf(tempCountryList.get(account.country));
                 account.city = (short) citiesList.indexOf(tempCityList.get(account.city));
-                account.email = temp.get(tempEmailList.get(account.email));
 
+                account.email = temp.get(tempEmailList.get(account.email));
                 account.emailDomain = domainList.indexOf(tempDomainList.get(account.emailDomain));
             }
         }
@@ -721,7 +721,6 @@ public class AppProxy {
     }
 
     public void commitCountryCityAccounts() {
-
 
         AllLists.countryAccounts = new int[AllLists.countriesList.size()][];
         for (int i = 0; i < tempCountryAccounts.size(); i++) {

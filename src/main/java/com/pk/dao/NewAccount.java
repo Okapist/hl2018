@@ -13,9 +13,7 @@ import static com.pk.model.PostLists.accIdAdded;
 
 public class NewAccount {
 
-    public HttpResponseStatus create(com.pk.jsonmodel.Account jsonAccount) {
-
-        String[] emailParts = jsonAccount.getEmail().split("@");
+    public HttpResponseStatus create(com.pk.jsonmodel.Account jsonAccount, byte status, String[] emailParts, List<int[]> likes, int[] premium, List<String> interests) {
 
         Account account = new Account();
         account.id = jsonAccount.getId();
@@ -28,7 +26,7 @@ public class NewAccount {
                 PostLists.newEmails.add(emailParts[0]);
                 emailIndex = AllLists.allEmailList.size() + PostLists.newEmails.size();
             } else {
-                emailIndex += AllLists.allEmailList.size() + 1;
+                emailIndex += AllLists.allEmailList.size();
             }
         }
 
@@ -40,7 +38,7 @@ public class NewAccount {
                 PostLists.newEmailDomains.add(emailParts[1]);
                 domainIndex = AllLists.domainList.size() + PostLists.newEmailDomains.size();
             } else {
-                domainIndex += AllLists.domainList.size() + 1;
+                domainIndex += AllLists.domainList.size();
             }
         }
 
@@ -54,14 +52,14 @@ public class NewAccount {
 
         account.email = emailIndex;
         account.emailDomain = domainIndex;
-/*
+
 
         if(jsonAccount.getFname() != null) {
 
             int oldIndex = Arrays.binarySearch(AllLists.fnames, jsonAccount.getFname().toCharArray(), Utils::compareCharArr);
             if(oldIndex < 0) {
                 PostLists.fnames.add(jsonAccount.getFname());
-                account.fname = AllLists.fnames.length + PostLists.fnames.size() - 1;
+                account.fname = AllLists.fnames.length + PostLists.fnames.size();
             } else {
                 account.fname = oldIndex;
             }
@@ -71,7 +69,7 @@ public class NewAccount {
             int oldIndex = Arrays.binarySearch(AllLists.snames, jsonAccount.getSname().toCharArray(), Utils::compareCharArr);
             if (oldIndex < 0) {
                 PostLists.snames.add(jsonAccount.getSname());
-                account.sname = AllLists.snames.length + PostLists.snames.size() - 1;
+                account.sname = AllLists.snames.length + PostLists.snames.size();
             } else {
                 account.sname = oldIndex;
             }
@@ -106,42 +104,32 @@ public class NewAccount {
             account.city = citiIndex;
         }
 
-        switch (jsonAccount.getStatus()) {
-            case "свободны":
-                account.status = 1;
-                break;
-            case "всё сложно":
-                account.status = 2;
-                break;
-            case "заняты":
-                account.status = 3;
-                break;
-        }
+        account.status = status;
+
         if(jsonAccount.getBirth() != null)
             account.birth = jsonAccount.getBirth();
 
-        account.joined = jsonAccount.getJoined();
+        if(jsonAccount.getJoined() != null)
+            account.joined = jsonAccount.getJoined();
 
-        if(jsonAccount.getPremiumStart() != null)
-            account.premiumStart = jsonAccount.getPremiumStart();
+        if(premium != null) {
+            account.premiumStart = premium[0];
+            account.premiumEnd = premium[1];
+        }
 
-        if(jsonAccount.getPremiumEnd() != null)
-            account.premiumEnd = jsonAccount.getPremiumEnd();
-
-        if(jsonAccount.getInterests() != null) {
-            account.interests = new HashSet<>(jsonAccount.getInterests().length);
-            account.interestsArray = new int[jsonAccount.getInterests().length];
-            String[] interests = jsonAccount.getInterests();
-            for (int i = 0; i < interests.length; i++) {
-                String interest = interests[i];
+        if(interests != null) {
+            account.interests = new HashSet<>(interests.size());
+            account.interestsArray = new int[interests.size()];
+            for (int i = 0; i < interests.size(); i++) {
+                String interest = interests.get(i);
                 Integer intId = AllLists.interests.get(interest);
                 account.interests.add(intId);
                 account.interestsArray[i] = intId;
             }
         }
-*/
 
-        boolean goodLikes = addLikes(jsonAccount);
+
+        boolean goodLikes = addLikes(account.id, likes);
         if(goodLikes) {
             AllLists.allAccounts[account.id] = account;
             accIdAdded.add(account.id);
@@ -151,68 +139,54 @@ public class NewAccount {
         }
     }
 
-    private boolean addLikes(com.pk.jsonmodel.Account jsonAccount) {
+    private boolean addLikes(int id, List<int[]> likes) {
 
-        if (jsonAccount.getLikes() != null) {
+        if (likes != null) {
 
-            Arrays.sort(jsonAccount.getLikes(), (p1, p2) -> {
-                return Integer.compare(p2.getId(), p1.getId());
+            Collections.sort(likes, (p1, p2) -> {
+                return Integer.compare(p2[0], p1[0]);
             });
 
-            List<Likes> clearList = new ArrayList<>();
+            List<int[]> clearList = new ArrayList<>();
             int prevLikeId = Integer.MIN_VALUE;
             int totalSame = 0;
             long totalTs = 0;
-            for (Likes like : jsonAccount.getLikes()) {
-                if (like.getId() != prevLikeId) {
+            for (int[] like : likes) {
+                if (like[0] != prevLikeId) {
                     if (totalSame != 0) {
-                        clearList.get(clearList.size()-1).setTs((int)((clearList.get(clearList.size()-1).getTs() + totalTs) / (totalSame+1)));
+
+                        clearList.get(clearList.size()-1)[1] = (int)((clearList.get(clearList.size()-1)[1] + totalTs) / (totalSame+1));
                         totalSame = 0;
                         totalTs = 0;
                     }
                     clearList.add(like);
-                    prevLikeId = like.getId();
+                    prevLikeId = like[0];
                 } else {
                     ++totalSame;
-                    totalTs += like.getTs();
+                    totalTs += like[0];
                 }
             }
-/*
-
-            while (AllLists.likesAccounts.size() <= jsonAccount.getId()) {
-                AllLists.likesAccounts.add(null);
-            }
-*/
 
             for (int i = 0; i < clearList.size()*2; i+=2) {
-                Likes like = clearList.get(i/2);
-                int likeId = like.getId();
-                int likeTs = like.getTs();
+                int[] like = clearList.get(i/2);
+                int likeId = like[0];
 
                 if(likeId > AllLists.allAccounts.length && AllLists.allAccounts[likeId] == null)
                     return false;
-
-/*
-                if(AllLists.likesAccounts.get(jsonAccount.getId()) == null) {
-                    AllLists.likesAccounts.set(jsonAccount.getId(), new int[clearList.size()*2]);
-                }
-
-                AllLists.likesAccounts.get(jsonAccount.getId())[i] = likeId;
-                AllLists.likesAccounts.get(jsonAccount.getId())[i+1] = likeTs;
-
-                while (AllLists.likesTO.size() <= likeId)
-                    AllLists.likesTO.add(null);
-
-                if(AllLists.likesTO.get(likeId) == null) {
-                    AllLists.likesTO.set(likeId, new ArrayList<>());
-                }
-
-                AllLists.likesTO.get(likeId).add(jsonAccount.getId());
-*/
             }
+
+            for (int i = 0; i < clearList.size()*2; i+=2) {
+                int[] like = clearList.get(i/2);
+                int likeId = like[0];
+                int likeTs = like[1];
+                int[] postLike = new int[3];
+                postLike[0] = id;
+                postLike[1] = likeId;
+                postLike[2] = likeTs;
+                PostLists.newLikes.add(postLike);
+            }
+
         }
         return true;
     }
-
-
 }

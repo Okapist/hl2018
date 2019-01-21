@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class PostLists {
 
+
     {
         fnames.add("");
         snames.add("");
@@ -26,4 +27,6 @@ public class PostLists {
 
     public static Set<Integer> usedEmailDomain = new HashSet<>();
     public static Set<Integer> freeEmailDomain = new HashSet<>();
+
+    public static List<int[]> newLikes = new ArrayList<>();
 }

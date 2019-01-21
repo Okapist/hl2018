@@ -221,13 +221,13 @@ public class Workers {
 
         int snameIndex = -666;
         if(sname != null && snameExists == null && snameEq != null && snameEq)
-            snameIndex = Utils.getSnameIndex(sname);
+            snameIndex = Utils.getSnameIndexBinary(sname);
         int[] fnameIndex= null;
         if(fname != null) {
             fnameIndex = new int[fname.size()];
             for (int i = 0; i < fname.size(); i++) {
                 String fn = fname.get(i);
-                fnameIndex[i] = Utils.getFnameIndex(fn);
+                fnameIndex[i] = Utils.getFnameIndexBinary(fn);
             }
         }
         boolean result = accFilter.filter(sex,
@@ -538,9 +538,9 @@ public class Workers {
 
         JsonIterator iter = JsonIterator.parse(jsonData);
         Account data = new Account();
-        int[] premium;
-        List<int[]> likes;
-        List<String> interests;
+        int[] premium = null;
+        List<int[]> likes = null;
+        List<String> interests = null;
         try {
             for (String field2 = iter.readObject(); field2 != null; field2 = iter.readObject()) {
                 switch (field2) {
@@ -651,8 +651,8 @@ public class Workers {
                 return HttpResponseStatus.BAD_REQUEST;
         }
 
-        //NewAccount creator = new NewAccount();
-        //HttpResponseStatus toReturn = creator.create(data);
+        NewAccount creator = new NewAccount();
+        HttpResponseStatus toReturn = creator.create(data, status, emailParts, likes, premium, interests);
 
         return HttpResponseStatus.CREATED;
     }

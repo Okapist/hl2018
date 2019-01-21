@@ -5,10 +5,7 @@ import com.pk.model.AllLists;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 import static com.pk.model.AllLists.fnames;
 import static com.pk.model.AllLists.snames;
@@ -145,6 +142,15 @@ public class Utils {
         return true;
     }
 
+    public static int getSnameIndexBinary(String sname) {
+        int index = Arrays.binarySearch(AllLists.snames, sname.toCharArray(), Utils::compareCharArr);
+        return index>=0?index:-1;
+    }
+
+    public static int getSnameIndexBinary(char[] sname) {
+        int index = Arrays.binarySearch(AllLists.snames, sname, Utils::compareCharArr);
+        return index>=0?index:-1;
+    }
 
     public static int getSnameIndex(String sname) {
         for (int i = 0; i < snames.length; i++) {
@@ -155,6 +161,17 @@ public class Utils {
         }
         return -1;
     }
+
+    public static int getFnameIndexBinary(String fname) {
+        int index = Arrays.binarySearch(AllLists.fnames, fname.toCharArray(), Utils::compareCharArr);
+        return index>=0?index:-1;
+    }
+
+    public static int getFnameIndexBinary(char[] fname) {
+        int index = Arrays.binarySearch(AllLists.fnames, fname, Utils::compareCharArr);
+        return index>=0?index:-1;
+    }
+
 
     public static int getFnameIndex(String fname) {
         for (int i = 0; i < fnames.length; i++) {
