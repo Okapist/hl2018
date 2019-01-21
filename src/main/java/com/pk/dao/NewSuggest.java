@@ -32,8 +32,8 @@ public class NewSuggest {
             int likeTs = baseLikes[i + 1];
             if (likeId == 0)
                 continue;
-            List<Integer> tmp = AllLists.likesTO.get(likeId);
-            for (Integer accountId : tmp) {
+            int[] tmp = AllLists.likesTO[likeId];
+            for (int accountId : tmp) {
 
                 if (country != null) {
                     if (AllLists.allAccounts[accountId].country == 0 ||

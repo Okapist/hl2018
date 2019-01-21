@@ -6,7 +6,7 @@ public class AllLists {
     public static final Account[] allAccounts = new Account[1_400_000];
 
     public static final List<int[]> likesAccounts = new ArrayList<>(); //кого аккаунт лайкал hm<accId, ts>
-    public static final List<List<Integer>> likesTO = new ArrayList<>(); //кто лайкал данный аккаунт
+    public static final int[][] likesTO = new int[1_400_000][]; //кто лайкал данный аккаунт
 
     public static final List<List<Integer>> domainAccounts = new ArrayList<>();
     public static int[][]cityAccounts;

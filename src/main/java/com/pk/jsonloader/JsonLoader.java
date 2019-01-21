@@ -72,6 +72,9 @@ public class JsonLoader {
         appProxy.tempEmailIndex = null;
         System.gc();
 
+        appProxy.commitLikes();
+        System.gc();
+
         appProxy.commitUsedEmails();
 
         appProxy.commitInterests();

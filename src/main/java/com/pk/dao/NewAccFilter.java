@@ -323,17 +323,17 @@ public class NewAccFilter {
             likesArr = new HashSet<>();
             for (String like : likes) {
                 int likeId = Integer.parseInt(like);
-                if (likeId >= AllLists.likesTO.size())
+                if (likeId >= AllLists.likesTO.length)
                     return true;
 
                 likesArr.add(likeId);
                 int tempStart = 0;
-                int tempEnd = AllLists.likesTO.get(likeId).size();
+                int tempEnd = AllLists.likesTO[likeId].length;
                 if (tempEnd - tempStart < filterSize) {
                     filterStartIndex = 0;
                     filterEndIndex = tempEnd;
-                    filterList = AllLists.likesTO.get(likeId);
-                    filterArr = null;
+                    filterList = null;
+                    filterArr =  AllLists.likesTO[likeId];
                     filterSize = tempEnd - tempStart;
                 }
             }

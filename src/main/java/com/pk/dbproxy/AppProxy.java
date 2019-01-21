@@ -24,6 +24,8 @@ public class AppProxy {
     private List<List<Integer>> tempCountryAccounts = new ArrayList<>();
     private List<List<Integer>> tempCityAccounts = new ArrayList<>();
 
+    private List<List<Integer>> tempLikesTo = new ArrayList<>();
+
     List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
     private HashMap<Integer, HashMap<Integer, List<Integer>>>[][][] tempRecommendInteresFilter = new HashMap[2][3][];
 
@@ -303,14 +305,14 @@ public class AppProxy {
                 AllLists.likesAccounts.get(jsonAccount.getId())[i] = likeId;
                 AllLists.likesAccounts.get(jsonAccount.getId())[i+1] = likeTs;
 
-                while (AllLists.likesTO.size() <= likeId)
-                    AllLists.likesTO.add(null);
+                while (tempLikesTo.size() <= likeId)
+                    tempLikesTo.add(null);
 
-                if(AllLists.likesTO.get(likeId) == null) {
-                    AllLists.likesTO.set(likeId, new ArrayList<>());
+                if(tempLikesTo.get(likeId) == null) {
+                    tempLikesTo.set(likeId, new ArrayList<>());
                 }
 
-                AllLists.likesTO.get(likeId).add(jsonAccount.getId());
+                tempLikesTo.get(likeId).add(jsonAccount.getId());
             }
         }
     }
@@ -750,5 +752,22 @@ public class AppProxy {
         tempCityAccounts.clear();
         tempCityAccounts = null;
 
+    }
+
+    public void commitLikes() {
+        for (int i = 0; i < tempLikesTo.size(); i++) {
+            List<Integer> temp = tempLikesTo.get(i);
+            if(temp == null)
+                continue;
+
+            int[] commitedLikes = new int[temp.size()];
+            AllLists.likesTO[i] = commitedLikes;
+            for(int j=0; j<temp.size(); ++j) {
+                commitedLikes[j] = temp.get(j);
+            }
+        }
+
+        tempLikesTo.clear();
+        tempLikesTo = null;
     }
 }

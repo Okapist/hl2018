@@ -179,11 +179,14 @@ public class NewAccGroup {
         Set<Integer> searchLikesSet = null;
         if (likes != null) {
             likeId = Integer.parseInt(likes);
-            if(likeId > AllLists.likesTO.size()) {
+            if(likeId > AllLists.likesTO.length) {
                 return true;
             }
-            listList = AllLists.likesTO.get(likeId);
-            searchLikesSet = new HashSet<>(AllLists.likesTO.get(likeId));
+            list = AllLists.likesTO[likeId];
+            searchLikesSet = new HashSet<>(AllLists.likesTO[likeId].length);
+            for(int like : AllLists.likesTO[likeId]) {
+                searchLikesSet.add(like);
+            }
         }
 
         if(listList == null && list ==null)
