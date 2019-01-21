@@ -48,12 +48,12 @@ public class Server {
         final Thread phaseChangeThread = new Thread(this::phaseChangeMonitor);
         phaseChangeThread.start();
 
-        NioEventLoopGroup bossGroup = new NioEventLoopGroup();
-        NioEventLoopGroup workerGroup = new NioEventLoopGroup(8);
+        EpollEventLoopGroup bossGroup = new EpollEventLoopGroup();
+        EpollEventLoopGroup workerGroup = new EpollEventLoopGroup(8);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(EpollServerSocketChannel.class)
                     .childHandler(new ServerInitializer())
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
@@ -222,19 +222,16 @@ public class Server {
                         if (context.startsWith("/accounts/new/")) {
                             if (context.equals("/accounts/new/"))
                                 status = workers.newAccount(request);
-                                //status = CREATED;//workers.newAccount(request);
                             else
                                 status = NOT_FOUND;
                         } else {
                             if (context.startsWith("/accounts/likes/")) {
                                 if (context.equals("/accounts/likes/"))
                                     status = workers.likes(request);
-                                    //status = ACCEPTED;//workers.refresh(request);
                                 else
                                     status = NOT_FOUND;
                             } else {
-                                status = workers.refresh(request);
-                                //status = ACCEPTED;//workers.refresh(request);
+                                status = workers.refresh(request, context);
                             }
                         }
                     } catch (Exception ex){
@@ -271,4 +268,5 @@ public class Server {
             ctx.close();
         }
     }
+
 }

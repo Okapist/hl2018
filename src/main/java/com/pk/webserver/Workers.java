@@ -657,11 +657,21 @@ public class Workers {
         return HttpResponseStatus.CREATED;
     }
 
-    public HttpResponseStatus refresh(HttpRequest request) {
+    public HttpResponseStatus refresh(HttpRequest request, String context) {
 
-        QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
+        if(!context.startsWith("/accounts/"))
+            return HttpResponseStatus.NOT_FOUND;
+
         int accId;
         try{
+            String[] parts = context.split("/");
+
+            if(parts.length != 3)
+                return HttpResponseStatus.BAD_REQUEST;
+
+            if(!isNumeric(parts[2]))
+                return HttpResponseStatus.NOT_FOUND;
+
             accId = Integer.parseInt(request.uri().split("/")[2]);
         } catch (Exception ex) {
             return HttpResponseStatus.NOT_FOUND;
@@ -767,7 +777,7 @@ public class Workers {
             }
         }
 
-        if(data.getEmail()!= null && (emailParts==null || emailParts.length != 2 || allEmailList.contains(emailParts[0]))) {
+        if(data.getEmail()!= null && (emailParts==null || emailParts.length != 2 || Collections.binarySearch(allEmailList, emailParts[0]) > -1)) {
             return HttpResponseStatus.BAD_REQUEST;
         }
 
@@ -861,4 +871,14 @@ public class Workers {
             return null;
         return Utils.findCityIndex(city);
     }
+
+    public static boolean isNumeric(String str)
+    {
+        for (char c : str.toCharArray())
+        {
+            if (!Character.isDigit(c)) return false;
+        }
+        return true;
+    }
+
 }
