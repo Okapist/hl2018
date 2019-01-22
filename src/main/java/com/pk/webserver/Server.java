@@ -35,9 +35,10 @@ public class Server {
     public final static AtomicInteger connections = new AtomicInteger();
     public final static AtomicBoolean anyPostCalled = new AtomicBoolean(false);
 
-    public final static AtomicInteger oldPhase = new AtomicInteger(0);
-    public final static AtomicInteger phase = new AtomicInteger(0);
+    public static volatile int oldPhase = 0;
+    public static volatile int phase = 0;
     public static volatile long lastQueryTime = 0;
+    public static volatile long phase2begin = 0;
 
     public Server() {
     }
@@ -76,19 +77,19 @@ public class Server {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
 
-            if (curTime - lastQueryTime > 1000) {
+            if (curTime - lastQueryTime > 1000 && curTime - phase2begin > 297000) {
 
-                if (phase.get() == 0)
+                if (phase == 0)
                     continue;
 
-                if(phase.get() == 1 && oldPhase.get() == 0) {
-                    oldPhase.set(1);
+                if(phase == 1 && oldPhase == 0) {
+                    oldPhase = 1;
                     System.gc();
                     System.out.println("FIRST PHASE END " + curTime);
                 }
 
-                if(phase.get() == 2 && oldPhase.get() == 1 && anyPostCalled.get()) {
-                    oldPhase.set(2);
+                if(phase == 2 && oldPhase == 1 && anyPostCalled.get()) {
+                    oldPhase = 2;
                     System.gc();
                     IndexCalculator id = new IndexCalculator();
                     id.calculateIndexes();
@@ -135,12 +136,12 @@ public class Server {
             try {
                 if (request.method() == HttpMethod.GET) {
 
-                    if (phase.get() == 0) {
-                        phase.set(1);
+                    if (phase == 0) {
+                        phase = 1;
                         System.out.println("FIRST PHASE START " + curTime);
                     }
-                    if (phase.get() == 2) {
-                        phase.set(3);
+                    if (phase == 2) {
+                        phase = 3;
                         System.out.println("THIRD PHASE START " + curTime);
                     }
 /*
@@ -177,12 +178,18 @@ public class Server {
                     //}
                 } else {
                     try {
-                        if (phase.get() == 1) {
-                            phase.set(2);
+                        if (phase == 1) {
+                            phase = 2;
                             System.out.println("SECOND PHASE START " + curTime);
                         }
+                        if (oldPhase == 2) {
+                            System.out.print("bad ");
+                        }
 
+                        if(phase2begin == 0)
+                            phase2begin = Calendar.getInstance().getTimeInMillis();
                         anyPostCalled.set(true);
+
 
                         if (context.startsWith("/accounts/new/")) {
                             if (context.equals("/accounts/new/"))

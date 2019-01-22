@@ -9,8 +9,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.*;
 
 import static com.pk.model.AllLists.usedEmailDomain;
-import static com.pk.model.PostLists.accIdAdded;
-import static com.pk.model.PostLists.accIdEdited;
 
 public class EditAccount {
 
@@ -128,7 +126,7 @@ public class EditAccount {
         boolean goodLikes = addLikes(jsonAccount);
         if(goodLikes) {
             //AllLists.allAccounts[account.id] = account;
-            accIdEdited.add(toEdit.id);
+            //accIdEdited.add(toEdit.id);
             return HttpResponseStatus.ACCEPTED;
         } else {
             return HttpResponseStatus.BAD_REQUEST;

@@ -18,8 +18,8 @@ public class PostLists {
     public static List<String> fnames = new ArrayList<>();
     public static List<String> snames = new ArrayList<>();
 
-    public static List<Integer> accIdAdded = new ArrayList<>();
-    public static List<Integer> accIdEdited = new ArrayList<>();
+    //public static List<Integer> accIdAdded = new ArrayList<>();
+    //public static List<Integer> accIdEdited = new ArrayList<>();
 
     public static List<String> newEmails = new ArrayList<>();
     public static List<String> newEmailDomains = new ArrayList<>();

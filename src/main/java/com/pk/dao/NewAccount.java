@@ -1,6 +1,5 @@
 package com.pk.dao;
 
-import com.pk.jsonmodel.Likes;
 import com.pk.model.Account;
 import com.pk.model.AllLists;
 import com.pk.model.PostLists;
@@ -9,7 +8,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.*;
 
 import static com.pk.model.AllLists.usedEmailDomain;
-import static com.pk.model.PostLists.accIdAdded;
 
 public class NewAccount {
 
@@ -132,7 +130,7 @@ public class NewAccount {
         boolean goodLikes = addLikes(account.id, likes);
         if(goodLikes) {
             AllLists.allAccounts[account.id] = account;
-            accIdAdded.add(account.id);
+            //accIdAdded.add(account.id);
             return HttpResponseStatus.CREATED;
         } else {
             return HttpResponseStatus.BAD_REQUEST;

@@ -7,8 +7,8 @@ import com.pk.model.PostLists;
 import java.util.*;
 
 import static com.pk.model.AllLists.*;
-import static com.pk.model.PostLists.accIdAdded;
-import static com.pk.model.PostLists.accIdEdited;
+//import static com.pk.model.PostLists.accIdAdded;
+//import static com.pk.model.PostLists.accIdEdited;
 
 public class IndexCalculator {
 
@@ -16,10 +16,10 @@ public class IndexCalculator {
     public void calculateIndexes() {
 
         System.out.println("START RECALC INDEX " + Calendar.getInstance().getTimeInMillis());
-        Collections.sort(accIdAdded);
-        Collections.sort(accIdEdited);
+        //Collections.sort(accIdAdded);
+        //Collections.sort(accIdEdited);
 
-        System.out.println("accId sorted " + Calendar.getInstance().getTimeInMillis());
+        //System.out.println("accId sorted " + Calendar.getInstance().getTimeInMillis());
 
         addNewEmailAndDomains();
         System.gc();
@@ -40,7 +40,7 @@ public class IndexCalculator {
         sortCountryCityEmails();
         System.gc();
 
-        System.out.println("createCountryCityDomainsPhoneCodesAccountArrays complete " + Calendar.getInstance().getTimeInMillis());
+        System.out.println("sortCountryCityEmails complete " + Calendar.getInstance().getTimeInMillis());
 
         updatePremiumLists();
         System.gc();
@@ -323,10 +323,10 @@ public class IndexCalculator {
         PostLists.snames.clear();
         //PostLists.snames = null;
 
-        accIdAdded.clear();
+        //accIdAdded.clear();
         //accIdAdded = null;
 
-        accIdEdited.clear();
+        //accIdEdited.clear();
         //accIdEdited = null;
 
         PostLists.freeEmailDomain.clear();
