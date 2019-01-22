@@ -15,24 +15,37 @@ public class IndexCalculator {
 
     public void calculateIndexes() {
 
+        System.out.println("START RECALC INDEX " + Calendar.getInstance().getTimeInMillis());
         Collections.sort(accIdAdded);
         Collections.sort(accIdEdited);
+
+        System.out.println("accId sorted " + Calendar.getInstance().getTimeInMillis());
 
         addNewEmailAndDomains();
         System.gc();
 
+        System.out.println("addNewEmailAndDomains complete " + Calendar.getInstance().getTimeInMillis());
+
         commitFSnamesEmails();
         System.gc();
 
+        System.out.println("commitFSnamesEmails complete " + Calendar.getInstance().getTimeInMillis());
+
         createCountryCityDomainsPhoneCodesAccountArrays();
         System.gc();
+
+        System.out.println("createCountryCityDomainsPhoneCodesAccountArrays complete " + Calendar.getInstance().getTimeInMillis());
 
         //city and country need only to sort;
         sortCountryCityEmails();
         System.gc();
 
+        System.out.println("createCountryCityDomainsPhoneCodesAccountArrays complete " + Calendar.getInstance().getTimeInMillis());
+
         updatePremiumLists();
         System.gc();
+
+        System.out.println("INDEX RECALC complete " + Calendar.getInstance().getTimeInMillis());
     }
 
     private void updatePremiumLists() {
