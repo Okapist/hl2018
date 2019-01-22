@@ -21,6 +21,9 @@ public class NewSuggest {
         if (limit < 1)
             return false;
 
+        if(accId >= AllLists.likesAccounts.size())
+            return true;
+
         int[] baseLikes = AllLists.likesAccounts.get(accId);
 
         if (baseLikes == null)

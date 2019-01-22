@@ -853,7 +853,7 @@ public class Workers {
             return null;
         List<Short> cityIndexes = new ArrayList<>(city.size());
         for(String c: city) {
-            Short i = Utils.findCityIndex(c);
+            Short i = Utils.findCityIndexBinary(c);
             if(i!= null)
                 cityIndexes.add(i);
         }
@@ -863,13 +863,13 @@ public class Workers {
     private Short convertCountryToIndex(String country) {
         if(country == null)
             return null;
-        return Utils.findCountryIndex(country);
+        return Utils.findCountryIndexBinary(country);
     }
 
     private Short convertCityToIndex(String city) {
         if(city == null)
             return null;
-        return Utils.findCityIndex(city);
+        return Utils.findCityIndexBinary(city);
     }
 
     public static boolean isNumeric(String str)

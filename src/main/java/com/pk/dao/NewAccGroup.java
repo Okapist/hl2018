@@ -179,6 +179,9 @@ public class NewAccGroup {
         Set<Integer> searchLikesSet = null;
         if (likes != null) {
             likeId = Integer.parseInt(likes);
+            if(AllLists.likesTO[likeId]==null)
+                return true;
+
             if(likeId > AllLists.likesTO.length) {
                 return true;
             }

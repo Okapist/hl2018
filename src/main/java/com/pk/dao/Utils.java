@@ -27,16 +27,6 @@ public class Utils {
         return null;
     }
 
-    public static Short findCityIndexBinary(String name) {
-
-        if(name == null || "".equals(name))
-            return null;
-
-        List<String> citiesList = AllLists.citiesList;
-        int index = Collections.binarySearch(citiesList, name);
-        return (index>-1?(short)index:null);
-    }
-
     public static Short findCountryIndexBinary(String name) {
 
         if(name == null || "".equals(name))
@@ -45,6 +35,17 @@ public class Utils {
         List<String> countryList = AllLists.countriesList;
         int index = Collections.binarySearch(countryList, name);
         return (index>-1?(short)index:null);
+    }
+
+    public static Short findCityIndexBinary(String name) {
+
+        if(name == null || "".equals(name))
+            return null;
+
+        List<String> cityList = AllLists.citiesList;
+        int index = Collections.binarySearch(cityList, name);
+        return (index>-1?AllLists.shortCache[index]:null);
+
     }
 
     public static Short findCityIndex(String name) {
@@ -152,16 +153,6 @@ public class Utils {
         return index>=0?index:-1;
     }
 
-    public static int getSnameIndex(String sname) {
-        for (int i = 0; i < snames.length; i++) {
-            char[] sn = snames[i];
-            if (new String(sn).equals(sname))
-                return i;
-
-        }
-        return -1;
-    }
-
     public static int getFnameIndexBinary(String fname) {
         int index = Arrays.binarySearch(AllLists.fnames, fname.toCharArray(), Utils::compareCharArr);
         return index>=0?index:-1;
@@ -170,17 +161,6 @@ public class Utils {
     public static int getFnameIndexBinary(char[] fname) {
         int index = Arrays.binarySearch(AllLists.fnames, fname, Utils::compareCharArr);
         return index>=0?index:-1;
-    }
-
-
-    public static int getFnameIndex(String fname) {
-        for (int i = 0; i < fnames.length; i++) {
-            char[] fn = fnames[i];
-            if (new String(fn).equals(fname))
-                return i;
-
-        }
-        return -1;
     }
 
     public static int getTimestamp(int year) {
@@ -201,32 +181,4 @@ public class Utils {
         return (int) (time/1000);
     }
 
-    public static int getCityInCountryIndex(int country, int city) {
-        return AllLists.countryCityList[country].indexOf(city);
-    }
-
-
-/*
-    public static int searchBirth(int birth) {
-        int low = 0;
-        int high = AllLists.birthAccount.length-1;
-        int[] list = AllLists.birthAccount;
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            int midVal = list[mid];
-
-            int midToCompare = AllLists.allAccounts[midVal].birth;
-
-            int cmp = midToCompare - birth;
-
-            if (cmp < 0)
-                low = mid + 1;
-            else if (cmp > 0)
-                high = mid - 1;
-            else
-                return mid; // key found
-        }
-        return low;  // key not found
-    }
-*/
 }

@@ -24,7 +24,7 @@ public class NewAccount {
             emailIndex = PostLists.newEmails.indexOf(emailParts[0]);
             if(emailIndex == -1) {
                 PostLists.newEmails.add(emailParts[0]);
-                emailIndex = AllLists.allEmailList.size() + PostLists.newEmails.size();
+                emailIndex = AllLists.allEmailList.size() + PostLists.newEmails.size() - 1;
             } else {
                 emailIndex += AllLists.allEmailList.size();
             }
@@ -36,7 +36,7 @@ public class NewAccount {
             domainIndex = PostLists.newEmailDomains.indexOf(emailParts[1]);
             if(domainIndex == -1) {
                 PostLists.newEmailDomains.add(emailParts[1]);
-                domainIndex = AllLists.domainList.size() + PostLists.newEmailDomains.size();
+                domainIndex = AllLists.domainList.size() + PostLists.newEmailDomains.size() - 1;
             } else {
                 domainIndex += AllLists.domainList.size();
             }
@@ -59,7 +59,7 @@ public class NewAccount {
             int oldIndex = Arrays.binarySearch(AllLists.fnames, jsonAccount.getFname().toCharArray(), Utils::compareCharArr);
             if(oldIndex < 0) {
                 PostLists.fnames.add(jsonAccount.getFname());
-                account.fname = AllLists.fnames.length + PostLists.fnames.size();
+                account.fname = AllLists.fnames.length + PostLists.fnames.size() - 1;
             } else {
                 account.fname = oldIndex;
             }
@@ -69,7 +69,7 @@ public class NewAccount {
             int oldIndex = Arrays.binarySearch(AllLists.snames, jsonAccount.getSname().toCharArray(), Utils::compareCharArr);
             if (oldIndex < 0) {
                 PostLists.snames.add(jsonAccount.getSname());
-                account.sname = AllLists.snames.length + PostLists.snames.size();
+                account.sname = AllLists.snames.length + PostLists.snames.size() - 1;
             } else {
                 account.sname = oldIndex;
             }

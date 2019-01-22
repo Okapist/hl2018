@@ -1,5 +1,6 @@
 package com.pk.dao;
 
+import com.pk.Runner;
 import com.pk.model.AllLists;
 import com.pk.model.PostLists;
 
@@ -20,15 +21,38 @@ public class IndexCalculator {
         addNewEmailAndDomains();
         System.gc();
 
-        //city and country need only to sort;
-        sortCountryCityEmails();
-        System.gc();
-
-        commitFSnames();
+        commitFSnamesEmails();
         System.gc();
 
         createCountryCityDomainsPhoneCodesAccountArrays();
         System.gc();
+
+        //city and country need only to sort;
+        sortCountryCityEmails();
+        System.gc();
+
+        updatePremiumLists();
+        System.gc();
+    }
+
+    private void updatePremiumLists() {
+
+        AllLists.premiumNowAccounts.clear();
+        AllLists.premiumEverAccounts.clear();
+        AllLists.premiumNeverAccounts.clear();
+        for(int i=0; i<AllLists.allAccounts.length; ++i) {
+            if(AllLists.allAccounts[i] != null) {
+
+                if(AllLists.allAccounts[i].premiumStart < Runner.curDate && AllLists.allAccounts[i].premiumEnd > Runner.curDate)
+                    AllLists.premiumNowAccounts.add(i);
+
+                if(AllLists.allAccounts[i].premiumStart > 0 && AllLists.allAccounts[i].premiumEnd > 0)
+                    AllLists.premiumEverAccounts.add(i);
+                else
+                    AllLists.premiumNeverAccounts.add(i);
+
+            }
+        }
     }
 
     private void rebuildEmailBorders(HashMap<String, Integer> temp) {
@@ -154,22 +178,29 @@ public class IndexCalculator {
         AllLists.cityAccounts = new int[tempCityAccounts.size()][];
         for (int i = 0; i < tempCityAccounts.size(); i++) {
             List<Integer> acList = tempCityAccounts.get(i);
+            if(acList != null) {
+                AllLists.cityAccounts[i] = new int[acList.size()];
 
-            AllLists.cityAccounts[i] = new int[acList.size()];
-
-            for (int i1 = 0; i1 < acList.size(); i1++) {
-                int cId = acList.get(i1);
-                AllLists.cityAccounts[i][i1] = cId;
+                for (int i1 = 0; i1 < acList.size(); i1++) {
+                    int cId = acList.get(i1);
+                    AllLists.cityAccounts[i][i1] = cId;
+                }
             }
         }
         tempCityAccounts.clear();
         tempCityAccounts = null;
     }
 
-    private void commitFSnames() {
+    private void commitFSnamesEmails() {
 
         int oldFnamesSize = AllLists.fnames.length;
         int oldSnamesSize = AllLists.snames.length;
+
+        //AllLists.allEmailList.addAll(PostLists.newEmails);
+
+        //for (String emailDomain : PostLists.newEmailDomains) {
+            //AllLists.domainList.add(emailDomain.toCharArray());
+        //}
 
         AllLists.fnames = Arrays.copyOf(AllLists.fnames, AllLists.fnames.length + PostLists.fnames.size());
         AllLists.snames = Arrays.copyOf(AllLists.snames, AllLists.snames.length + PostLists.snames.size());
@@ -177,16 +208,16 @@ public class IndexCalculator {
         List<String> fnames1 = PostLists.fnames;
         for (int i = 0; i < fnames1.size(); i++) {
             String ttt = fnames1.get(i);
-            if(!"".equals(ttt)) {
-                AllLists.fnames[oldFnamesSize + i-1] = ttt.toCharArray();
+            if (!"".equals(ttt)) {
+                AllLists.fnames[oldFnamesSize + i] = ttt.toCharArray();
             }
         }
 
         List<String> snames1 = PostLists.snames;
         for (int i = 0; i < snames1.size(); i++) {
-            String ttt = fnames1.get(i);
-            if(!"".equals(ttt)) {
-                AllLists.snames[oldSnamesSize + i-1] = ttt.toCharArray();
+            String ttt = snames1.get(i);
+            if (!"".equals(ttt)) {
+                AllLists.snames[oldSnamesSize + i] = ttt.toCharArray();
             }
         }
     }
@@ -230,17 +261,25 @@ public class IndexCalculator {
 
         for(com.pk.model.Account account : allAccounts) {
             if (account != null) {
-                account.country = (short) Collections.binarySearch(countriesList, tempCountryList.get(account.country));
 
-                account.city = (short) Collections.binarySearch(citiesList, tempCityList.get(account.city));
+                if(account.country > 0)
+                    account.country = (short) Collections.binarySearch(countriesList, tempCountryList.get(account.country));
 
-                account.email = temp.get(tempEmailList.get(account.email));
+                if(account.city > 0)
+                    account.city = (short) Collections.binarySearch(citiesList, tempCityList.get(account.city));
 
-                account.emailDomain = domainList.indexOf(tempDomainList.get(account.emailDomain));
+                if(account.email > 0) {
+                    account.email = temp.get(tempEmailList.get(account.email));
+                    account.emailDomain = domainList.indexOf(tempDomainList.get(account.emailDomain));
+                }
 
-                account.fname = Utils.getFnameIndexBinary(tempFnameList[account.fname]);
-                account.sname = Utils.getFnameIndexBinary(tempSnameList[account.sname]);
+                if(account.fname > 0)
+                    account.fname = Utils.getFnameIndexBinary(tempFnameList[account.fname]);
 
+                if(account.sname > 0)
+                    account.sname = Utils.getSnameIndexBinary(tempSnameList[account.sname]);
+
+                int jj = 0;
             }
         }
 

@@ -66,7 +66,7 @@ public class NewAccFilter {
         Integer emailDomainIndex = null;
         if (email != null && emailDomain != null && emailDomain) {
             emailDomainIndex = Utils.findDomainIndexBinary(email);
-            if (emailDomainIndex == null) {
+            if (emailDomainIndex == null || emailDomainIndex >= AllLists.domainAccounts.size()) {
                 return true;
             }
             if(AllLists.domainAccounts.get(emailDomainIndex).size() < filterSize) {
@@ -325,6 +325,8 @@ public class NewAccFilter {
                 int likeId = Integer.parseInt(like);
                 if (likeId >= AllLists.likesTO.length)
                     return true;
+                if(AllLists.likesTO[likeId] ==null)
+                    continue;
 
                 likesArr.add(likeId);
                 int tempStart = 0;
@@ -623,9 +625,13 @@ public class NewAccFilter {
 
             if(isAdd && likes != null && likesArr != null) {
 
-                if (AllLists.likesAccounts.get(possible.id) == null) {
+                if (possible.id>=AllLists.likesAccounts.size() || AllLists.likesAccounts.get(possible.id) == null) {
                     isAdd = false;
                 }
+
+                if(possibleId >= AllLists.likesAccounts.size())
+                    continue;
+
                 int[] accLikes = AllLists.likesAccounts.get(possible.id);
                 if(accLikes == null)
                     continue;

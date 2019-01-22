@@ -37,7 +37,7 @@ public class Server {
 
     public final static AtomicInteger oldPhase = new AtomicInteger(0);
     public final static AtomicInteger phase = new AtomicInteger(0);
-    public final static AtomicLong lastQueryTime = new AtomicLong(0);
+    public static volatile long lastQueryTime = 0;
 
     public Server() {
     }
@@ -76,16 +76,7 @@ public class Server {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
 
-            if (curTime - lastQueryTime.get() > 200) {
-
-                long stored = lastQueryTime.get();
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if(stored != lastQueryTime.get())
-                    continue;
+            if (curTime - lastQueryTime > 1000) {
 
                 if (phase.get() == 0)
                     continue;
@@ -131,39 +122,11 @@ public class Server {
         public ServerHandler() {
         }
 
-/*
-        private AtomicInteger connections = new AtomicInteger(0);
-
-        @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            //if(connections < 4) {
-                connections.set(connections.get() +1);
-                System.out.println(connections.get());
-                super.channelActive(ctx);
-            //} else
-                //ctx.close();
-        }
-
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            super.channelInactive(ctx);
-            connections.set(connections.get() -1);
-        }
-
-*/
-
-/*
-        @Override
-        public void channelReadComplete(ChannelHandlerContext ctx) {
-            ctx.flush();
-        }
-*/
-
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
-            lastQueryTime.set(curTime);
+            lastQueryTime = curTime;
 
             HttpRequest request = this.request = (HttpRequest) msg;
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
@@ -180,11 +143,13 @@ public class Server {
                         phase.set(3);
                         System.out.println("THIRD PHASE START " + curTime);
                     }
+/*
 
                     if (anyPostCalled.get()) { //PHASE 3 IGNORING
                         buf.append("{\"accounts\": []}");
                         status = OK;
                     } else {
+*/
 
                         if (context.startsWith("/accounts/filter/")) {
                             if (!context.equals("/accounts/filter/"))
@@ -209,7 +174,7 @@ public class Server {
                                 }
                             }
                         }
-                    }
+                    //}
                 } else {
                     try {
                         if (phase.get() == 1) {
