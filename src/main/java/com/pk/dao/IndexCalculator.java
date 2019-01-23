@@ -22,28 +22,28 @@ public class IndexCalculator {
         //System.out.println("accId sorted " + Calendar.getInstance().getTimeInMillis());
 
         addNewEmailAndDomains();
-        System.gc();
+        //System.gc();
 
         System.out.println("addNewEmailAndDomains complete " + Calendar.getInstance().getTimeInMillis());
 
         commitFSnamesEmails();
-        System.gc();
+        //System.gc();
 
         System.out.println("commitFSnamesEmails complete " + Calendar.getInstance().getTimeInMillis());
 
         createCountryCityDomainsPhoneCodesAccountArrays();
-        System.gc();
+        //System.gc();
 
         System.out.println("createCountryCityDomainsPhoneCodesAccountArrays complete " + Calendar.getInstance().getTimeInMillis());
 
         //city and country need only to sort;
         sortCountryCityEmails();
-        System.gc();
+        //System.gc();
 
         System.out.println("sortCountryCityEmails complete " + Calendar.getInstance().getTimeInMillis());
 
         updatePremiumLists();
-        System.gc();
+        //System.gc();
 
         System.out.println("INDEX RECALC complete " + Calendar.getInstance().getTimeInMillis());
     }

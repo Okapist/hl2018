@@ -32,7 +32,7 @@ public class Server {
     
 */
     
-    public final static AtomicInteger connections = new AtomicInteger();
+    //public final static AtomicInteger connections = new AtomicInteger();
     public final static AtomicBoolean anyPostCalled = new AtomicBoolean(false);
 
     public static volatile int oldPhase = 0;
@@ -77,7 +77,7 @@ public class Server {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
 
-            if (curTime - lastQueryTime > 1000 && curTime - phase2begin > 297000) {
+            if (curTime - lastQueryTime > 200 && curTime-phase2begin > 296000) {
 
                 if (phase == 0)
                     continue;
