@@ -344,7 +344,7 @@ public class Workers {
         if((cityIndex == null && city != null) ||
                 (country != null && countryIndex == null) ||
                 group == null) {
-            String fullResponse = "{\"accounts\": []}";
+            String fullResponse = "{\"groups\": []}";
             buf.append(fullResponse);
             return HttpResponseStatus.OK;
         }

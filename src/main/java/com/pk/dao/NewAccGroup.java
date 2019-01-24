@@ -163,16 +163,24 @@ public class NewAccGroup {
         }
 
         //OLD CODE
-        //if(1==1)
-            //return true;
-
-
         Integer interestId = null;
         int[] list = null;
         List<Integer> listList = null;
         if (interests != null) {
             interestId = AllLists.interests.get(interests);
             list = AllLists.interestAccounts[interestId];
+        }
+
+        if(city != null) {
+            if(list == null || list.length > AllLists.cityAccounts[city].length) {
+                list = AllLists.cityAccounts[city];
+            }
+        }
+
+        if(country != null) {
+            if(list == null || list.length > AllLists.countryAccounts[country].length) {
+                list = AllLists.countryAccounts[country];
+            }
         }
 
         Integer likeId = null;

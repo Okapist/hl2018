@@ -74,7 +74,7 @@ public class NewRecommend {
         int status = 0;
         final int startCountry = country == null ? 0 : searchCountry;
         final int toAddCountry = searchCountry > 0 ? searchCountry : 1;
-        final Set<Integer> alreadyAdded = new HashSet<>();
+        final Set<Integer> alreadyAdded = new HashSet<>(50);
 
         while (true) {
             final HashMap<Integer, HashMap<Integer, int[]>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
@@ -145,11 +145,6 @@ public class NewRecommend {
                 }
             }
         }
-
-        //while (heap.size() > limit) {
-            //heap.poll();
-        //}
-
         buildResult(heap, limit, buf);
         return true;
     }

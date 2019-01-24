@@ -38,6 +38,7 @@ public class Server {
     public static volatile int oldPhase = 0;
     public static volatile int phase = 0;
     public static volatile long lastQueryTime = 0;
+    public static volatile long prevQueryTime = 0;
     public static volatile long phase2begin = 0;
 
     public Server() {
@@ -77,7 +78,7 @@ public class Server {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
 
-            if (curTime - lastQueryTime > 200 && curTime-phase2begin > 294000) {
+            if (curTime - lastQueryTime > 200 && curTime-lastQueryTime > lastQueryTime-prevQueryTime && curTime-phase2begin > 299000) {
 
                 if (phase == 0)
                     continue;
@@ -89,14 +90,14 @@ public class Server {
                 }
 
                 if(phase == 2 && oldPhase == 1 && anyPostCalled.get()) {
+                    System.out.println("SECOND PHASE BEGIN END " + curTime);
                     oldPhase = 2;
-                    System.gc();
                     IndexCalculator id = new IndexCalculator();
                     id.calculateIndexes();
                     id.clearTempData();
 
                     System.gc();
-                    System.out.println("SECOND PHASE END " + curTime);
+                    System.out.println("SECOND PHASE END END" + curTime);
                     return;
                 }
             }
@@ -127,6 +128,7 @@ public class Server {
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
+            prevQueryTime = lastQueryTime;
             lastQueryTime = curTime;
 
             HttpRequest request = this.request = (HttpRequest) msg;

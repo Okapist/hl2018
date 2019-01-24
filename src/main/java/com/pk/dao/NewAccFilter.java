@@ -62,6 +62,10 @@ public class NewAccFilter {
         int filterStartIndex = 0;
         int filterEndIndex = 0;
 
+        int[][] orFilter = null;
+        int[] orPointers = null;
+        boolean orMayContainDup = false;
+
         //email filter
         Integer emailDomainIndex = null;
         if (email != null && emailDomain != null && emailDomain) {
@@ -73,6 +77,7 @@ public class NewAccFilter {
                 filterStartIndex = 0;
                 filterEndIndex = AllLists.domainAccounts.get(emailDomainIndex).size();
                 filterArr = null;
+                orFilter = null;
                 filterList = AllLists.domainAccounts.get(emailDomainIndex);
                 filterSize = AllLists.domainAccounts.get(emailDomainIndex).size();
             }
@@ -92,6 +97,7 @@ public class NewAccFilter {
                         filterStartIndex = 0;
                         filterEndIndex = AllLists.fnameAccounts[0].length;
                         filterList = null;
+                        orFilter = null;
                         filterArr = fnameAccounts[0];
                         filterSize = tempEnd - tempStart;
                     }
@@ -111,11 +117,31 @@ public class NewAccFilter {
                         filterStartIndex = 0;
                         filterEndIndex = AllLists.fnameAccounts[fname[0]].length;
                         filterList = null;
+                        orFilter = null;
                         filterArr = fnameAccounts[fname[0]];
                         filterSize = tempEnd - tempStart;
                     }
                 } else {
-                    int i =0;
+                    int tempFilterSize = 0;
+                    if (fname != null && fnameExists == null && fname.length > 1) { //fname_any
+
+                        for (int i = 0; i < fname.length; i++) {
+                            tempFilterSize += AllLists.fnameAccounts[fname[i]].length;
+                        }
+                        if(tempFilterSize < filterSize) {
+                            orFilter = new int[fname.length][];
+                            orPointers = new int[fname.length];
+
+                            for (int i = 0; i < fname.length; i++) {
+                                filterList = null;
+                                filterArr = null;
+                                orFilter[i] = AllLists.fnameAccounts[fname[i]];
+                                orMayContainDup = false;
+                                orPointers[i] = orFilter[i].length - 1;
+                                filterSize = tempFilterSize;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -128,6 +154,7 @@ public class NewAccFilter {
                     filterStartIndex = 0;
                     filterEndIndex = AllLists.snameAccounts[0].length;
                     filterList = null;
+                    orFilter = null;
                     filterArr = snameAccounts[0];
                     filterSize = tempEnd - tempStart;
                 }
@@ -145,6 +172,7 @@ public class NewAccFilter {
                     filterStartIndex = 0;
                     filterEndIndex = AllLists.snameAccounts[sname].length;
                     filterList = null;
+                    orFilter = null;
                     filterArr = AllLists.snameAccounts[sname];
                     filterSize = tempEnd - tempStart;
                 }
@@ -156,6 +184,34 @@ public class NewAccFilter {
         } else {
             if(sname == -1)
                 return true;
+        }
+
+        if(snameStartWith != null && snameStartWith.length > 0) {
+            int startIndex = -Utils.getSnameIndexBinary2(snameStartWith) - 1;
+            int endIndex = startIndex;
+            while(endIndex<AllLists.snames.length && Utils.startWith(AllLists.snames[endIndex], snameStartWith))
+                ++endIndex;
+
+            int tempFilterSize = 0;
+
+                for (int i = startIndex; i < endIndex; i++) {
+                    tempFilterSize += AllLists.snameAccounts[i].length;
+                }
+
+                if(tempFilterSize < filterSize) {
+                    orFilter = new int[endIndex-startIndex][];
+                    orPointers = new int[endIndex-startIndex];
+
+                    for (int i = startIndex; i < endIndex; i++) {
+                        filterList = null;
+                        filterArr = null;
+                        orFilter[i-startIndex] = AllLists.snameAccounts[i];
+                        orMayContainDup = false;
+                        orPointers[i-startIndex] = orFilter[i-startIndex].length - 1;
+                        filterSize = tempFilterSize;
+                    }
+                }
+
         }
 
         if (birth != null) {
@@ -175,6 +231,7 @@ public class NewAccFilter {
                     filterStartIndex = 0;
                     filterEndIndex = AllLists.birthYearsAccount[birth - MIN_BIRTH_YEAR].length;
                     filterList = null;
+                    orFilter = null;
                     filterArr = AllLists.birthYearsAccount[birth - MIN_BIRTH_YEAR];
                     filterSize = tempEnd - tempStart;
                 }
@@ -221,6 +278,7 @@ public class NewAccFilter {
                     filterEndIndex = tempEnd;
                     filterList = AllLists.phoneCodeAccounts.get(phoneCode);
                     filterArr = null;
+                    orFilter = null;
                     filterSize = tempEnd - tempStart;
                 }
             }
@@ -235,6 +293,7 @@ public class NewAccFilter {
                     filterEndIndex = tempEnd;
                     filterList = AllLists.phoneCodeAccounts.get(null);
                     filterArr = null;
+                    orFilter = null;
                     filterSize = tempEnd - tempStart;
                 }
             }
@@ -251,6 +310,7 @@ public class NewAccFilter {
                 filterStartIndex = 0;
                 filterEndIndex = tempEnd;
                 filterList = null;
+                orFilter = null;
                 filterArr = AllLists.countryAccounts[country];
                 filterSize = tempEnd - tempStart;
             }
@@ -264,6 +324,7 @@ public class NewAccFilter {
                     filterStartIndex = 0;
                     filterEndIndex = tempEnd;
                     filterList = null;
+                    orFilter = null;
                     filterArr = AllLists.countryAccounts[0];
                     filterSize = tempEnd - tempStart;
                 }
@@ -280,6 +341,7 @@ public class NewAccFilter {
                         filterStartIndex = 0;
                         filterEndIndex = tempEnd;
                         filterList = null;
+                        orFilter = null;
                         filterArr = AllLists.cityAccounts[0];
                         filterSize = tempEnd - tempStart;
                     }
@@ -292,15 +354,34 @@ public class NewAccFilter {
                         filterStartIndex = 0;
                         filterEndIndex = tempEnd;
                         filterList = null;
+                        orFilter = null;
                         filterArr = AllLists.cityAccounts[city.get(0)];
                         filterSize = tempEnd - tempStart;
+                    }
+                } else {
+                    int tempFilterSize = 0;
+                    for (int i = 0; i <city.size(); i++) {
+                        tempFilterSize += AllLists.cityAccounts[city.get(i)].length;
+                    }
+                    if (tempFilterSize < filterSize) {
+                        orFilter = new int[city.size()][];
+                        orPointers = new int[city.size()];
+
+                        for (int i = 0; i < city.size(); i++) {
+                            filterList = null;
+                            filterArr = null;
+                            orFilter[i] = AllLists.cityAccounts[city.get(i)];
+                            orMayContainDup = false;
+                            orPointers[i] = orFilter[i].length - 1;
+                            filterSize = tempFilterSize;
+                        }
                     }
                 }
             }
         }
 
         if (interests != null) {
-            if (interestsAll != null && interestsAll) {
+            if (interestsAll != null && (interestsAll || interests.size()==1)) {
                 for (int interest : interestsInt) {
                     if(interest < 0 || interest >= AllLists.interestAccounts.length)
                         return true;
@@ -311,8 +392,29 @@ public class NewAccFilter {
                         filterStartIndex = 0;
                         filterEndIndex = tempEnd;
                         filterList = null;
+                        orFilter = null;
                         filterArr = AllLists.interestAccounts[interest];
                         filterSize = tempEnd - tempStart;
+                    }
+                }
+            }  else {
+                if(interestsAll != null && !interestsAll) {
+                    int tempFilterSize = 0;
+                    for (int i = 0; i < interestsInt.length; i++) {
+                        tempFilterSize += AllLists.interestAccounts[interestsInt[i]].length;
+                    }
+                    if (tempFilterSize < filterSize) {
+                        orFilter = new int[interestsInt.length][];
+                        orPointers = new int[interestsInt.length];
+
+                        for (int i = 0; i < interestsInt.length; i++) {
+                            filterList = null;
+                            filterArr = null;
+                            orFilter[i] = AllLists.interestAccounts[interestsInt[i]];
+                            orMayContainDup = true;
+                            orPointers[i] = orFilter[i].length - 1;
+                            filterSize = tempFilterSize;
+                        }
                     }
                 }
             }
@@ -335,6 +437,7 @@ public class NewAccFilter {
                     filterStartIndex = 0;
                     filterEndIndex = tempEnd;
                     filterList = null;
+                    orFilter = null;
                     filterArr =  AllLists.likesTO[likeId];
                     filterSize = tempEnd - tempStart;
                 }
@@ -352,6 +455,7 @@ public class NewAccFilter {
                     filterEndIndex = tempEnd;
                     filterList = AllLists.premiumNowAccounts;
                     filterArr = null;
+                    orFilter = null;
                     filterSize = tempEnd - tempStart;
                 }
             }
@@ -364,6 +468,7 @@ public class NewAccFilter {
                         filterEndIndex = tempEnd;
                         filterList = AllLists.premiumEverAccounts;
                         filterArr = null;
+                        orFilter = null;
                         filterSize = tempEnd - tempStart;
                     }
                 } else {
@@ -374,6 +479,7 @@ public class NewAccFilter {
                         filterEndIndex = tempEnd;
                         filterList = AllLists.premiumNeverAccounts;
                         filterArr = null;
+                        orFilter = null;
                         filterSize = tempEnd - tempStart;
                     }
                 }
@@ -396,7 +502,7 @@ public class NewAccFilter {
         boolean isFirst = true;
         int totalAdded = 0;
 
-        if(filterArr == null && filterList == null) {
+        if(filterArr == null && filterList == null && orFilter == null) {
             filterEndIndex = allAccounts.length;
             filterStartIndex = 0;
         }
@@ -406,47 +512,76 @@ public class NewAccFilter {
         if(filterEndIndex == allAccounts.length) {
             if (email != null && emailLt != null) {
                 if (emailLt) {
-                    filterEndIndex = emailHightBorder[email[0] - 'a'][email.length>1?email[1] - 'a':'a'-'a'][email.length>2?email[2] - 'a':'a'-'a'] + 1;
+                    filterEndIndex = emailHightBorder[email[0] - 'a'][email.length > 1 ? email[1] - 'a' : 'a' - 'a'][email.length > 2 ? email[2] - 'a' : 'a' - 'a'] + 1;
                 } else {
-                    filterEndIndex = emailLowBorder[email[0] - 'a'][email.length>1?email[1] - 'a':'z'-'a'][email.length>2?email[2] - 'a':'z'-'a'] + 1;
+                    filterEndIndex = emailLowBorder[email[0] - 'a'][email.length > 1 ? email[1] - 'a' : 'z' - 'a'][email.length > 2 ? email[2] - 'a' : 'z' - 'a'] + 1;
                 }
             }
         }
 
         int index = filterEndIndex-1;
-        while (index >= start) {
 
-            Integer possibleId;
-            if(filterArr != null)
-                possibleId = filterArr[index];
-            else {
-                if (filterList != null) {
-                    possibleId = filterList.get(index);
-                } else {
-                    while (allAccounts[index] == null && index > 0)
-                        --index;
+        boolean isSex = sex != null;
+        boolean isEmail = email != null;
+        boolean isStatus = status != null;
+        boolean isFname = fname != null;
+        boolean isFnameExists = fnameExists != null;
+        boolean isSnameExists = snameExists != null;
+        boolean isSnameEq = snameEq != null;
+        boolean isPhoneCode = phoneCode != null;
+        boolean isCountry = country != null;
+        boolean isCountryExists = countryExists != null;
+        boolean isCity = city != null;
+        boolean isPremiumNow = premiumNow != null;
+        boolean isPremiumNewer = premiumNewer != null;
+        boolean isBirth = birth != null;
+        boolean isInterests = interests != null;
+        boolean isLikes = likes != null;
 
-                    if (allAccounts[index] == null)
-                        break;
+        while (index >= start || orFilter != null) {
 
-                    possibleId = allAccounts[index].id;
+            int possibleId;
+            try {
+                if (filterArr != null)
+                    possibleId = filterArr[index];
+                else {
+                    if (filterList != null) {
+                        possibleId = filterList.get(index);
+                    } else {
+                        if (orFilter != null) {
+                            possibleId = getMaxIndex(orFilter, orPointers, orMayContainDup);
+                            ++index;
+                            if(possibleId == -666)
+                                break;
+                        } else {
+                            while (allAccounts[index] == null && index > 0)
+                                --index;
+
+                            if (allAccounts[index] == null)
+                                break;
+
+                            possibleId = allAccounts[index].id;
+                        }
+                    }
                 }
-            }
-            --index;
-
-            if(possibleId==null || possibleId < 1)
+                --index;
+            } catch (Exception ex) {
                 continue;
+            }
+            if(possibleId < 1)
+                continue;
+
             boolean isAdd = true;
 
             Account possible = AllLists.allAccounts[possibleId];
 
-            if (isAdd && sex != null) {
+            if (isAdd && isSex) {
                 if (possible.sex != sex) {
                     continue;
                 }
             }
 
-            if(isAdd && email != null && emailLt != null) {
+            if(isAdd && isEmail && emailLt != null) {
                 if(emailLt) {
                     if (Utils.compareCharArr(allEmailList.get(possible.email).toCharArray(), email) >= 0)
                         continue;
@@ -456,12 +591,12 @@ public class NewAccFilter {
                 }
             }
 
-            if(isAdd && email != null && emailDomain != null) {
-                if(possible.emailDomain == 0 || possible.emailDomain != emailDomainIndex)
+            if(isAdd && isEmail && emailDomain != null) {
+                if(possible.emailDomain != emailDomainIndex)
                     continue;
             }
 
-            if(isAdd && status != null) {
+            if(isAdd && isStatus) {
                 if(statusEq) {
                     if(possible.status != status)
                         continue;
@@ -471,7 +606,7 @@ public class NewAccFilter {
                 }
             }
 
-            if(isAdd && fname != null && fnameExists == null) {
+            if(isAdd && isFname && fnameExists == null) {
                 boolean fnResult = false;
                 for (int fn : fname) {
                     if (possible.fname == fn) {
@@ -483,7 +618,7 @@ public class NewAccFilter {
                     continue;
             }
 
-            if(fnameExists != null) {
+            if(isFnameExists) {
                 if(fnameExists) {
                     if(possible.fname == 0)
                         continue;
@@ -493,7 +628,7 @@ public class NewAccFilter {
                 }
             }
 
-            if(snameExists != null) {
+            if(isSnameExists) {
                 if(snameExists) {
                     if(possible.sname == 0)
                         continue;
@@ -503,7 +638,7 @@ public class NewAccFilter {
                 }
             }
 
-            if(snameEq !=null) {
+            if(isSnameEq) {
                 if (snameEq) {
                     if (possible.sname == 0 || possible.sname != sname)
                         continue;
@@ -514,7 +649,7 @@ public class NewAccFilter {
             }
 
 
-            if (isAdd && phoneCode != null) {
+            if (isAdd && isPhoneCode) {
                 if(phoneExists != null) {
                     if (phoneExists) {
                         if (possible.phone == null) {
@@ -532,11 +667,11 @@ public class NewAccFilter {
                 }
             }
 
-            if(isAdd && country != null) {
+            if(isAdd && isCountry) {
                 if (possible.country == 0 || possible.country != country)
                     continue;
             }
-            if(isAdd && countryExists != null) {
+            if(isAdd && isCountryExists) {
                 if(countryExists) {
                     if(possible.country == 0)
                         continue;
@@ -546,7 +681,7 @@ public class NewAccFilter {
                 }
             }
 
-            if(isAdd && city != null) {
+            if(isAdd && isCity) {
                 if(cityExists != null) {
                     if(cityExists) {
                         if(possible.city == 0)
@@ -561,13 +696,13 @@ public class NewAccFilter {
                 }
             }
 
-            if(isAdd && premiumNow != null && premiumNow){
+            if(isAdd && isPremiumNow && premiumNow){
                 if(possible.premiumEnd == 0 || possible.premiumStart == 0 || possible.premiumEnd < Runner.curDate ||
                         possible.premiumStart > Runner.curDate)
                     continue;
             }
 
-            if(isAdd && premiumNewer != null){
+            if(isAdd && isPremiumNewer){
                 if(premiumNewer == true) {
                     if (possible.premiumEnd != 0 || possible.premiumStart != 0)
                         continue;
@@ -577,7 +712,7 @@ public class NewAccFilter {
                 }
             }
 
-            if (isAdd && birth != null) {
+            if (isAdd && isBirth) {
                 if (birthLt != null) {
                     if (birthLt) {
                         if (possible.birth == 0 || possible.birth > birth)
@@ -597,8 +732,8 @@ public class NewAccFilter {
                 }
             }
 
-            if (isAdd && interests != null) {
-                if(interestsAll != null && interestsAll) {
+            if (isAdd && isInterests) {
+                if(interestsAll != null && (interestsAll || interests.size()==1)) {
                     boolean totalContinue = false;
                     for (int interest : interestsInt) {
                         int intId = interest;
@@ -623,7 +758,7 @@ public class NewAccFilter {
                 }
             }
 
-            if(isAdd && likes != null && likesArr != null) {
+            if(isAdd && isLikes && likesArr != null) {
 
                 if (possible.id>=AllLists.likesAccounts.size() || AllLists.likesAccounts.get(possible.id) == null) {
                     isAdd = false;
@@ -663,6 +798,36 @@ public class NewAccFilter {
         }
 
         return true;
+    }
+
+    private int getMaxIndex(int[][] orFilter, int[] orPointers, boolean orMayContainDup) {
+
+        int maxArrIndex = -1;
+        int maxVal = -1;
+        for(int i=0; i< orFilter.length; ++i) {
+            if(orPointers[i] > -1) {
+                if(orFilter[i][orPointers[i]] > maxVal) {
+                    maxArrIndex =i;
+                    maxVal = orFilter[i][orPointers[i]];
+                }
+            }
+        }
+
+        if(maxArrIndex == -1 || maxVal == -1)
+            return -666;
+
+        --orPointers[maxArrIndex];
+
+        if(orMayContainDup) {
+            for (int i = 0; i < orFilter.length; ++i) {
+                if (orPointers[i] > -1) {
+                    if (orFilter[i][orPointers[i]] == maxVal) {
+                        --orPointers[i];
+                    }
+                }
+            }
+        }
+        return maxVal;
     }
 
     private void buildResult(boolean isFirst, Account account, boolean ansSex, boolean ansStatus, boolean ansFname,

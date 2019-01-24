@@ -114,7 +114,14 @@ public class Utils {
     }
 
     public static int compareCharArr(char[] c1, char[] c2) {
-        if(c1 == null || c2 == null || c1.length==0 || c2.length == 0)
+
+        if(c1 == null && c2 == null)
+            return 0;
+
+        if(c1 == null || c1.length==0)
+            return 1;
+
+        if(c2 == null || c2.length == 0)
             return -1;
 
         int min = Math.min(c1.length, c2.length);
@@ -146,6 +153,10 @@ public class Utils {
     public static int getSnameIndexBinary(String sname) {
         int index = Arrays.binarySearch(AllLists.snames, sname.toCharArray(), Utils::compareCharArr);
         return index>=0?index:-1;
+    }
+
+    public static int getSnameIndexBinary2(char[] sname) {
+        return Arrays.binarySearch(AllLists.snames, sname, Utils::compareCharArr);
     }
 
     public static int getSnameIndexBinary(char[] sname) {
