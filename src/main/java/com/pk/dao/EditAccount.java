@@ -35,7 +35,7 @@ public class EditAccount {
 
             Integer domainIndex = Utils.findDomainIndexBinary(emailParts[1].toCharArray());
             if (domainIndex == null || domainIndex < 0) {
-
+                PostLists.isNewEmailDomain = true;
                 domainIndex = PostLists.newEmailDomains.indexOf(emailParts[1]);
                 if (domainIndex == -1) {
                     PostLists.newEmailDomains.add(emailParts[1]);
@@ -81,8 +81,20 @@ public class EditAccount {
             }
         }
 
-        if (jsonAccount.getPhone() != null)
+        if(jsonAccount.getPhone() != null) {
+
+            String oldPhone = new String(account.phone);
+            String oldPhoneCode = oldPhone.substring(oldPhone.indexOf("(") + 1, oldPhone.indexOf(")"));
+            AllLists.phoneCodeAccounts.get(oldPhoneCode).remove(account.id);
+
             account.phone = jsonAccount.getPhone().toCharArray();
+
+            String phone = jsonAccount.getPhone();
+            String phoneCode = phone.substring(phone.indexOf("(") + 1, phone.indexOf(")"));
+            account.phoneCode = phoneCode.toCharArray();
+            AllLists.phoneCodeAccounts.computeIfAbsent(phoneCode, p -> new ArrayList<>());
+            AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
+        }
 
         if(jsonAccount.getSex() != null)
             account.sex = jsonAccount.getSexBoolean();
@@ -94,6 +106,7 @@ public class EditAccount {
                     AllLists.countriesList.add("");
                 }
                 AllLists.countriesList.add(jsonAccount.getCountry());
+                PostLists.isNewCountry = true;
                 coutryIndex = (short) (AllLists.countriesList.size() - 1);
             }
             account.country = coutryIndex;
@@ -106,6 +119,7 @@ public class EditAccount {
                     AllLists.citiesList.add("");
                 }
                 AllLists.citiesList.add(jsonAccount.getCity());
+                PostLists.isNewCity = true;
                 citiIndex = (short) (AllLists.citiesList.size() - 1);
             }
             account.city = citiIndex;

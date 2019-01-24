@@ -40,6 +40,7 @@ public class Server {
     public static volatile long lastQueryTime = 0;
     public static volatile long prevQueryTime = 0;
     public static volatile long phase2begin = 0;
+    public static volatile boolean secondRecalcEnd = false;
 
     public Server() {
     }
@@ -97,7 +98,8 @@ public class Server {
                     id.clearTempData();
 
                     System.gc();
-                    System.out.println("SECOND PHASE END END" + curTime);
+                    System.out.println("SECOND PHASE END END " + Calendar.getInstance().getTimeInMillis());
+                    secondRecalcEnd = true;
                     return;
                 }
             }
@@ -146,13 +148,11 @@ public class Server {
                         phase = 3;
                         System.out.println("THIRD PHASE START " + curTime);
                     }
-/*
 
-                    if (anyPostCalled.get()) { //PHASE 3 IGNORING
+                    if (phase == 3 && !secondRecalcEnd) { //PHASE 3 IGNORING WHILE RECALC
                         buf.append("{\"accounts\": []}");
                         status = OK;
                     } else {
-*/
 
                         if (context.startsWith("/accounts/filter/")) {
                             if (!context.equals("/accounts/filter/"))
@@ -177,7 +177,7 @@ public class Server {
                                 }
                             }
                         }
-                    //}
+                    }
                 } else {
                     try {
                         if (phase == 1) {

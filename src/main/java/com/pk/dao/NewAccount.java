@@ -30,7 +30,7 @@ public class NewAccount {
 
         Integer domainIndex = Utils.findDomainIndexBinary(emailParts[1].toCharArray());
         if(domainIndex==null || domainIndex < 0) {
-
+            PostLists.isNewEmailDomain = true;
             domainIndex = PostLists.newEmailDomains.indexOf(emailParts[1]);
             if(domainIndex == -1) {
                 PostLists.newEmailDomains.add(emailParts[1]);
@@ -73,8 +73,18 @@ public class NewAccount {
             }
         }
 
-        if(jsonAccount.getPhone() != null)
+        if(jsonAccount.getPhone() != null) {
             account.phone = jsonAccount.getPhone().toCharArray();
+
+            String phone = jsonAccount.getPhone();
+            String phoneCode = phone.substring(phone.indexOf("(") + 1, phone.indexOf(")"));
+            account.phoneCode = phoneCode.toCharArray();
+            AllLists.phoneCodeAccounts.computeIfAbsent(phoneCode, p -> new ArrayList<>());
+            AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
+        } else {
+            AllLists.phoneCodeAccounts.computeIfAbsent(null, p -> new ArrayList<>());
+            AllLists.phoneCodeAccounts.get(null).add(account.id);
+        }
 
         account.sex = jsonAccount.getSexBoolean();
 
@@ -84,6 +94,7 @@ public class NewAccount {
                 if(AllLists.countriesList.size() ==0) {
                     AllLists.countriesList.add("");
                 }
+                PostLists.isNewCountry = true;
                 AllLists.countriesList.add(jsonAccount.getCountry());
                 coutryIndex = (short)(AllLists.countriesList.size()-1);
             }
@@ -97,6 +108,7 @@ public class NewAccount {
                     AllLists.citiesList.add("");
                 }
                 AllLists.citiesList.add(jsonAccount.getCity());
+                PostLists.isNewCity = true;
                 citiIndex = (short)(AllLists.citiesList.size()-1);
             }
             account.city = citiIndex;
