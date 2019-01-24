@@ -126,13 +126,17 @@ public class NewAccFilter {
                     if (fname != null && fnameExists == null && fname.length > 1) { //fname_any
 
                         for (int i = 0; i < fname.length; i++) {
-                            tempFilterSize += AllLists.fnameAccounts[fname[i]].length;
+                            if(fname[i] > 0)
+                                tempFilterSize += AllLists.fnameAccounts[fname[i]].length;
                         }
                         if(tempFilterSize < filterSize) {
                             orFilter = new int[fname.length][];
                             orPointers = new int[fname.length];
 
                             for (int i = 0; i < fname.length; i++) {
+                                if(fname[i] < 0)
+                                    continue;
+
                                 filterList = null;
                                 filterArr = null;
                                 orFilter[i] = AllLists.fnameAccounts[fname[i]];
@@ -566,6 +570,7 @@ public class NewAccFilter {
                 }
                 --index;
             } catch (Exception ex) {
+                ex.printStackTrace();
                 continue;
             }
             if(possibleId < 1)
@@ -805,6 +810,8 @@ public class NewAccFilter {
         int maxArrIndex = -1;
         int maxVal = -1;
         for(int i=0; i< orFilter.length; ++i) {
+            if(orFilter[i] == null)
+                continue;
             if(orPointers[i] > -1) {
                 if(orFilter[i][orPointers[i]] > maxVal) {
                     maxArrIndex =i;
@@ -820,6 +827,8 @@ public class NewAccFilter {
 
         if(orMayContainDup) {
             for (int i = 0; i < orFilter.length; ++i) {
+                if(orFilter[i] == null)
+                    continue;
                 if (orPointers[i] > -1) {
                     if (orFilter[i][orPointers[i]] == maxVal) {
                         --orPointers[i];

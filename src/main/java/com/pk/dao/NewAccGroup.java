@@ -779,18 +779,63 @@ public class NewAccGroup {
     private Group[] sortGroups(HashMap<Integer, Group> hm, boolean order) {
 
         Group[] formedGroups = hm.values().toArray(new Group[0]);
+/*
+            if (order) {
+                groupData = new TreeSet<>(
+                        (p1, p2) -> {
+                            if (p1[0] != p2[0])
+                                return p1[0] - p2[0];
+
+                            if (p1[3] != p2[3])
+                                return p1[3] - p2[3];
+
+                            if (p1[4] != p2[4])
+                                return p1[4] - p2[4];
+
+                            if (p1[2] != p2[2])
+                                return Utils.getStatusText((byte) (p1[2] + 1)).compareTo(Utils.getStatusText((byte) (p2[2] + 1)));
+
+                            if (p1[1] != p2[1])
+                                return p1[1] - p2[1];
+                            return 0;
+                        });
+            } else {
+                groupData = new TreeSet<>(
+                        (p2, p1) -> {
+                            if (p1[0] != p2[0])
+                                return p1[0] - p2[0];
+
+                            if (p1[3] != p2[3])
+                                return p1[3] - p2[3];
+
+                            if (p1[4] != p2[4])
+                                return p1[4] - p2[4];
+
+                            if (p1[2] != p2[2])
+                                return Utils.getStatusText((byte) (p1[2] + 1)).compareTo(Utils.getStatusText((byte) (p2[2] + 1)));
+
+                            if (p1[1] != p2[1])
+                                return p1[1] - p2[1];
+                            return 0;
+                        });
+            }
+*/
 
         if(formedGroups != null) {
             if (order) {
                 Arrays.sort(formedGroups, (Group o1, Group o2) -> {
                     if (o1.count != o2.count)
                         return o1.count - o2.count;
+
                     if (o1.country != o2.country)
                         return o1.country - o2.country;
+
                     if (o1.city != o2.city)
                         return o1.city - o2.city;
+
                     if (o1.status != o2.status)
-                        return o1.status - o2.status;
+                        return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
+
                     if (o1.sex != o2.sex)
                         return (o1.sex?1:0) - (o2.sex?1:0);
 
@@ -805,7 +850,7 @@ public class NewAccGroup {
                     if (o1.city != o2.city)
                         return o1.city - o2.city;
                     if (o1.status != o2.status)
-                        return o1.status - o2.status;
+                        return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
                     if (o1.sex != o2.sex)
                         return (o1.sex?1:0) - (o2.sex?1:0);
 
