@@ -77,7 +77,7 @@ public class Server {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
 
-            if (curTime - lastQueryTime > 200 && curTime-phase2begin > 296000) {
+            if (curTime - lastQueryTime > 200 && curTime-phase2begin > 294000) {
 
                 if (phase == 0)
                     continue;

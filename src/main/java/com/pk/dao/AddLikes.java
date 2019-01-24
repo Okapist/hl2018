@@ -1,15 +1,16 @@
 package com.pk.dao;
 
-import com.pk.jsonmodel.PostLikes;
 import com.pk.model.AllLists;
+import com.pk.model.PostLists;
 import io.netty.handler.codec.http.HttpResponseStatus;
+
+import java.util.List;
 
 public class AddLikes {
 
+    public HttpResponseStatus addLikes(List<int[]> data) {
 
-    public HttpResponseStatus addLikes(PostLikes data) {
-
-        boolean res = validate(data);
+        boolean res = addLikesHelper(data);
 
         if(res)
             return HttpResponseStatus.ACCEPTED;
@@ -17,21 +18,27 @@ public class AddLikes {
             return HttpResponseStatus.BAD_REQUEST;
     }
 
-    private boolean validate(PostLikes data) {
+    private boolean addLikesHelper(List<int[]> likes) {
 
-        if(data.likeData == null)
-            return false;
+        if (likes != null) {
 
-        for(int[] postLike : data.likeData) {
+            for (int i = 0; i < likes.size(); ++i) {
+                int[] like = likes.get(i);
+                int likeFromId = like[0];
+                int likeToId = like[1];
 
-            if(postLike == null)
-                return false;
+                if(likeFromId >= AllLists.allAccounts.length || AllLists.allAccounts[likeFromId] == null)
+                    return false;
+                if(likeToId >= AllLists.allAccounts.length || AllLists.allAccounts[likeToId] == null)
+                    return false;
+            }
 
-            if(postLike[1] <=0 || postLike[0]<=0 || postLike[0] >= AllLists.allAccounts.length ||
-                    postLike[1] >= AllLists.allAccounts.length ||
-                    AllLists.allAccounts[postLike[1]] == null || AllLists.allAccounts[postLike[0]] == null)
-            return false;
+            for (int i = 0; i < likes.size(); ++i) {
+                int[] like = likes.get(i);
+                PostLists.newLikes.add(like);
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 }

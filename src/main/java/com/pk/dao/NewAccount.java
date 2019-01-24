@@ -169,7 +169,7 @@ public class NewAccount {
                 int[] like = clearList.get(i/2);
                 int likeId = like[0];
 
-                if(likeId > AllLists.allAccounts.length && AllLists.allAccounts[likeId] == null)
+                if(likeId >= AllLists.allAccounts.length || AllLists.allAccounts[likeId] == null)
                     return false;
             }
 

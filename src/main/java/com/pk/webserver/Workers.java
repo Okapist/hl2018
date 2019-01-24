@@ -256,8 +256,6 @@ public class Workers {
 
         Boolean sex = null;
         String status = null;
-        String fname = null;
-        String sname = null;
         String country = null;
         String city = null;
         Integer birth = null;
@@ -297,12 +295,6 @@ public class Workers {
                         break;
                     case "city":
                         city = params.get(key).get(0);
-                        break;
-                    case "fname":
-                        fname = params.get(key).get(0);
-                        break;
-                    case "sname":
-                        sname = params.get(key).get(0);
                         break;
                     case "birth":
                         birth = Integer.parseInt(params.get(key).get(0));
@@ -667,7 +659,7 @@ public class Workers {
             String[] parts = context.split("/");
 
             if(parts.length != 3)
-                return HttpResponseStatus.BAD_REQUEST;
+                return HttpResponseStatus.NOT_FOUND;
 
             if(!isNumeric(parts[2]))
                 return HttpResponseStatus.NOT_FOUND;
@@ -676,7 +668,7 @@ public class Workers {
         } catch (Exception ex) {
             return HttpResponseStatus.NOT_FOUND;
         }
-        if(accId == 0 || accId>allAccounts.length || allAccounts[accId] == null) {
+        if(accId == 0 || accId>=allAccounts.length || allAccounts[accId] == null) {
             return HttpResponseStatus.NOT_FOUND;
         }
 
@@ -684,8 +676,9 @@ public class Workers {
 
         JsonIterator iter = JsonIterator.parse(jsonData);
         Account data = new Account();
-        int[] premium;
-        List<int[]> likes;
+        int[] premium = null;
+        List<int[]> likes = null;
+        List<String> interests = null;
 
         try {
             for (String field2 = iter.readObject(); field2 != null; field2 = iter.readObject()) {
@@ -700,7 +693,7 @@ public class Workers {
                         data.setCountry(iter.readString());
                         break;
                     case "interests": //array
-                        List<String> interests = new ArrayList<>();
+                        interests = new ArrayList<>();
                         while (iter.readArray()) {
                             interests.add(iter.readString());
                         }
@@ -803,10 +796,9 @@ public class Workers {
                 return HttpResponseStatus.BAD_REQUEST;
         }
 
-        //EditAccount editAccount = new EditAccount();
-        //HttpResponseStatus toReturn = editAccount.edit(accId, emailParts, status, data);
-
-        return HttpResponseStatus.ACCEPTED;
+        EditAccount editAccount = new EditAccount();
+        HttpResponseStatus toReturn = editAccount.edit(accId, data, status, emailParts, likes, premium, interests);
+        return toReturn;
     }
 
     public HttpResponseStatus likes(HttpRequest request) {
@@ -814,7 +806,7 @@ public class Workers {
         byte[] jsonData = readBytes(((FullHttpRequest) request).content());
 
         JsonIterator iter = JsonIterator.parse(jsonData);
-        PostLikes data = new PostLikes();
+        List<int[]> likeData = new ArrayList<>();
         try {
             String field = iter.readObject();
             if("likes".equals(field)) {
@@ -835,17 +827,16 @@ public class Workers {
                                 return HttpResponseStatus.BAD_REQUEST;
                         }
                     }
-                    data.likeData.add(like);
+                    likeData.add(like);
                 }
             }
         } catch (Exception e) {
             return HttpResponseStatus.BAD_REQUEST;
         }
 
-        //AddLikes al = new AddLikes();
-        //HttpResponseStatus result = al.addLikes(data);
-
-        return HttpResponseStatus.ACCEPTED;
+        AddLikes al = new AddLikes();
+        HttpResponseStatus result = al.addLikes(likeData);
+        return result;
     }
 
     private List<Short> convertCityListToIndex(List<String> city) {
