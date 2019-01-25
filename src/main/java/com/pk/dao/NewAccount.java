@@ -80,7 +80,12 @@ public class NewAccount {
             String phoneCode = phone.substring(phone.indexOf("(") + 1, phone.indexOf(")"));
             account.phoneCode = phoneCode.toCharArray();
             AllLists.phoneCodeAccounts.computeIfAbsent(phoneCode, p -> new ArrayList<>());
-            AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
+            int toInsertPos = -Collections.binarySearch(AllLists.phoneCodeAccounts.get(phoneCode), account.id);
+            if (toInsertPos < AllLists.phoneCodeAccounts.get(phoneCode).size()-1) {
+                AllLists.phoneCodeAccounts.get(phoneCode).add(toInsertPos-1, account.id);
+            } else {
+                AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
+            }
         } else {
             AllLists.phoneCodeAccounts.computeIfAbsent(null, p -> new ArrayList<>());
             AllLists.phoneCodeAccounts.get(null).add(account.id);

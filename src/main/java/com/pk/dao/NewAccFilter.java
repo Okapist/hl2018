@@ -92,6 +92,9 @@ public class NewAccFilter {
             if (fnameExists != null) {
                 if(!fnameExists) {
                     int tempStart = 0;
+                    if (AllLists.fnameAccounts[0] == null)
+                        return true;
+
                     int tempEnd = AllLists.fnameAccounts[0].length;
                     if(tempEnd - tempStart < filterSize) {
                         filterStartIndex = 0;
@@ -110,6 +113,8 @@ public class NewAccFilter {
                     if(fname[0] == -1) {
                         return true;
                     }
+                    if (AllLists.fnameAccounts[fname[0]] == null)
+                        return true;
 
                     int tempStart = 0;
                     int tempEnd = AllLists.fnameAccounts[fname[0]].length;
@@ -126,8 +131,12 @@ public class NewAccFilter {
                     if (fname != null && fnameExists == null && fname.length > 1) { //fname_any
 
                         for (int i = 0; i < fname.length; i++) {
-                            if(fname[i] > 0)
+                            if(fname[i] > 0) {
+                                if (AllLists.fnameAccounts[fname[i]] == null)
+                                    return true;
+
                                 tempFilterSize += AllLists.fnameAccounts[fname[i]].length;
+                            }
                         }
                         if(tempFilterSize < filterSize) {
                             orFilter = new int[fname.length][];
@@ -136,6 +145,9 @@ public class NewAccFilter {
                             for (int i = 0; i < fname.length; i++) {
                                 if(fname[i] < 0)
                                     continue;
+
+                                if (AllLists.fnameAccounts[fname[i]] == null)
+                                    return true;
 
                                 filterList = null;
                                 filterArr = null;
@@ -153,6 +165,10 @@ public class NewAccFilter {
         if (snameExists != null) {
             if(!snameExists) {
                 int tempStart = 0;
+
+                if(AllLists.snameAccounts[0] == null)
+                    return true;
+
                 int tempEnd = AllLists.snameAccounts[0].length;
                 if(tempEnd - tempStart < filterSize) {
                     filterStartIndex = 0;
@@ -171,6 +187,10 @@ public class NewAccFilter {
             ansSname = true;
             if (snameEq != null && snameEq) {
                 int tempStart = 0;
+
+                if(AllLists.snameAccounts[sname] == null)
+                    return true;
+
                 int tempEnd = AllLists.snameAccounts[sname].length;
                 if(tempEnd - tempStart < filterSize) {
                     filterStartIndex = 0;
@@ -199,6 +219,8 @@ public class NewAccFilter {
             int tempFilterSize = 0;
 
                 for (int i = startIndex; i < endIndex; i++) {
+                    if(AllLists.snameAccounts[i] == null)
+                        continue;
                     tempFilterSize += AllLists.snameAccounts[i].length;
                 }
 
@@ -207,6 +229,9 @@ public class NewAccFilter {
                     orPointers = new int[endIndex-startIndex];
 
                     for (int i = startIndex; i < endIndex; i++) {
+                        if(AllLists.snameAccounts[i] == null)
+                            continue;
+
                         filterList = null;
                         filterArr = null;
                         orFilter[i-startIndex] = AllLists.snameAccounts[i];
@@ -323,6 +348,9 @@ public class NewAccFilter {
             ansCountry = true;
             if(countryExists == false) {
                 int tempStart = 0;
+                if(countryAccounts[0] == null)
+                    return true;
+
                 int tempEnd = AllLists.countryAccounts[0].length;
                 if (tempEnd - tempStart < filterSize) {
                     filterStartIndex = 0;
@@ -339,6 +367,9 @@ public class NewAccFilter {
             ansCity = true;
             if (cityExists != null) {
                 if (!cityExists) {
+                    if(cityAccounts[0] == null)
+                        return true;
+
                     int tempStart = 0;
                     int tempEnd =  AllLists.cityAccounts[0].length;
                     if (tempEnd - tempStart < filterSize) {

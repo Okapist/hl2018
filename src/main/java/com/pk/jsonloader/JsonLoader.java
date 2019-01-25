@@ -33,6 +33,8 @@ public class JsonLoader {
 
         List<String> options = Files.readAllLines(Paths.get(path + "options.txt"));
         Runner.curDate = Integer.parseInt(options.get(0));
+        Runner.raiting = Integer.parseInt(options.get(1)) == 1;
+        System.out.println("Is Raiting " + Runner.raiting);
 
         for(int j=0; j< AllLists.yearToTs.length; ++j) {
             AllLists.yearToTs[j] = Utils.getTimestamp(j+1930);

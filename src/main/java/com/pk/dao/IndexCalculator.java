@@ -131,7 +131,7 @@ public class IndexCalculator {
             if (account == null)
                 continue;
 
-            if (isNewCountry) {
+            //if (isNewCountry) {
                 //set country index
                 while (tempCountryAccounts.size() <= account.country)
                     tempCountryAccounts.add(null);
@@ -141,7 +141,7 @@ public class IndexCalculator {
                 }
 
                 tempCountryAccounts.get(account.country).add(account.id);
-            }
+            //}
 
             //if (isNewCity) {
                 //set city index
@@ -248,7 +248,6 @@ public class IndexCalculator {
         }
     }
 
-
     private void sortCountryCityEmails() {
         ArrayList<String> tempCountryList = null;
         if(isNewCountry) {
@@ -285,6 +284,14 @@ public class IndexCalculator {
 
         HashMap<Integer, Integer> tempId = new HashMap<>();
 
+        List<Integer>[] tempFnames = new ArrayList[AllLists.fnames.length];
+        List<Integer>[] tempSnames = new ArrayList[AllLists.snames.length];
+
+        HashMap<Integer, List<Integer>> tempBirthYears = new HashMap();
+
+        int minYear = Integer.MAX_VALUE;
+        int maxYear = Integer.MIN_VALUE;
+
         for(com.pk.model.Account account : allAccounts) {
             if (account != null) {
 
@@ -308,7 +315,42 @@ public class IndexCalculator {
                     account.sname = Utils.getSnameIndexBinary(tempSnameList[account.sname]);
 
                 tempId.put(account.email, Math.max(temp.getOrDefault(account.email, 0), account.id));
+
+                if(tempFnames[account.fname] == null)
+                    tempFnames[account.fname] = new ArrayList<>();
+                if(tempSnames[account.sname] == null)
+                    tempSnames[account.sname] = new ArrayList<>();
+
+                tempFnames[account.fname].add(account.id);
+                tempSnames[account.sname].add(account.id);
+
+                minYear = Math.min(minYear, getYear(account.birth));
+                maxYear = Math.max(maxYear, getYear(account.birth));
+
+                MIN_JOINED_YEAR = Math.min(MIN_JOINED_YEAR, getYear(account.joined));
+                MAX_JOINED_YEAR = Math.max(MAX_JOINED_YEAR, getYear(account.joined));
+
+                tempBirthYears.computeIfAbsent(getYear(account.birth), p-> new ArrayList<>());
+                tempBirthYears.get(getYear(account.birth)).add(account.id);
             }
+        }
+
+        AllLists.birthYearsAccount = new int[maxYear-minYear+1][];
+        for(int year : tempBirthYears.keySet()) {
+            AllLists.birthYearsAccount[year - minYear] = tempBirthYears.get(year).stream().mapToInt(Integer::intValue).toArray();
+        }
+        MIN_BIRTH_YEAR = minYear;
+        MAX_BIRTH_YEAR = maxYear;
+
+        AllLists.fnameAccounts = new int[tempFnames.length][];
+        AllLists.snameAccounts = new int[tempSnames.length][];
+        for(int i=0 ;i<tempFnames.length; ++i) {
+            if(tempFnames[i] != null)
+                AllLists.fnameAccounts[i] = tempFnames[i].stream().mapToInt(Integer::intValue).toArray();
+        }
+        for(int i=0 ;i<tempSnames.length; ++i) {
+            if(tempSnames[i] != null)
+                AllLists.snameAccounts[i] = tempSnames[i].stream().mapToInt(Integer::intValue).toArray();
         }
 
         rebuildEmailBorders(temp, tempId);
@@ -365,9 +407,9 @@ public class IndexCalculator {
         PostLists.newLikes = null;
     }
 
-    private static void swap(Object[] x, int a, int b) {
-        Object t = x[a];
-        x[a] = x[b];
-        x[b] = t;
+    Calendar cal = Calendar.getInstance();
+    private int getYear(int timestamp) {
+        cal.setTimeInMillis((long)timestamp*1000);
+        return cal.get(Calendar.YEAR);
     }
 }

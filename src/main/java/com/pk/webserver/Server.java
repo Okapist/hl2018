@@ -1,5 +1,6 @@
 package com.pk.webserver;
 
+import com.pk.Runner;
 import com.pk.dao.IndexCalculator;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
@@ -79,15 +80,16 @@ public class Server {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
 
-            if (curTime - lastQueryTime > 200 && curTime-lastQueryTime > lastQueryTime-prevQueryTime && curTime-phase2begin > 299000) {
+            if (curTime - lastQueryTime > 200 && curTime-lastQueryTime > lastQueryTime-prevQueryTime && (curTime-phase2begin > 299000 || Runner.raiting==false)) {
 
                 if (phase == 0)
                     continue;
 
                 if(phase == 1 && oldPhase == 0) {
+                    System.out.println("FIRST PHASE END BEGIN " + curTime);
                     oldPhase = 1;
                     System.gc();
-                    System.out.println("FIRST PHASE END " + curTime);
+                    System.out.println("FIRST PHASE END END " + Calendar.getInstance().getTimeInMillis());
                 }
 
                 if(phase == 2 && oldPhase == 1 && anyPostCalled.get()) {
@@ -150,6 +152,7 @@ public class Server {
                     }
 
                     if (phase == 3 && !secondRecalcEnd) { //PHASE 3 IGNORING WHILE RECALC
+                        System.out.println("miss " + Calendar.getInstance().getTimeInMillis());
                         buf.append("{\"accounts\": []}");
                         status = OK;
                     } else {

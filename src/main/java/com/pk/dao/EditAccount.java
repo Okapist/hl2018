@@ -83,9 +83,13 @@ public class EditAccount {
 
         if(jsonAccount.getPhone() != null) {
 
-            String oldPhone = new String(account.phone);
-            String oldPhoneCode = oldPhone.substring(oldPhone.indexOf("(") + 1, oldPhone.indexOf(")"));
-            AllLists.phoneCodeAccounts.get(oldPhoneCode).remove(account.id);
+            if(account.phone != null) {
+                String oldPhone = new String(account.phone);
+                String oldPhoneCode = oldPhone.substring(oldPhone.indexOf("(") + 1, oldPhone.indexOf(")"));
+                int index = Collections.binarySearch(AllLists.phoneCodeAccounts.get(oldPhoneCode), accId);
+                if (index >= 0)
+                    AllLists.phoneCodeAccounts.get(oldPhoneCode).remove(index);
+            }
 
             account.phone = jsonAccount.getPhone().toCharArray();
 
@@ -93,7 +97,13 @@ public class EditAccount {
             String phoneCode = phone.substring(phone.indexOf("(") + 1, phone.indexOf(")"));
             account.phoneCode = phoneCode.toCharArray();
             AllLists.phoneCodeAccounts.computeIfAbsent(phoneCode, p -> new ArrayList<>());
-            AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
+
+            int toInsertPos = -Collections.binarySearch(AllLists.phoneCodeAccounts.get(phoneCode), account.id);
+            if (toInsertPos < AllLists.phoneCodeAccounts.get(phoneCode).size()-1) {
+                AllLists.phoneCodeAccounts.get(phoneCode).add(toInsertPos-1, account.id);
+            } else {
+                AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
+            }
         }
 
         if(jsonAccount.getSex() != null)
