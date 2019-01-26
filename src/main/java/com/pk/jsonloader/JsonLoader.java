@@ -105,5 +105,6 @@ public class JsonLoader {
         System.gc();
 
         appProxy.commitCountryCityAccounts();
+
     }
 }

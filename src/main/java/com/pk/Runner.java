@@ -1,14 +1,18 @@
 package com.pk;
 
 import com.pk.dbproxy.AppProxy;
+import com.pk.dbproxy.Warmer;
 import com.pk.jsonloader.JsonLoader;
 import com.pk.webserver.Server;
+
+import java.util.Calendar;
 
 
 public class Runner {
 
     public static int curDate;
     public static volatile boolean raiting = false;
+    public static boolean isWarm = false;
 
     public static void main(String[] args) throws Exception {
         {
@@ -21,9 +25,9 @@ public class Runner {
             } catch (Exception ex) {
                 System.out.println("START WINDOWS LOAD");
                 //loader.load("d:/hl/bigdata/", new AppProxy());
-                //loader.load("d:/hl/data/", new AppProxy());
+                loader.load("d:/hl/data/", new AppProxy());
                 //loader.load("C:\\JavaProjects\\external\\hl\\bigdata\\", new AppProxy());
-                loader.load("C:\\JavaProjects\\external\\hl\\data\\", new AppProxy());
+                //loader.load("C:\\JavaProjects\\external\\hl\\data\\", new AppProxy());
                 System.out.println("END WINDOWS LOAD");
             }
             loader = null;
@@ -31,8 +35,19 @@ public class Runner {
         System.gc();
         System.out.println("LAST GC CALLED");
 
+
+        Warmer warmer = new Warmer();
+        warmer.warmIndexes();
+        warmer.warmGet();
+        warmer.warmPost();
+        warmer.warmIndexes();
+        Runner.isWarm = false;
+        System.gc();
+        System.out.println("WARM END. READY " + Calendar.getInstance().getTimeInMillis());
+
+
         Server server = new Server();
-        server.start();
         System.out.println("SERVER STARTED");
+        server.start();
     }
 }

@@ -178,8 +178,6 @@ public class NewAccFilter {
                     filterArr = snameAccounts[0];
                     filterSize = tempEnd - tempStart;
                 }
-            } else {
-                int i =0;
             }
         }
 

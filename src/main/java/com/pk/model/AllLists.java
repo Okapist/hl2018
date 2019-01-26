@@ -46,7 +46,7 @@ public class AllLists {
     public static final int[] yearToTs = new int[100];
     public static final Short shortCache[] = new Short[32000];
 
-    public static int[][] interestAccounts; //аккаунты с указанным интересом [interest][accountId]
+    public static int[][] interestAccounts; //аккаунты с указанным интересом [interest][accountId] updated
 
     //[premium][status][country]<city><interes><accounts>
     public static final HashMap<Integer, HashMap<Integer, int[]>>[][][] recommendInteresFilter = new HashMap[2][3][];

@@ -119,10 +119,10 @@ public class Utils {
             return 0;
 
         if(c1 == null || c1.length==0)
-            return 1;
+            return -1;
 
         if(c2 == null || c2.length == 0)
-            return -1;
+            return 1;
 
         int min = Math.min(c1.length, c2.length);
         for(int i=0; i<min; ++i) {

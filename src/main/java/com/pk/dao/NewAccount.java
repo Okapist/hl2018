@@ -1,5 +1,6 @@
 package com.pk.dao;
 
+import com.pk.Runner;
 import com.pk.model.Account;
 import com.pk.model.AllLists;
 import com.pk.model.PostLists;
@@ -82,13 +83,17 @@ public class NewAccount {
             AllLists.phoneCodeAccounts.computeIfAbsent(phoneCode, p -> new ArrayList<>());
             int toInsertPos = -Collections.binarySearch(AllLists.phoneCodeAccounts.get(phoneCode), account.id);
             if (toInsertPos < AllLists.phoneCodeAccounts.get(phoneCode).size()-1) {
-                AllLists.phoneCodeAccounts.get(phoneCode).add(toInsertPos-1, account.id);
+                if(!Runner.isWarm)
+                    AllLists.phoneCodeAccounts.get(phoneCode).add(toInsertPos-1, account.id);
             } else {
-                AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
+                if(!Runner.isWarm)
+                    AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
             }
         } else {
-            AllLists.phoneCodeAccounts.computeIfAbsent(null, p -> new ArrayList<>());
-            AllLists.phoneCodeAccounts.get(null).add(account.id);
+            if(!Runner.isWarm)
+                AllLists.phoneCodeAccounts.computeIfAbsent(null, p -> new ArrayList<>());
+            if(!Runner.isWarm)
+                AllLists.phoneCodeAccounts.get(null).add(account.id);
         }
 
         account.sex = jsonAccount.getSexBoolean();
@@ -100,7 +105,8 @@ public class NewAccount {
                     AllLists.countriesList.add("");
                 }
                 PostLists.isNewCountry = true;
-                AllLists.countriesList.add(jsonAccount.getCountry());
+                if(!Runner.isWarm)
+                    AllLists.countriesList.add(jsonAccount.getCountry());
                 coutryIndex = (short)(AllLists.countriesList.size()-1);
             }
             account.country = coutryIndex;
@@ -112,7 +118,8 @@ public class NewAccount {
                 if(AllLists.citiesList.size() ==0) {
                     AllLists.citiesList.add("");
                 }
-                AllLists.citiesList.add(jsonAccount.getCity());
+                if(!Runner.isWarm)
+                    AllLists.citiesList.add(jsonAccount.getCity());
                 PostLists.isNewCity = true;
                 citiIndex = (short)(AllLists.citiesList.size()-1);
             }
@@ -146,7 +153,8 @@ public class NewAccount {
 
         boolean goodLikes = addLikes(account.id, likes);
         if(goodLikes) {
-            AllLists.allAccounts[account.id] = account;
+            if(!Runner.isWarm)
+                AllLists.allAccounts[account.id] = account;
             //accIdAdded.add(account.id);
             return HttpResponseStatus.CREATED;
         } else {

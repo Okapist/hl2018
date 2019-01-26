@@ -1,5 +1,6 @@
 package com.pk.dao;
 
+import com.pk.Runner;
 import com.pk.model.Account;
 import com.pk.model.AllLists;
 import com.pk.model.PostLists;
@@ -13,9 +14,18 @@ public class EditAccount {
 
     public HttpResponseStatus edit(int accId, com.pk.jsonmodel.Account jsonAccount, byte status, String[] emailParts, List<int[]> likes, int[] premium, List<String> interests) {
 
-        Account account = AllLists.allAccounts[accId];
+        Account account;
+        if(!Runner.isWarm)
+            account = AllLists.allAccounts[accId];
+        else {
+            account = new Account();
+            account.sex = true;
+            account.email = 1;
+            account.emailDomain = 2;
+            account.id = 1_399_001;
+        }
 
-        boolean goodLikes = addLikes(account.id, likes);
+            boolean goodLikes = addLikes(account.id, likes);
         if (!goodLikes) {
             return HttpResponseStatus.BAD_REQUEST;
         }
@@ -96,13 +106,16 @@ public class EditAccount {
             String phone = jsonAccount.getPhone();
             String phoneCode = phone.substring(phone.indexOf("(") + 1, phone.indexOf(")"));
             account.phoneCode = phoneCode.toCharArray();
-            AllLists.phoneCodeAccounts.computeIfAbsent(phoneCode, p -> new ArrayList<>());
+            if(!Runner.isWarm)
+                AllLists.phoneCodeAccounts.computeIfAbsent(phoneCode, p -> new ArrayList<>());
 
             int toInsertPos = -Collections.binarySearch(AllLists.phoneCodeAccounts.get(phoneCode), account.id);
             if (toInsertPos < AllLists.phoneCodeAccounts.get(phoneCode).size()-1) {
-                AllLists.phoneCodeAccounts.get(phoneCode).add(toInsertPos-1, account.id);
+                if(!Runner.isWarm)
+                    AllLists.phoneCodeAccounts.get(phoneCode).add(toInsertPos-1, account.id);
             } else {
-                AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
+                if(!Runner.isWarm)
+                    AllLists.phoneCodeAccounts.get(phoneCode).add(account.id);
             }
         }
 
@@ -113,9 +126,11 @@ public class EditAccount {
             Short coutryIndex = Utils.findCountryIndexBinary(jsonAccount.getCountry());
             if (coutryIndex == null) {
                 if (AllLists.countriesList.size() == 0) {
-                    AllLists.countriesList.add("");
+                    if(!Runner.isWarm)
+                        AllLists.countriesList.add("");
                 }
-                AllLists.countriesList.add(jsonAccount.getCountry());
+                if(!Runner.isWarm)
+                    AllLists.countriesList.add(jsonAccount.getCountry());
                 PostLists.isNewCountry = true;
                 coutryIndex = (short) (AllLists.countriesList.size() - 1);
             }
@@ -126,9 +141,11 @@ public class EditAccount {
             Short citiIndex = Utils.findCityIndexBinary(jsonAccount.getCity());
             if (citiIndex == null) {
                 if (AllLists.citiesList.size() == 0) {
-                    AllLists.citiesList.add("");
+                    if(!Runner.isWarm)
+                        AllLists.citiesList.add("");
                 }
-                AllLists.citiesList.add(jsonAccount.getCity());
+                if(!Runner.isWarm)
+                    AllLists.citiesList.add(jsonAccount.getCity());
                 PostLists.isNewCity = true;
                 citiIndex = (short) (AllLists.citiesList.size() - 1);
             }
