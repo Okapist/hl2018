@@ -15,8 +15,6 @@ import io.netty.util.CharsetUtil;
 
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
@@ -53,7 +51,7 @@ public class Server {
         phaseChangeThread.start();
 
         EpollEventLoopGroup bossGroup = new EpollEventLoopGroup();
-        EpollEventLoopGroup workerGroup = new EpollEventLoopGroup();
+        EpollEventLoopGroup workerGroup = new EpollEventLoopGroup(5);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)

@@ -1,5 +1,6 @@
 package com.pk;
 
+import com.pk.dao.IndexCalculator;
 import com.pk.dbproxy.AppProxy;
 import com.pk.dbproxy.Warmer;
 import com.pk.jsonloader.JsonLoader;
@@ -40,7 +41,9 @@ public class Runner {
         warmer.warmIndexes();
         warmer.warmGet();
         warmer.warmPost();
-        warmer.warmIndexes();
+        Runner.isWarm = true;
+        new IndexCalculator().clearTempData();
+        warmer = null;
         Runner.isWarm = false;
         System.gc();
         System.out.println("WARM END. READY " + Calendar.getInstance().getTimeInMillis());

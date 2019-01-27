@@ -149,7 +149,6 @@ public class Warmer {
         warmEdit();
         warmLikes();
         System.out.println("warm post end " + Calendar.getInstance().getTimeInMillis());
-
         Runner.isWarm = false;
 
     }

@@ -81,7 +81,7 @@ public class IndexCalculator {
         }
     }
 
-    private void rebuildEmailBorders(HashMap<String, Integer> temp, HashMap<Integer, Integer> tempId) {
+    private void rebuildEmailBorders(HashMap<Integer, Integer> tempId) {
 
         //build borders
         int max = Integer.MIN_VALUE;
@@ -113,9 +113,6 @@ public class IndexCalculator {
                 }
             }
         }
-
-        //tempId.clear();
-        //tempId = null;
     }
 
     private void createCountryCityDomainsPhoneCodesAccountArrays() {
@@ -284,14 +281,6 @@ public class IndexCalculator {
         char[][] tempSnameList = Arrays.copyOf(snames, snames.length);
         Arrays.sort(snames, Utils::compareCharArr);
 
-        HashMap<String, Integer> temp = new HashMap<>();
-        for (int i = 0; i < allEmailList.size(); i++) {
-            String p = allEmailList.get(i);
-            temp.put(p, i);
-        }
-
-        HashMap<Integer, Integer> tempId = new HashMap<>();
-
         List<Integer>[] tempFnames = new ArrayList[AllLists.fnames.length];
         List<Integer>[] tempSnames = new ArrayList[AllLists.snames.length];
 
@@ -339,6 +328,7 @@ public class IndexCalculator {
         }
 
 
+        HashMap<Integer, Integer> tempId = new HashMap<>();
 
         for (com.pk.model.Account account : allAccounts) {
             if (account != null) {
@@ -350,7 +340,7 @@ public class IndexCalculator {
                     account.city = (short) Collections.binarySearch(citiesList, tempCityList.get(account.city));
 
                 if (account.email > 0) {
-                    account.email = temp.get(tempEmailList.get(account.email));
+                    account.email = Collections.binarySearch(allEmailList, tempEmailList.get(account.email));
 
                     if (isNewEmailDomain)
                         account.emailDomain = Collections.binarySearch(domainList, tempDomainList.get(account.emailDomain), Utils::compareCharArr);
@@ -362,7 +352,7 @@ public class IndexCalculator {
                 if (account.sname > 0)
                     account.sname = Utils.getSnameIndexBinary(tempSnameList[account.sname]);
 
-                tempId.put(account.email, Math.max(temp.getOrDefault(account.email, 0), account.id));
+                tempId.put(account.email, account.id);
 
                 if (tempFnames[account.fname] == null)
                     tempFnames[account.fname] = new ArrayList<>();
@@ -429,7 +419,7 @@ public class IndexCalculator {
                     interestAccounts[i] = interest.stream().mapToInt(Integer::intValue).toArray();
             }
 
-            rebuildEmailBorders(temp, tempId);
+            rebuildEmailBorders(tempId);
         });
         t.start();
     }
@@ -441,12 +431,6 @@ public class IndexCalculator {
 
         PostLists.snames.clear();
         //PostLists.snames = null;
-
-        //accIdAdded.clear();
-        //accIdAdded = null;
-
-        //accIdEdited.clear();
-        //accIdEdited = null;
 
         PostLists.freeEmailDomain.clear();
         //PostLists.freeEmailDomain = null;
@@ -463,8 +447,8 @@ public class IndexCalculator {
 
 
         PostLists.newLikes.clear();
-        if(!Runner.isWarm)
-            PostLists.newLikes = null;
+        //if(!Runner.isWarm)
+            //PostLists.newLikes = null;
 
         if(!Runner.isWarm)
             AllLists.usedEmailDomain = null;

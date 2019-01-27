@@ -420,6 +420,9 @@ public class NewAccFilter {
                         return true;
 
                     int tempStart = 0;
+                    if(AllLists.interestAccounts == null || interest>= interestAccounts.length   || AllLists.interestAccounts[interest] == null)
+                        continue;
+
                     int tempEnd = AllLists.interestAccounts[interest].length;
                     if (tempEnd - tempStart < filterSize) {
                         filterStartIndex = 0;
@@ -434,6 +437,9 @@ public class NewAccFilter {
                 if(interestsAll != null && !interestsAll) {
                     int tempFilterSize = 0;
                     for (int i = 0; i < interestsInt.length; i++) {
+                        if(AllLists.interestAccounts == null || interestsInt[i]>= interestAccounts.length   || AllLists.interestAccounts[interestsInt[i]] == null)
+                            continue;
+
                         tempFilterSize += AllLists.interestAccounts[interestsInt[i]].length;
                     }
                     if (tempFilterSize < filterSize) {
@@ -441,6 +447,9 @@ public class NewAccFilter {
                         orPointers = new int[interestsInt.length];
 
                         for (int i = 0; i < interestsInt.length; i++) {
+                            if(AllLists.interestAccounts == null || interestsInt[i]>= interestAccounts.length   || AllLists.interestAccounts[interestsInt[i]] == null)
+                                continue;
+
                             filterList = null;
                             filterArr = null;
                             orFilter[i] = AllLists.interestAccounts[interestsInt[i]];
