@@ -769,4 +769,53 @@ public class AppProxy {
         tempLikesTo.clear();
         tempLikesTo = null;
     }
+
+    public void topLow50IntCalc() {
+        HashMap<Integer, Integer> interestGroups = new HashMap<>();
+        for (com.pk.model.Account account : allAccounts) {
+            if (account == null || account.interestsArray == null || account.interestsArray.length == 0)
+                continue;
+
+            for (int intId : account.interestsArray) {
+                interestGroups.put(intId, interestGroups.getOrDefault(intId, 0) + 1);
+            }
+        }
+
+        LinkedHashMap<Integer, Integer> sorted = sortByValue(interestGroups);
+        int size = sorted.size();
+        int pointer = 0;
+        for (Integer key : sorted.keySet()) {
+            if (pointer < 50)
+                topInterests50[pointer] = new int[]{key, sorted.get(key)};
+
+            if (size - pointer <= 50)
+                lowInterests50[size - pointer - 1] = new int[]{key, sorted.get(key)};
+
+            ++pointer;
+        }
+
+        Arrays.sort(topInterests50, (p1, p2) -> {
+            if (p1[1] != p2[1])
+                return p1[1] - p2[1];
+            return AllLists.interestsById.get(p1[0]).compareTo(AllLists.interestsById.get(p2[0]));
+        });
+
+        Arrays.sort(lowInterests50, (p2, p1) -> {
+            if (p1[1] != p2[1])
+                return p1[1] - p2[1];
+            return AllLists.interestsById.get(p1[0]).compareTo(AllLists.interestsById.get(p2[0]));
+        });
+    }
+
+    public  <K, V extends Comparable<? super V>> LinkedHashMap<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
+        list.sort(Map.Entry.comparingByValue());
+
+        LinkedHashMap<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
+    }
 }

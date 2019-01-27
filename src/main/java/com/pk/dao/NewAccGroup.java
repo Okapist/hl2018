@@ -44,6 +44,14 @@ public class NewAccGroup {
             }
         }
 
+        //bicycle for only interests
+        if(groupInterests && !groupCity && !groupSex && !groupCountry && !groupStatus) {
+            if(likes ==null && interests==null && birth==null && joined==null && sex==null && status==null && country==null && city==null) {
+                calcReturnPreCalcInterests(limit, order, buf);
+                return true;
+            }
+        }
+
         //new code based on new groupFilter no filter for now
         if(likes==null&& interests == null && groupInterests==false && ((birth == null && joined==null) ||
                 (birth!=null && joined==null) ||
@@ -183,6 +191,15 @@ public class NewAccGroup {
             }
         }
 
+        if(birth != null) {
+            if(birth > MAX_BIRTH_YEAR || birth < MIN_BIRTH_YEAR)
+                return true;
+
+            if(list == null || list.length > birthYearsAccount[birth-MIN_BIRTH_YEAR].length) {
+                list = birthYearsAccount[birth-MIN_BIRTH_YEAR];
+            }
+        }
+
         Integer likeId = null;
         Set<Integer> searchLikesSet = null;
         if (likes != null) {
@@ -260,7 +277,7 @@ public class NewAccGroup {
                     continue;
             }
 
-            if (interests != null && list == null) {
+            if (interests != null) {
                 if (possible.interests == null || !possible.interests.contains(interestId))
                     continue;
             }
@@ -779,47 +796,6 @@ public class NewAccGroup {
     private Group[] sortGroups(HashMap<Integer, Group> hm, boolean order) {
 
         Group[] formedGroups = hm.values().toArray(new Group[0]);
-/*
-            if (order) {
-                groupData = new TreeSet<>(
-                        (p1, p2) -> {
-                            if (p1[0] != p2[0])
-                                return p1[0] - p2[0];
-
-                            if (p1[3] != p2[3])
-                                return p1[3] - p2[3];
-
-                            if (p1[4] != p2[4])
-                                return p1[4] - p2[4];
-
-                            if (p1[2] != p2[2])
-                                return Utils.getStatusText((byte) (p1[2] + 1)).compareTo(Utils.getStatusText((byte) (p2[2] + 1)));
-
-                            if (p1[1] != p2[1])
-                                return p1[1] - p2[1];
-                            return 0;
-                        });
-            } else {
-                groupData = new TreeSet<>(
-                        (p2, p1) -> {
-                            if (p1[0] != p2[0])
-                                return p1[0] - p2[0];
-
-                            if (p1[3] != p2[3])
-                                return p1[3] - p2[3];
-
-                            if (p1[4] != p2[4])
-                                return p1[4] - p2[4];
-
-                            if (p1[2] != p2[2])
-                                return Utils.getStatusText((byte) (p1[2] + 1)).compareTo(Utils.getStatusText((byte) (p2[2] + 1)));
-
-                            if (p1[1] != p2[1])
-                                return p1[1] - p2[1];
-                            return 0;
-                        });
-            }
-*/
 
         if(formedGroups != null) {
             if (order) {
@@ -934,5 +910,43 @@ public class NewAccGroup {
         long time = date.getTime();
         AllLists.yearToTs[year-1930] = (int) (time/1000);
         return (int) (time/1000);
+    }
+
+    private void calcReturnPreCalcInterests(int limit, boolean order, StringBuilder buf) {
+        if(order) {
+            int pointer = 0;
+            boolean isFirst = true;
+            while (pointer < limit) {
+                if (isFirst) {
+                    buf.append("{\"count\":");
+                    isFirst = false;
+                } else
+                    buf.append(",{\"count\":");
+
+                buf.append(topInterests50[pointer][1]);
+                buf.append(",\"interests\":\"");
+                buf.append(AllLists.interestsById.get(topInterests50[pointer][0]));
+                buf.append("\"");
+                buf.append("}");
+                ++pointer;
+            }
+        } else {
+            int pointer = 0;
+            boolean isFirst = true;
+            while (pointer < limit) {
+                if (isFirst) {
+                    buf.append("{\"count\":");
+                    isFirst = false;
+                } else
+                    buf.append(",{\"count\":");
+
+                buf.append(lowInterests50[pointer][1]);
+                buf.append(",\"interests\":\"");
+                buf.append(AllLists.interestsById.get(lowInterests50[pointer][0]));
+                buf.append("\"");
+                buf.append("}");
+                ++pointer;
+            }
+        }
     }
 }

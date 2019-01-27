@@ -61,4 +61,7 @@ public class AllLists {
     public static int[][][] emailHightBorder = new int[26][26][26];//updated
 
     public static int[] usedEmailDomain;
+
+    public static int[][] topInterests50 = new int[50][]; //interes - count
+    public static int[][] lowInterests50 = new int[50][]; //interes - count
 }

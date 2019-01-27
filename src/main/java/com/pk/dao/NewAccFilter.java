@@ -556,7 +556,7 @@ public class NewAccFilter {
                 if (emailLt) {
                     filterEndIndex = emailHightBorder[email[0] - 'a'][email.length > 1 ? email[1] - 'a' : 'a' - 'a'][email.length > 2 ? email[2] - 'a' : 'a' - 'a'] + 1;
                 } else {
-                    filterEndIndex = emailLowBorder[email[0] - 'a'][email.length > 1 ? email[1] - 'a' : 'z' - 'a'][email.length > 2 ? email[2] - 'a' : 'z' - 'a'] + 1;
+                    filterEndIndex = emailLowBorder[email[0] - 'a'][email.length > 1 ? email[1] - 'a' : 'a' - 'a'][email.length > 2 ? email[2] - 'a' : 'a' - 'a'] + 1;
                 }
             }
         }

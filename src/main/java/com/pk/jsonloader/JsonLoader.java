@@ -106,5 +106,6 @@ public class JsonLoader {
 
         appProxy.commitCountryCityAccounts();
 
+        appProxy.topLow50IntCalc();
     }
 }
