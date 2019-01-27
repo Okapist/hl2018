@@ -52,12 +52,12 @@ public class Server {
         final Thread phaseChangeThread = new Thread(this::phaseChangeMonitor);
         phaseChangeThread.start();
 
-        NioEventLoopGroup bossGroup = new NioEventLoopGroup();
-        NioEventLoopGroup workerGroup = new NioEventLoopGroup();
+        EpollEventLoopGroup bossGroup = new EpollEventLoopGroup();
+        EpollEventLoopGroup workerGroup = new EpollEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(EpollServerSocketChannel.class)
                     .childHandler(new ServerInitializer())
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
@@ -152,7 +152,7 @@ public class Server {
                     }
 
                     if (phase == 3 && !secondRecalcEnd) { //PHASE 3 IGNORING WHILE RECALC
-                        System.out.println("miss " + Calendar.getInstance().getTimeInMillis());
+                        //System.out.println("miss " + Calendar.getInstance().getTimeInMillis());
                         buf.append("{\"accounts\": []}");
                         status = OK;
                     } else {

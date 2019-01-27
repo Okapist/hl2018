@@ -91,8 +91,10 @@ public class NewRecommend {
                                 if (possibleList != null) {
                                     for (int i1 = 0; i1 < possibleList.length; i1++) {
                                         Integer p = possibleList[i1];
+                                        if(p==0)
+                                            continue;
                                         Account possible = AllLists.allAccounts[p];
-                                        if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
+                                        if (possible != null && possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
                                             alreadyAdded.add(possible.id);
                                             heap.add(possible);
                                         }
@@ -116,8 +118,10 @@ public class NewRecommend {
                                     if (possibleList != null) {
                                         for (int i = 0, possibleListLength = possibleList.length; i < possibleListLength; i++) {
                                             Integer p = possibleList[i];
+                                            if(p==0)
+                                                continue;
                                             Account possible = AllLists.allAccounts[p];
-                                            if (possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
+                                            if (possible != null && possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
                                                 alreadyAdded.add(possible.id);
                                                 heap.add(possible);
                                             }

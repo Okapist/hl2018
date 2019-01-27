@@ -483,7 +483,7 @@ public class AppProxy {
 
                         HashMap<Integer, List<Integer>> aa = tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex);
                         for(Integer intId : aa.keySet()) {
-                            AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(intId, p -> new int[aa.get(intId).size()]);
+                            AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(intId, p -> new int[(int) Math.max(aa.get(intId).size() * 1.15, aa.get(intId).size() + 1)]);
 
                             List<Integer> get = aa.get(intId);
                             for (int i = 0; i < get.size(); i++) {

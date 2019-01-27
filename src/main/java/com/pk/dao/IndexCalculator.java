@@ -10,19 +10,22 @@ import static com.pk.model.AllLists.*;
 import static com.pk.model.AllLists.fnames;
 import static com.pk.model.AllLists.snames;
 import static com.pk.model.PostLists.*;
-//import static com.pk.model.PostLists.accIdAdded;
-//import static com.pk.model.PostLists.accIdEdited;
 
 public class IndexCalculator {
 
 
     public void calculateIndexes() {
+
         if(!Runner.isWarm)
             System.out.println("START RECALC INDEX " + Calendar.getInstance().getTimeInMillis());
-        //Collections.sort(accIdAdded);
-        //Collections.sort(accIdEdited);
 
-        //System.out.println("accId sorted " + Calendar.getInstance().getTimeInMillis());
+        Thread t = new Thread(() -> {
+            updatePremiumLists();
+            //System.gc();
+            if(!Runner.isWarm)
+                System.out.println("updatePremiumLists complete " + Calendar.getInstance().getTimeInMillis());
+        });
+        t.start();
 
         addNewEmailAndDomains();
         //System.gc();
@@ -36,13 +39,6 @@ public class IndexCalculator {
         if(!Runner.isWarm)
             System.out.println("commitFSnamesEmails complete " + Calendar.getInstance().getTimeInMillis());
 
-        if(isNewEmailDomain || isNewCity || isNewCountry)
-            createCountryCityDomainsPhoneCodesAccountArrays();
-        //System.gc();
-
-        if(!Runner.isWarm)
-            System.out.println("createCountryCityDomainsPhoneCodesAccountArrays complete " + Calendar.getInstance().getTimeInMillis());
-
         //city and country need only to sort;
         sortCountryCityEmails();
         //System.gc();
@@ -50,14 +46,16 @@ public class IndexCalculator {
         if(!Runner.isWarm)
             System.out.println("sortCountryCityEmails complete " + Calendar.getInstance().getTimeInMillis());
 
-        updatePremiumLists();
+        if(isNewEmailDomain || isNewCity || isNewCountry)
+            createCountryCityDomainsPhoneCodesAccountArrays();
         //System.gc();
-        if(!Runner.isWarm)
-            System.out.println("updatePremiumLists complete " + Calendar.getInstance().getTimeInMillis());
 
-        createRecommendFilter();
         if(!Runner.isWarm)
-            System.out.println("createRecommendFilter complete " + Calendar.getInstance().getTimeInMillis());
+            System.out.println("createCountryCityDomainsPhoneCodesAccountArrays complete " + Calendar.getInstance().getTimeInMillis());
+
+        //createRecommendFilter();
+        //if(!Runner.isWarm)
+            //System.out.println("createRecommendFilter complete " + Calendar.getInstance().getTimeInMillis());
 
         if(!Runner.isWarm)
             System.out.println("INDEX RECALC complete " + Calendar.getInstance().getTimeInMillis());
@@ -260,19 +258,19 @@ public class IndexCalculator {
 
     private void sortCountryCityEmails() {
         ArrayList<String> tempCountryList = null;
-        if(isNewCountry) {
+        if (isNewCountry) {
             tempCountryList = new ArrayList<>(countriesList);
             Collections.sort(countriesList);
         }
 
         ArrayList<String> tempCityList = null;
-        if(isNewCity) {
+        if (isNewCity) {
             tempCityList = new ArrayList<>(citiesList);
             Collections.sort(citiesList);
         }
 
         ArrayList<char[]> tempDomainList = null;
-        if(isNewEmailDomain) {
+        if (isNewEmailDomain) {
             tempDomainList = new ArrayList<>(domainList);
             Collections.sort(domainList, Utils::compareCharArr);
         }
@@ -304,33 +302,71 @@ public class IndexCalculator {
         int minYear = Integer.MAX_VALUE;
         int maxYear = Integer.MIN_VALUE;
 
-        for(com.pk.model.Account account : allAccounts) {
+        if(isNewCountry || isNewCity) {
+            //recalc recommend city country indexes
+            for (int premiumIndex = 0; premiumIndex < AllLists.recommendInteresFilter.length; ++premiumIndex) {
+                for (int statusIndex = 0; statusIndex < AllLists.recommendInteresFilter[premiumIndex].length; ++statusIndex) {
+
+                    HashMap<Integer, HashMap<Integer, int[]>>[] newRecommend = new HashMap[countriesList.size()];
+
+                    for (int countryIndex = 0; countryIndex < AllLists.recommendInteresFilter[premiumIndex][statusIndex].length; ++countryIndex) {
+
+                        short newCountryIndex;
+                        if(isNewCountry)
+                            newCountryIndex = (short) Collections.binarySearch(countriesList, tempCountryList.get(countryIndex));
+                        else
+                            newCountryIndex = (short) countryIndex;
+
+                        //HashMap<Integer, HashMap<Integer, int[]>> toCopyCountry = recommendInteresFilter[premiumIndex][statusIndex][countryIndex];
+                        newRecommend[newCountryIndex] = new HashMap<>();
+
+                        for (Integer cityIndex : AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].keySet()) {
+
+                            int newCityOndex;
+
+                            if(isNewCity)
+                                newCityOndex = Collections.binarySearch(citiesList, tempCityList.get(cityIndex));
+                            else
+                                newCityOndex = cityIndex;
+
+                            newRecommend[newCountryIndex].put(newCityOndex, AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex));
+                        }
+                    }
+
+                    AllLists.recommendInteresFilter[premiumIndex][statusIndex] = newRecommend;
+                }
+            }
+        }
+
+
+
+        for (com.pk.model.Account account : allAccounts) {
             if (account != null) {
 
-                if(isNewCountry && account.country > 0)
+                if (isNewCountry && account.country > 0)
                     account.country = (short) Collections.binarySearch(countriesList, tempCountryList.get(account.country));
 
-                if(isNewCity && account.city > 0)
+                if (isNewCity && account.city > 0)
                     account.city = (short) Collections.binarySearch(citiesList, tempCityList.get(account.city));
 
-                if(account.email > 0) {
+                if (account.email > 0) {
                     account.email = temp.get(tempEmailList.get(account.email));
 
-                    if(isNewEmailDomain)
-                        account.emailDomain = domainList.indexOf(tempDomainList.get(account.emailDomain));
+                    if (isNewEmailDomain)
+                        account.emailDomain = Collections.binarySearch(domainList, tempDomainList.get(account.emailDomain), Utils::compareCharArr);
                 }
 
-                if(account.fname > 0)
+                if (account.fname > 0)
                     account.fname = Utils.getFnameIndexBinary(tempFnameList[account.fname]);
 
-                if(account.sname > 0)
+                if (account.sname > 0)
                     account.sname = Utils.getSnameIndexBinary(tempSnameList[account.sname]);
 
                 tempId.put(account.email, Math.max(temp.getOrDefault(account.email, 0), account.id));
 
-                if(tempFnames[account.fname] == null)
+                if (tempFnames[account.fname] == null)
                     tempFnames[account.fname] = new ArrayList<>();
-                if(tempSnames[account.sname] == null)
+                if (tempSnames[account.sname] == null)
                     tempSnames[account.sname] = new ArrayList<>();
 
                 tempFnames[account.fname].add(account.id);
@@ -342,10 +378,10 @@ public class IndexCalculator {
                 MIN_JOINED_YEAR = Math.min(MIN_JOINED_YEAR, getYear(account.joined));
                 MAX_JOINED_YEAR = Math.max(MAX_JOINED_YEAR, getYear(account.joined));
 
-                tempBirthYears.computeIfAbsent(getYear(account.birth), p-> new ArrayList<>());
+                tempBirthYears.computeIfAbsent(getYear(account.birth), p -> new ArrayList<>());
                 tempBirthYears.get(getYear(account.birth)).add(account.id);
 
-                if(account.interestsArray != null) {
+                if (account.interestsArray != null) {
                     for (int i = 0; i < account.interestsArray.length; i++) {
                         Integer intId = account.interestsArray[i];
 
@@ -363,56 +399,40 @@ public class IndexCalculator {
             }
         }
 
-        AllLists.birthYearsAccount = new int[maxYear-minYear+1][];
-        for(int year : tempBirthYears.keySet()) {
-            AllLists.birthYearsAccount[year - minYear] = tempBirthYears.get(year).stream().mapToInt(Integer::intValue).toArray();
-        }
-        MIN_BIRTH_YEAR = minYear;
-        MAX_BIRTH_YEAR = maxYear;
+        final int finalMaxYear = maxYear;
+        final int finalMinYear = minYear;
 
-        AllLists.fnameAccounts = new int[tempFnames.length][];
-        AllLists.snameAccounts = new int[tempSnames.length][];
-        for(int i=0 ;i<tempFnames.length; ++i) {
-            if(tempFnames[i] != null)
-                AllLists.fnameAccounts[i] = tempFnames[i].stream().mapToInt(Integer::intValue).toArray();
-        }
-        for(int i=0 ;i<tempSnames.length; ++i) {
-            if(tempSnames[i] != null)
-                AllLists.snameAccounts[i] = tempSnames[i].stream().mapToInt(Integer::intValue).toArray();
-        }
+        Thread t = new Thread(() -> {
+            birthYearsAccount = new int[finalMaxYear - finalMinYear + 1][];
+            for (int year : tempBirthYears.keySet()) {
+                birthYearsAccount[year - finalMinYear] = tempBirthYears.get(year).stream().mapToInt(Integer::intValue).toArray();
+            }
+            MIN_BIRTH_YEAR = finalMinYear;
+            MAX_BIRTH_YEAR = finalMaxYear;
 
-        AllLists.interestAccounts = new int[tempIinterestAccounts.size()][];
-        for (int i = 0; i < tempIinterestAccounts.size(); i++) {
-            List<Integer> interest = tempIinterestAccounts.get(i);
-            if(interest != null)
-                AllLists.interestAccounts[i] = interest.stream().mapToInt(Integer::intValue).toArray();
-        }
-/*
-        tempIinterestAccounts.clear();
-        tempIinterestAccounts = null;
-*/
+            fnameAccounts = new int[tempFnames.length][];
+            snameAccounts = new int[tempSnames.length][];
+            for (int i = 0; i < tempFnames.length; ++i) {
+                if (tempFnames[i] != null)
+                    fnameAccounts[i] = tempFnames[i].stream().mapToInt(Integer::intValue).toArray();
+            }
 
-        rebuildEmailBorders(temp, tempId);
+            for (int i = 0; i < tempSnames.length; ++i) {
+                if (tempSnames[i] != null)
+                    snameAccounts[i] = tempSnames[i].stream().mapToInt(Integer::intValue).toArray();
+            }
 
-/*
-        tempCountryList.clear();
-        tempCountryList = null;
+            interestAccounts = new int[tempIinterestAccounts.size()][];
+            for (int i = 0; i < tempIinterestAccounts.size(); i++) {
+                List<Integer> interest = tempIinterestAccounts.get(i);
+                if (interest != null)
+                    interestAccounts[i] = interest.stream().mapToInt(Integer::intValue).toArray();
+            }
 
-        tempCityList.clear();
-        tempCityList = null;
-
-        tempDomainList.clear();
-        tempDomainList = null;
-
-        tempEmailList.clear();
-        tempEmailList = null;
-
-        tempSnameList = null;
-        tempFnameList = null;
-*/
-
+            rebuildEmailBorders(temp, tempId);
+        });
+        t.start();
     }
-
 
     public void clearTempData() {
 
@@ -455,71 +475,4 @@ public class IndexCalculator {
         cal.setTimeInMillis((long)timestamp*1000);
         return cal.get(Calendar.YEAR);
     }
-
-    private void createRecommendFilter() {
-        HashMap<Integer, HashMap<Integer, List<Integer>>>[][][] tempRecommendInteresFilter = new HashMap[2][3][];
-
-        for (int premium = 0; premium < 2; ++premium) {
-            for (int status = 0; status < 3; ++status) {
-                tempRecommendInteresFilter[premium][status] = new HashMap[AllLists.countriesList.size()];
-
-                for (int countryIndex = 0; countryIndex < AllLists.countriesList.size(); ++countryIndex) {
-                    tempRecommendInteresFilter[premium][status][countryIndex] = new HashMap<>();
-                }
-            }
-        }
-
-        for (com.pk.model.Account account : allAccounts) {
-            if(account==null)
-                continue;
-
-            int premiumIndex = account.premiumEnd > Runner.curDate ? 0 : 1;
-            int countryIndex = account.country;
-            int statusIndex = account.status - 1;
-            int cityIndex = account.city;
-            int[] interestsIndex = account.interestsArray;
-
-            tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p -> new HashMap<>());
-            if (interestsIndex != null) {
-                for (int interest : interestsIndex) {
-                    tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(interest, p -> new ArrayList<>());
-                    tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(interest).add(account.id);
-                }
-            } else {
-                tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(0, p -> new ArrayList<>());
-                tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(0).add(account.id);
-
-            }
-        }
-
-        for(int premiumIndex=0; premiumIndex<tempRecommendInteresFilter.length; ++premiumIndex) {
-            for(int statusIndex=0; statusIndex<tempRecommendInteresFilter[premiumIndex].length; ++statusIndex) {
-
-                AllLists.recommendInteresFilter[premiumIndex][statusIndex] = new HashMap[AllLists.countriesList.size()];
-
-                for(int countryIndex=0; countryIndex<tempRecommendInteresFilter[premiumIndex][statusIndex].length; ++countryIndex) {
-
-                    AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex] = new HashMap<>();
-
-                    for(Integer cityIndex : tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].keySet()) {
-                        AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p -> new HashMap<>());
-
-                        HashMap<Integer, List<Integer>> aa = tempRecommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex);
-                        for(Integer intId : aa.keySet()) {
-                            AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(intId, p -> new int[aa.get(intId).size()]);
-
-                            List<Integer> get = aa.get(intId);
-                            for (int i = 0; i < get.size(); i++) {
-                                int accId = get.get(i);
-                                AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId)[i] = accId;
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
-        tempRecommendInteresFilter = null;
-    }
-
 }

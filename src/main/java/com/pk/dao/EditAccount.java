@@ -66,9 +66,15 @@ public class EditAccount {
             oldHash |= account.email << 7;
             PostLists.usedEmailDomain.remove(oldHash);
 
+            if(!Runner.isWarm)
+                removeRecommendFilter(account);
+
             account.email = emailIndex;
             account.emailDomain = domainIndex;
         }
+
+        if(jsonAccount.getEmail() == null && !Runner.isWarm)
+            removeRecommendFilter(account);
 
         if (jsonAccount.getFname() != null) {
 
@@ -177,6 +183,9 @@ public class EditAccount {
             }
         }
 
+        if(!Runner.isWarm)
+            createRecommendFilter(account);
+
         return HttpResponseStatus.ACCEPTED;
     }
 
@@ -230,4 +239,103 @@ public class EditAccount {
         }
         return true;
     }
+
+
+    private void removeRecommendFilter(Account account) {
+        if (account == null || account.interestsArray == null)
+            return;
+
+        int premiumIndex = account.premiumEnd > Runner.curDate ? 0 : 1;
+        int countryIndex = account.country;
+        int statusIndex = account.status - 1;
+        int cityIndex = account.city;
+
+        if (AllLists.recommendInteresFilter[premiumIndex][statusIndex] == null) {
+            AllLists.recommendInteresFilter[premiumIndex][statusIndex] = new HashMap[AllLists.countriesList.size()];
+        }
+
+        if (AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex] == null) {
+            AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex] = new HashMap<>();
+        }
+
+        AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p -> new HashMap<>());
+
+        //AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(account.id, p -> new int[account.interestsArray.length]);
+        AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(account.id, p -> new int[account.interestsArray.length]);
+
+        for (int i = 0; i < account.interestsArray.length; i++) {
+            int intId = account.interestsArray[i];
+
+            if(AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId) == null) {
+                AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(intId, p -> new int[1]);
+                AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId)[0] = account.id;
+            } else {
+                int[] oldList = AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId);
+                for (int i1 = 0; i1 < oldList.length; i1++) {
+                    if(oldList[i1] == account.id) {
+                        oldList[i1] = 0;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void createRecommendFilter(Account account) {
+        if (account == null || account.interestsArray == null)
+            return;
+
+        int premiumIndex = account.premiumEnd > Runner.curDate ? 0 : 1;
+        int countryIndex = account.country;
+        int statusIndex = account.status - 1;
+        int cityIndex = account.city;
+
+        if (AllLists.recommendInteresFilter[premiumIndex][statusIndex] == null) {
+            AllLists.recommendInteresFilter[premiumIndex][statusIndex] = new HashMap[AllLists.countriesList.size()];
+        }
+
+        if (AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex] == null) {
+            AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex] = new HashMap<>();
+        }
+
+        AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].computeIfAbsent(cityIndex, p -> new HashMap<>());
+
+        //AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(account.id, p -> new int[account.interestsArray.length]);
+        AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(account.id, p -> new int[account.interestsArray.length]);
+
+        for (int i = 0; i < account.interestsArray.length; i++) {
+            int intId = account.interestsArray[i];
+
+            if(AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId) == null) {
+                AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).computeIfAbsent(intId, p -> new int[1]);
+                AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId)[0] = account.id;
+            } else {
+
+                int[] oldList = AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId);
+                boolean founded = false;
+                for (int i1 = 0; i1 < oldList.length; i1++) {
+                    if(oldList[i1] == 0) {
+                        oldList[i1] = account.id;
+                        founded = true;
+                        break;
+                    }
+                }
+                if(!founded) {
+                    AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).put(intId, new int[(int) Math.max((oldList.length + 1) * 1.15, oldList.length + 2)]);
+
+                    int[] newList = AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId);
+
+                    System.arraycopy(oldList,0,newList,0, oldList.length);
+
+/*
+                    for (int i1 = 0; i1 < oldList.length; i1++) {
+                        newList[i1] = oldList[i1];
+                    }
+*/
+                    newList[oldList.length] = account.id;
+                }
+            }
+        }
+    }
+
 }
