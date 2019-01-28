@@ -392,6 +392,8 @@ public class AppProxy {
         groupFilterBirth = new HashMap[countriesList.size()];
         groupFilterJoined = new HashMap[countriesList.size()];
 
+        groupFilterBirthCityInterests = new short[MAX_BIRTH_YEAR-MIN_BIRTH_YEAR+1][citiesList.size()][interestsById.size()+1];
+
         for (com.pk.model.Account account : allAccounts) {
             if (account == null)
                 continue;
@@ -401,7 +403,6 @@ public class AppProxy {
 
             int birth = getYear(account.birth);
             int joined = getYear(account.joined);
-            //int fixedCityIndex = countryCityList[account.country].indexOf(account.city);
 
             if(groupFilter[countryIndex] == null) {
 
@@ -417,6 +418,12 @@ public class AppProxy {
             ++groupFilter[countryIndex].get(account.city)[statusIndex][sexIndex];
             ++groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
             ++groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
+
+            if(account.city !=0 && account.birth !=0 && account.interestsArray != null) {
+                for(int interesId : account.interestsArray) {
+                    ++groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city][interesId];
+                }
+            }
         }
     }
 

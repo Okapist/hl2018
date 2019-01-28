@@ -57,6 +57,11 @@ public class AllLists {
     public static HashMap<Short, short[][][]>[] groupFilterBirth;
     public static HashMap<Short, short[][][]>[] groupFilterJoined;
 
+
+    //bicycle
+    //[birth][city][interes] = count sorted by
+    public static short[][][] groupFilterBirthCityInterests;
+
     public static final int[][][] emailLowBorder = new int[26][26][26];//updated
     public static final int[][][] emailHightBorder = new int[26][26][26];//updated
 
