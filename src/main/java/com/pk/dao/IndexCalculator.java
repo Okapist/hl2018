@@ -238,7 +238,8 @@ public class IndexCalculator {
         AllLists.allEmailList.addAll(PostLists.newEmails);
 
         for(String ttt: PostLists.newEmailDomains) {
-            AllLists.domainList.add(ttt.toCharArray());
+            if(!"".equals(ttt))
+                AllLists.domainList.add(ttt.toCharArray());
         }
     }
 

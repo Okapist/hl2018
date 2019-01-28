@@ -255,14 +255,12 @@ public class NewAccount {
 
             for (int i = 0; i < likes.size(); ++i) {
                 int[] like = likes.get(i);
-                int likeFromId = like[0];
-                int likeToId = like[1];
+                int likeToId = like[0];
 
-                if(likeFromId >= AllLists.allAccounts.length || AllLists.allAccounts[likeFromId] == null)
-                    return false;
                 if(likeToId >= AllLists.allAccounts.length || AllLists.allAccounts[likeToId] == null)
                     return false;
-                if(like[2] <= 0)
+
+                if(like[1] <= 0)
                     return false;
             }
             return true;
