@@ -16,18 +16,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.0</version>
-        </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
@@ -105,37 +93,9 @@
                 <configuration>
                     <source>1.8</source>
                     <target>11</target>
-<!--
-                    <compilerArgument>-proc:none</compilerArgument>
--->
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>default-profile</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <file>
-                    <exists>${java.home}/../lib/tools.jar</exists>
-                </file>
-            </activation>
-            <properties>
-                <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
-            </properties>
-        </profile>
-        <profile>
-            <id>release</id>
-        </profile>
-    </profiles>
-
-    <distributionManagement>
-        <repository>
-            <id>bintray-repo-maven</id>
-            <url>https://api.bintray.com/maven/buremba/maven/netty-rest/;publish=1</url>
-        </repository>
-    </distributionManagement>
 </project>

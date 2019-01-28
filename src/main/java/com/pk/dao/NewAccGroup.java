@@ -53,7 +53,7 @@ public class NewAccGroup {
         }
 
         //new code based on new groupFilter no filter for now
-        if(likes==null&& interests == null && groupInterests==false && ((birth == null && joined==null) ||
+        if(likes==null&& interests == null && !groupInterests && ((birth == null && joined==null) ||
                 (birth!=null && joined==null) ||
                 (birth==null && joined!=null))) {
 
@@ -166,7 +166,7 @@ public class NewAccGroup {
                             lastSex, lastStatus, startSex, startStatus, startCountry, startCity, groupData, tempCountry, tempCity, tempStatus,
                             tempSex, curSum);
             }
-            buildAnswer(groupData, limit, groupSex, groupStatus, groupCountry, groupCity, groupInterests, buf);
+            buildAnswer(groupData, limit, groupSex, groupStatus, groupCountry, groupCity, buf);
             return true;
         }
 
@@ -237,55 +237,65 @@ public class NewAccGroup {
             jEnd = getTimestamp(joined + 1) - 1;
         }
 
-        HashMap<Integer, Group> formedGroups = new HashMap<>(50);
+        HashMap<Integer, Group> formedGroups = new HashMap<>(100);
         int start = 0;
         int end = list==null?listList.size():list.length;
         int cur = start;
+
+        boolean isCity = city != null;
+        boolean isCountry = country != null;
+        boolean isSex = sex != null;
+        boolean isStatus = status != null;
+        boolean isBirth = birth != null;
+        boolean isJoined = joined != null;
+        boolean isInterests = interests != null;
+        boolean isLikes = likes != null;
+
         while (cur<end) {
             Integer possibleId = list==null?listList.get(cur):list[cur];
             ++cur;
 
-            if (possibleId == null || possibleId < 1)
+            if (possibleId == null || possibleId == 0)
                 continue;
 
             Account possible = AllLists.allAccounts[possibleId];
 
-            if (city != null) {
+            if (isCity) {
                 if (possible.city == 0 || possible.city != city)
                     continue;
             }
 
-            if (country != null) {
+            if (isCountry) {
                 if (possible.country == 0 || possible.country != country)
                     continue;
             }
 
-            if (sex != null) {
+            if (isSex) {
                 if (possible.sex != sex)
                     continue;
             }
 
-            if (status != null) {
+            if (isStatus) {
                 if (possible.status != status)
                     continue;
             }
 
-            if (birth != null) {
+            if (isBirth) {
                 if (possible.birth == 0 || possible.birth < bStart || possible.birth > bEnd)
                     continue;
             }
 
-            if (joined != null) {
+            if (isJoined) {
                 if (possible.joined < jStart || possible.joined > jEnd)
                     continue;
             }
 
-            if (interests != null) {
+            if (isInterests) {
                 if (possible.interests == null || !possible.interests.contains(interestId))
                     continue;
             }
 
-            if (likes != null && listList == null) {
+            if (isLikes && listList == null) {
                 if(!searchLikesSet.contains(possible.id)) {
                     continue;
                 }
@@ -702,7 +712,7 @@ public class NewAccGroup {
 
 
     private void buildAnswer(TreeSet<int[]> groups, int limit,
-                             boolean groupSex, boolean groupStatus, boolean groupCountry, boolean groupCity, boolean groupInterests, StringBuilder buf) {
+                             boolean groupSex, boolean groupStatus, boolean groupCountry, boolean groupCity, StringBuilder buf) {
         int pointer = 0;
         boolean isFirst = true;
         while (!groups.isEmpty() && pointer<limit) {
@@ -737,13 +747,7 @@ public class NewAccGroup {
                 buf.append(sexStr);
                 buf.append("\"");
             }
-/*
-            if(groupInterests && group.interest != 0) {
-                buf.append(",\"interests\":\"");
-                buf.append(AllLists.interestsById.get(group.interest));
-                buf.append("\"");
-            }
-*/
+
             buf.append("}");
             ++pointer;
         }
@@ -800,42 +804,40 @@ public class NewAccGroup {
 
         Group[] formedGroups = hm.values().toArray(new Group[0]);
 
-        if(formedGroups != null) {
-            if (order) {
-                Arrays.sort(formedGroups, (Group o1, Group o2) -> {
-                    if (o1.count != o2.count)
-                        return o1.count - o2.count;
+        if (order) {
+            Arrays.sort(formedGroups, (Group o1, Group o2) -> {
+                if (o1.count != o2.count)
+                    return o1.count - o2.count;
 
-                    if (o1.country != o2.country)
-                        return o1.country - o2.country;
+                if (o1.country != o2.country)
+                    return o1.country - o2.country;
 
-                    if (o1.city != o2.city)
-                        return o1.city - o2.city;
+                if (o1.city != o2.city)
+                    return o1.city - o2.city;
 
-                    if (o1.status != o2.status)
-                        return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
+                if (o1.status != o2.status)
+                    return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
 
-                    if (o1.sex != o2.sex)
-                        return (o1.sex?1:0) - (o2.sex?1:0);
+                if (o1.sex != o2.sex)
+                    return (o1.sex?1:0) - (o2.sex?1:0);
 
-                    return AllLists.interestsById.get(o1.interest).compareTo(AllLists.interestsById.get(o2.interest));
-                });
-            } else {
-                Arrays.sort(formedGroups, (Group o2, Group o1) -> {
-                    if (o1.count != o2.count)
-                        return o1.count - o2.count;
-                    if (o1.country != o2.country)
-                        return o1.country - o2.country;
-                    if (o1.city != o2.city)
-                        return o1.city - o2.city;
-                    if (o1.status != o2.status)
-                        return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
-                    if (o1.sex != o2.sex)
-                        return (o1.sex?1:0) - (o2.sex?1:0);
+                return AllLists.interestsById.get(o1.interest).compareTo(AllLists.interestsById.get(o2.interest));
+            });
+        } else {
+            Arrays.sort(formedGroups, (Group o2, Group o1) -> {
+                if (o1.count != o2.count)
+                    return o1.count - o2.count;
+                if (o1.country != o2.country)
+                    return o1.country - o2.country;
+                if (o1.city != o2.city)
+                    return o1.city - o2.city;
+                if (o1.status != o2.status)
+                    return Utils.getStatusText(o1.status).compareTo(Utils.getStatusText(o2.status));
+                if (o1.sex != o2.sex)
+                    return (o1.sex?1:0) - (o2.sex?1:0);
 
-                    return AllLists.interestsById.get(o1.interest).compareTo(AllLists.interestsById.get(o2.interest));
-                });
-            }
+                return AllLists.interestsById.get(o1.interest).compareTo(AllLists.interestsById.get(o2.interest));
+            });
         }
         return formedGroups;
     }
@@ -866,7 +868,7 @@ public class NewAccGroup {
         }
 
         if (!groupInterests) {
-            if (groups.get(hash) != null) {
+            if (groups.containsKey(hash)) {
                 ++groups.get(hash).count;
             } else {
                 Group g = new Group();
@@ -878,13 +880,11 @@ public class NewAccGroup {
                 groups.put(hash, g);
             }
         } else {
-            int[] accInterests = account.interestsArray;
-            final int originalHash = hash;
-            for (Integer interest : accInterests) {
-                hash = originalHash | (int) interest << moveInterestsIndex;
+            for (int interest : account.interestsArray) {
+                int interestHash = hash | interest << moveInterestsIndex;
 
-                if (groups.get(hash) != null) {
-                    ++groups.get(hash).count;
+                if (groups.containsKey(interestHash)) {
+                    ++groups.get(interestHash).count;
                 } else {
                     Group g = new Group();
                     g.count = 1;
@@ -893,7 +893,7 @@ public class NewAccGroup {
                     g.country = groupCountry?account.country:0;
                     g.city = groupCity?account.city:0;
                     g.interest = interest;
-                    groups.put(hash, g);
+                    groups.put(interestHash, g);
                 }
             }
         }

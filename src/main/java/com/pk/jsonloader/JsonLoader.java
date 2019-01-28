@@ -16,7 +16,7 @@ import java.util.List;
 
 public class JsonLoader {
 
-    public void load(String path, AppProxy appProxy) throws IOException, SQLException {
+    public void load(String path, AppProxy appProxy) throws IOException {
 
         boolean isNix = path.startsWith("/");
 

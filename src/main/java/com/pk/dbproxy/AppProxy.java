@@ -13,7 +13,7 @@ import static com.pk.model.AllLists.*;
 
 public class AppProxy {
 
-    int maxIntId = 1;
+    private int maxIntId = 1;
 
     private ArrayList<String> fnames = new ArrayList<>();
     private ArrayList<String> snames = new ArrayList<>();
@@ -26,7 +26,7 @@ public class AppProxy {
 
     private List<List<Integer>> tempLikesTo = new ArrayList<>();
 
-    List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
+    private List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
     private HashMap<Integer, HashMap<Integer, List<Integer>>>[][][] tempRecommendInteresFilter = new HashMap[2][3][];
 
     public AppProxy() {
@@ -63,7 +63,7 @@ public class AppProxy {
                 account.emailDomain = domainIndex;
 
                 int hash = account.emailDomain;
-                hash |= account.email<<7;
+                hash |= account.email << 8;
                 if(tempUsedEmails.contains(hash)) {
                     System.out.println("WHONG HASH CALC " + hash);
                 }
@@ -196,7 +196,7 @@ public class AppProxy {
         Collections.sort(citiesList);
 
         ArrayList<char[]> tempDomainList = new ArrayList<>(domainList);
-        Collections.sort(domainList, Utils::compareCharArr);
+        domainList.sort(Utils::compareCharArr);
 
         ArrayList<String> tempEmailList = new ArrayList<>(allEmailList);
         Collections.sort(allEmailList);
@@ -266,9 +266,7 @@ public class AppProxy {
 
         if (jsonAccount.getLikes() != null) {
 
-            Arrays.sort(jsonAccount.getLikes(), (p1, p2) -> {
-                return Integer.compare(p2.getId(), p1.getId());
-            });
+            Arrays.sort(jsonAccount.getLikes(), (p1, p2) -> Integer.compare(p2.getId(), p1.getId()));
 
             List<Likes> clearList = new ArrayList<>();
             int prevLikeId = Integer.MIN_VALUE;
@@ -388,10 +386,6 @@ public class AppProxy {
         System.out.println("ALL FILTERS CREATED");
     }
 
-    private void createGroupFilterSumCountry() {
-    }
-
-
     private void createGroupFilter() {
 
         groupFilter = new HashMap[countriesList.size()];
@@ -424,11 +418,9 @@ public class AppProxy {
             ++groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
             ++groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
         }
-
-        int i = 0;
     }
 
-    Calendar cal = Calendar.getInstance();
+    private final Calendar cal = Calendar.getInstance();
     private int getYear(int timestamp) {
         cal.setTimeInMillis((long)timestamp*1000);
         return cal.get(Calendar.YEAR);
@@ -499,7 +491,7 @@ public class AppProxy {
         tempRecommendInteresFilter = null;
     }
 
-    public void createNewFilters() {
+    private void createNewFilters() {
 
         /*
         for(int i=0; i<AllLists.allAccounts.length; ++i) {
@@ -608,29 +600,29 @@ public class AppProxy {
         snames = null;
 
         List<com.pk.model.Account> sortedAccount = new ArrayList(Arrays.asList(allAccounts));
-        Collections.sort(sortedAccount, (p1,p2) -> {
-            if(p1 == null && p2 == null)
+        sortedAccount.sort((p1, p2) -> {
+            if (p1 == null && p2 == null)
                 return 0;
-            if(p1 == null)
+            if (p1 == null)
                 return -1;
-            if(p2==null)
+            if (p2 == null)
                 return 1;
 
-            if(p1.fname != p2.fname)
+            if (p1.fname != p2.fname)
                 return p1.fname - p2.fname;
 
             return p1.id - p2.id;
         });
 
-        Collections.sort(sortedAccount, (p1,p2) -> {
-            if(p1 == null && p2 == null)
+        sortedAccount.sort((p1, p2) -> {
+            if (p1 == null && p2 == null)
                 return 0;
-            if(p1 == null)
+            if (p1 == null)
                 return -1;
-            if(p2==null)
+            if (p2 == null)
                 return 1;
 
-            if(p1.sname != p2.sname)
+            if (p1.sname != p2.sname)
                 return p1.sname - p2.sname;
 
             return p1.id - p2.id;
@@ -810,7 +802,7 @@ public class AppProxy {
         });
     }
 
-    public  <K, V extends Comparable<? super V>> LinkedHashMap<K, V> sortByValue(Map<K, V> map) {
+    private <K, V extends Comparable<? super V>> LinkedHashMap<K, V> sortByValue(Map<K, V> map) {
         List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
         list.sort(Map.Entry.comparingByValue());
 

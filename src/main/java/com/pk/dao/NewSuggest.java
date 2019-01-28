@@ -11,7 +11,7 @@ import static com.pk.model.AllLists.*;
 
 public class NewSuggest {
 
-    private static final Float ZERO_FLOAT = new Float(0);
+    private static final Float ZERO_FLOAT =  Float.valueOf(0);
 
     public boolean suggest(int accId, Short country, Short city, int limit, StringBuilder buf) {
 

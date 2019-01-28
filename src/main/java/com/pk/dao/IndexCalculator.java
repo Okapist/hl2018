@@ -213,12 +213,6 @@ public class IndexCalculator {
         int oldFnamesSize = fnames.length;
         int oldSnamesSize = snames.length;
 
-        //AllLists.allEmailList.addAll(PostLists.newEmails);
-
-        //for (String emailDomain : PostLists.newEmailDomains) {
-            //AllLists.domainList.add(emailDomain.toCharArray());
-        //}
-
         fnames = Arrays.copyOf(fnames, fnames.length + PostLists.fnames.size());
         snames = Arrays.copyOf(snames, snames.length + PostLists.snames.size());
 
@@ -241,9 +235,7 @@ public class IndexCalculator {
 
     private void addNewEmailAndDomains() {
 
-        for(String ttt : PostLists.newEmails) {
-            AllLists.allEmailList.add(ttt);
-        }
+        AllLists.allEmailList.addAll(PostLists.newEmails);
 
         for(String ttt: PostLists.newEmailDomains) {
             AllLists.domainList.add(ttt.toCharArray());
@@ -266,7 +258,7 @@ public class IndexCalculator {
         ArrayList<char[]> tempDomainList = null;
         if (isNewEmailDomain) {
             tempDomainList = new ArrayList<>(domainList);
-            Collections.sort(domainList, Utils::compareCharArr);
+            domainList.sort(Utils::compareCharArr);
         }
 
         ArrayList<String> tempEmailList = new ArrayList<>(allEmailList);
@@ -451,9 +443,6 @@ public class IndexCalculator {
         PostLists.snames.clear();
         //PostLists.snames = null;
 
-        PostLists.freeEmailDomain.clear();
-        //PostLists.freeEmailDomain = null;
-
         PostLists.usedEmailDomain.clear();
         //PostLists.usedEmailDomain = null;
 
@@ -473,7 +462,7 @@ public class IndexCalculator {
             AllLists.usedEmailDomain = null;
     }
 
-    Calendar cal = Calendar.getInstance();
+    private final Calendar cal = Calendar.getInstance();
     private int getYear(int timestamp) {
         cal.setTimeInMillis((long)timestamp*1000);
         return cal.get(Calendar.YEAR);

@@ -25,7 +25,7 @@ public class AllLists {
     public static int[][]cityAccounts;//updated
     public static int[][] countryAccounts;//updated
 
-    public static List<String> allEmailList = new ArrayList<>();//updated
+    public static final List<String> allEmailList = new ArrayList<>();//updated
 
     public static final HashMap<String, Integer> interests = new HashMap<>(); //прямой и обратный индекс по интересам
     public static final HashMap<Integer,String> interestsById = new HashMap<>();
@@ -38,12 +38,6 @@ public class AllLists {
     public static int MAX_BIRTH_YEAR = Integer.MAX_VALUE;
     public static int MIN_JOINED_YEAR = Integer.MAX_VALUE;
     public static int MAX_JOINED_YEAR = Integer.MIN_VALUE;
-
-    public static int OLD_MIN_BIRTH_YEAR = Integer.MAX_VALUE;
-    public static int OLD_MAX_BIRTH_YEAR = Integer.MAX_VALUE;
-    public static int OLD_MIN_JOINED_YEAR = Integer.MAX_VALUE;
-    public static int OLD_MAX_JOINED_YEAR = Integer.MIN_VALUE;
-
 
     public static List<Short>[] countryCityList; //лист городов в стране
 
@@ -63,11 +57,11 @@ public class AllLists {
     public static HashMap<Short, short[][][]>[] groupFilterBirth;
     public static HashMap<Short, short[][][]>[] groupFilterJoined;
 
-    public static int[][][] emailLowBorder = new int[26][26][26];//updated
-    public static int[][][] emailHightBorder = new int[26][26][26];//updated
+    public static final int[][][] emailLowBorder = new int[26][26][26];//updated
+    public static final int[][][] emailHightBorder = new int[26][26][26];//updated
 
     public static int[] usedEmailDomain;
 
-    public static int[][] topInterests50 = new int[50][]; //interes - count
-    public static int[][] lowInterests50 = new int[50][]; //interes - count
+    public static final int[][] topInterests50 = new int[50][]; //interes - count
+    public static final int[][] lowInterests50 = new int[50][]; //interes - count
 }

@@ -1,11 +1,8 @@
 package com.pk.webserver;
 
 import com.jsoniter.JsonIterator;
-import com.jsoniter.spi.DecodingMode;
 import com.pk.dao.*;
 import com.pk.jsonmodel.Account;
-import com.pk.jsonmodel.PostLikes;
-//import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
@@ -17,12 +14,15 @@ import java.util.*;
 import static com.pk.model.AllLists.allAccounts;
 import static com.pk.model.AllLists.allEmailList;
 
-public class Workers {
+class Workers {
 
-    NewAccFilter accFilter = new NewAccFilter();
-    NewAccGroup accGroup = new NewAccGroup();
-    NewRecommend recommend = new NewRecommend();
-    NewSuggest suggest = new NewSuggest();
+    private final NewAccFilter accFilter = new NewAccFilter();
+    private final NewAccGroup accGroup = new NewAccGroup();
+    private final NewRecommend recommend = new NewRecommend();
+    private final NewSuggest suggest = new NewSuggest();
+    private final AddLikes al = new AddLikes();
+    private final NewAccount creator = new NewAccount();
+    private final EditAccount editAccount = new EditAccount();
 
     public HttpResponseStatus filter(HttpRequest request, StringBuilder buf) {
         QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
@@ -204,7 +204,6 @@ public class Workers {
                 (country != null && countryIndex == null && countryExists == null)) {
             String fullResponse = "{\"accounts\": []}";
             buf.append(fullResponse);
-            //request.response(fullResponse, HttpResponseStatus.OK).end();
             return HttpResponseStatus.OK;
         }
 
@@ -230,7 +229,7 @@ public class Workers {
                 fnameIndex[i] = Utils.getFnameIndexBinary(fn);
             }
         }
-        boolean result = accFilter.filter(sex,
+        accFilter.filter(sex,
                 email==null?null:email.toCharArray(), emailDomain, emailLt,
                 statusToFiler, statusEq,
                 fnameIndex, fnameExists,
@@ -447,7 +446,7 @@ public class Workers {
         Map<String, List<String>> params = queryStringDecoder.parameters();
         int accId;
         try{
-            accId = Integer.parseInt(request.uri().toString().split("/")[2]);
+            accId = Integer.parseInt(request.uri().split("/")[2]);
         } catch (Exception ex) {
             buf.append("{}");
             return HttpResponseStatus.BAD_REQUEST;
@@ -643,10 +642,7 @@ public class Workers {
                 return HttpResponseStatus.BAD_REQUEST;
         }
 
-        NewAccount creator = new NewAccount();
-        HttpResponseStatus toReturn = creator.create(data, status, emailParts, likes, premium, interests);
-
-        return HttpResponseStatus.CREATED;
+        return creator.create(data, status, emailParts, likes, premium, interests);
     }
 
     public HttpResponseStatus refresh(HttpRequest request, String context) {
@@ -796,9 +792,7 @@ public class Workers {
                 return HttpResponseStatus.BAD_REQUEST;
         }
 
-        EditAccount editAccount = new EditAccount();
-        HttpResponseStatus toReturn = editAccount.edit(accId, data, status, emailParts, likes, premium, interests);
-        return toReturn;
+        return editAccount.edit(accId, data, status, emailParts, likes, premium, interests);
     }
 
     public HttpResponseStatus likes(HttpRequest request) {
@@ -827,6 +821,9 @@ public class Workers {
                                 return HttpResponseStatus.BAD_REQUEST;
                         }
                     }
+                    if(like[0] == 0 || like[1]==0 || like[2]==0)
+                        return HttpResponseStatus.BAD_REQUEST;
+
                     likeData.add(like);
                 }
             }
@@ -834,9 +831,10 @@ public class Workers {
             return HttpResponseStatus.BAD_REQUEST;
         }
 
-        AddLikes al = new AddLikes();
-        HttpResponseStatus result = al.addLikes(likeData);
-        return result;
+        if(likeData==null || likeData.size() == 0)
+            return HttpResponseStatus.BAD_REQUEST;
+
+        return al.addLikes(likeData);
     }
 
     private List<Short> convertCityListToIndex(List<String> city) {
@@ -863,7 +861,7 @@ public class Workers {
         return Utils.findCityIndexBinary(city);
     }
 
-    public static boolean isNumeric(String str)
+    private static boolean isNumeric(String str)
     {
         for (char c : str.toCharArray())
         {

@@ -17,9 +17,10 @@ public class NewAccount {
         Account account = new Account();
         account.id = jsonAccount.getId();
 
-        //boolean goodLikes = addLikes(account.id, likes);
-        //if (!goodLikes)
-            //return HttpResponseStatus.BAD_REQUEST;
+        if(likes != null) {
+            if(!addLikesHelper(likes))
+                return HttpResponseStatus.BAD_REQUEST;
+        }
 
         int emailIndex = Collections.binarySearch(AllLists.allEmailList, emailParts[0]);
         if (emailIndex < 0) {
@@ -47,8 +48,8 @@ public class NewAccount {
 
 
         int hash = domainIndex;
-        hash |= emailIndex << 7;
-        if (!PostLists.freeEmailDomain.contains(hash) && (Arrays.binarySearch(usedEmailDomain, hash) > -1 || PostLists.usedEmailDomain.contains(hash)))
+        hash |= emailIndex << 8;
+        if (Arrays.binarySearch(usedEmailDomain, hash) > -1 || PostLists.usedEmailDomain.contains(hash))
             return HttpResponseStatus.BAD_REQUEST;
 
         PostLists.usedEmailDomain.add(hash);
@@ -164,23 +165,6 @@ public class NewAccount {
         return HttpResponseStatus.CREATED;
     }
 
-    private boolean addLikes(int id, List<int[]> likes) {
-/*
-        if (likes != null) {
-            for (int i = 0; i < likes.size(); ++i) {
-                int[] like = likes.get(i);
-                int likeId = like[0];
-                int likeTs = like[1];
-                int[] postLike = new int[3];
-                postLike[0] = id;
-                postLike[1] = likeId;
-                postLike[2] = likeTs;
-                PostLists.newLikes.add(postLike);
-            }
-        }*/
-        return true;
-    }
-
     private void updateGroupFilter(Account account) {
         int countryIndex = account.country;
         int sexIndex = account.sex ? 1 : 0;
@@ -259,9 +243,30 @@ public class NewAccount {
         }
     }
 
-    Calendar cal = Calendar.getInstance();
+    private final Calendar cal = Calendar.getInstance();
     private int getYear(int timestamp) {
         cal.setTimeInMillis((long)timestamp*1000);
         return cal.get(Calendar.YEAR);
+    }
+
+    private boolean addLikesHelper(List<int[]> likes) {
+
+        if (likes != null) {
+
+            for (int i = 0; i < likes.size(); ++i) {
+                int[] like = likes.get(i);
+                int likeFromId = like[0];
+                int likeToId = like[1];
+
+                if(likeFromId >= AllLists.allAccounts.length || AllLists.allAccounts[likeFromId] == null)
+                    return false;
+                if(likeToId >= AllLists.allAccounts.length || AllLists.allAccounts[likeToId] == null)
+                    return false;
+                if(like[2] <= 0)
+                    return false;
+            }
+            return true;
+        }
+        return false;
     }
 }

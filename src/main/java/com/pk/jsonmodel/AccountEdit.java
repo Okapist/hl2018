@@ -3,7 +3,7 @@ package com.pk.jsonmodel;
 
 import com.jsoniter.annotation.JsonProperty;
 
-public class AccountEdit {
+class AccountEdit {
 
     @JsonProperty(required = false)
     public

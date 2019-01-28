@@ -12,21 +12,20 @@ public class PostLists {
     public static boolean isNewCity = false;
     public static boolean isNewEmailDomain = false;
 
-    {
+    public static final List<String> fnames = new ArrayList<>();
+    public static final List<String> snames = new ArrayList<>();
+
+    public static final List<String> newEmails = new ArrayList<>();
+    public static final List<String> newEmailDomains = new ArrayList<>();
+
+    public static final Set<Integer> usedEmailDomain = new HashSet<>();
+
+    public static final List<int[]> newLikes = new ArrayList<>();
+
+    static {
         fnames.add("");
         snames.add("");
         newEmails.add("");
         newEmailDomains.add("");
     }
-
-    public static List<String> fnames = new ArrayList<>();
-    public static List<String> snames = new ArrayList<>();
-
-    public static List<String> newEmails = new ArrayList<>();
-    public static List<String> newEmailDomains = new ArrayList<>();
-
-    public static Set<Integer> usedEmailDomain = new HashSet<>();
-    public static Set<Integer> freeEmailDomain = new HashSet<>();
-
-    public static List<int[]> newLikes = new ArrayList<>();
 }

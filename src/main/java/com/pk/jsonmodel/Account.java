@@ -112,7 +112,7 @@ public class Account
         this.email = email;
     }
 
-    public Premium getPremium ()
+    private Premium getPremium()
     {
         return premium;
     }

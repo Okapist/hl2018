@@ -38,7 +38,7 @@ public class NewRecommend {
         }
 
         //store in reverse order to remove extra
-        PriorityQueue<Account> heap = new PriorityQueue<>(limit, (p2, p1) -> {
+        PriorityQueue<Account> heap = new PriorityQueue<>(limit*3, (p2, p1) -> {
 
             boolean p1Premium = p1.premiumStart != 0 && p1.premiumEnd != 0 && p1.premiumStart < Runner.curDate && p1.premiumEnd > Runner.curDate;
             boolean p2Premium = p2.premiumStart != 0 && p2.premiumEnd != 0 && p2.premiumStart < Runner.curDate && p2.premiumEnd > Runner.curDate;
@@ -52,8 +52,7 @@ public class NewRecommend {
 
             int common1 = 0;
             int common2 = 0;
-            for (int i = 0; i < baseInterestsArray.length; i++) {
-                int intId = baseInterestsArray[i];
+            for (int intId : baseInterestsArray) {
                 if (p1.interests.contains(intId)) {
                     ++common1;
                 }
@@ -155,15 +154,11 @@ public class NewRecommend {
 
     private void buildResult(PriorityQueue<Account> heap, int limit, StringBuilder buf) {
 
-        //Account[] arr = new Account[heap.size()];
-        //for (int i = 0; i < arr.length; ++i)
-            //arr[i] = heap.poll();
         int added = 0;
         boolean isFirst = true;
-        while(!heap.isEmpty() && added<limit) {
-        //for (int i = arr.length - 1; i >= 0; --i) {
+        while (!heap.isEmpty() && added < limit) {
             Account cur = heap.poll();
-            if (cur.id < 1)
+            if (cur.id == 0)
                 continue;
 
             ++added;
@@ -201,16 +196,13 @@ public class NewRecommend {
             buf.append(",\"birth\": ");
             buf.append(cur.birth);
 
-            Integer premStart = cur.premiumStart;
-            Integer premEnd = cur.premiumEnd;
-            if (premStart != null && premEnd != null && premStart > 0 && premEnd > 0) {
+            if (cur.premiumStart > 0 && cur.premiumEnd > 0) {
                 buf.append(",\"premium\":{\"start\":");
-                buf.append(premStart);
+                buf.append(cur.premiumStart);
                 buf.append(",\"finish\":");
-                buf.append(premEnd);
+                buf.append(cur.premiumEnd);
                 buf.append("}");
             }
-
             buf.append("}");
         }
     }

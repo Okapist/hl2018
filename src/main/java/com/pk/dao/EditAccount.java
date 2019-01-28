@@ -26,9 +26,9 @@ public class EditAccount {
             account.id = 1_399_001;
         }
 
-            boolean goodLikes = addLikes(account.id, likes);
-        if (!goodLikes) {
-            return HttpResponseStatus.BAD_REQUEST;
+        if(likes != null) {
+            if(!addLikesHelper(likes))
+                return HttpResponseStatus.BAD_REQUEST;
         }
 
         if(jsonAccount.getEmail() != null) {
@@ -57,14 +57,14 @@ public class EditAccount {
             }
 
             int hash = domainIndex;
-            hash |= emailIndex << 7;
-            if (!PostLists.freeEmailDomain.contains(hash) && (Arrays.binarySearch(usedEmailDomain, hash) > -1 || PostLists.usedEmailDomain.contains(hash)))
+            hash |= emailIndex << 8;
+            if (Arrays.binarySearch(usedEmailDomain, hash) > -1 || PostLists.usedEmailDomain.contains(hash))
                 return HttpResponseStatus.BAD_REQUEST;
 
             PostLists.usedEmailDomain.add(hash);
 
             int oldHash = account.emailDomain;
-            oldHash |= account.email << 7;
+            oldHash |= account.email << 8;
             PostLists.usedEmailDomain.remove(oldHash);
 
             if(!Runner.isWarm)
@@ -193,23 +193,6 @@ public class EditAccount {
             updateGroupFilter(account);
         }
         return HttpResponseStatus.ACCEPTED;
-    }
-
-    private boolean addLikes(int id, List<int[]> likes) {
-
-      /*  if (likes != null) {
-            for (int i = 0; i < likes.size(); ++i) {
-                int[] like = likes.get(i);
-                int likeId = like[0];
-                int likeTs = like[1];
-                int[] postLike = new int[3];
-                postLike[0] = id;
-                postLike[1] = likeId;
-                postLike[2] = likeTs;
-                PostLists.newLikes.add(postLike);
-            }
-        }*/
-        return true;
     }
 
     private void removeRecommendFilter(Account account) {
@@ -359,10 +342,31 @@ public class EditAccount {
             ++groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
     }
 
-    Calendar cal = Calendar.getInstance();
+    private final Calendar cal = Calendar.getInstance();
     private int getYear(int timestamp) {
         cal.setTimeInMillis((long)timestamp*1000);
         return cal.get(Calendar.YEAR);
+    }
+
+    private boolean addLikesHelper(List<int[]> likes) {
+
+        if (likes != null) {
+
+            for (int i = 0; i < likes.size(); ++i) {
+                int[] like = likes.get(i);
+                int likeFromId = like[0];
+                int likeToId = like[1];
+
+                if(likeFromId >= AllLists.allAccounts.length || AllLists.allAccounts[likeFromId] == null)
+                    return false;
+                if(likeToId >= AllLists.allAccounts.length || AllLists.allAccounts[likeToId] == null)
+                    return false;
+                if(like[2] <= 0)
+                    return false;
+            }
+            return true;
+        }
+        return false;
     }
 
 }

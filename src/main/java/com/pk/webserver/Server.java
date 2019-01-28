@@ -32,14 +32,14 @@ public class Server {
 */
     
     //public final static AtomicInteger connections = new AtomicInteger();
-    public final static AtomicBoolean anyPostCalled = new AtomicBoolean(false);
+    private final static AtomicBoolean anyPostCalled = new AtomicBoolean(false);
 
-    public static volatile int oldPhase = 0;
-    public static volatile int phase = 0;
-    public static volatile long lastQueryTime = 0;
-    public static volatile long prevQueryTime = 0;
-    public static volatile long phase2begin = 0;
-    public static volatile boolean secondRecalcEnd = false;
+    private static volatile int oldPhase = 0;
+    private static volatile int phase = 0;
+    private static volatile long lastQueryTime = 0;
+    private static volatile long prevQueryTime = 0;
+    private static volatile long phase2begin = 0;
+    private static volatile boolean secondRecalcEnd = false;
 
     public Server() {
     }
@@ -78,7 +78,7 @@ public class Server {
 
             long curTime = Calendar.getInstance().getTimeInMillis();
 
-            if (curTime - lastQueryTime > 200 && curTime-lastQueryTime > lastQueryTime-prevQueryTime && (curTime-phase2begin > 299000 || Runner.raiting==false)) {
+            if (curTime - lastQueryTime > 200 && curTime-lastQueryTime > lastQueryTime-prevQueryTime && (curTime-phase2begin > 299000 || !Runner.raiting)) {
 
                 if (phase == 0)
                     continue;
@@ -118,12 +118,11 @@ public class Server {
 
     class ServerHandler extends ChannelInboundHandlerAdapter {
 
-        private HttpRequest request;
         private final StringBuilder buf = new StringBuilder();
         private final Workers workers = new Workers();
         private HttpResponseStatus status = NOT_FOUND;
 
-        public ServerHandler() {
+        ServerHandler() {
         }
 
         @Override
@@ -133,7 +132,7 @@ public class Server {
             prevQueryTime = lastQueryTime;
             lastQueryTime = curTime;
 
-            HttpRequest request = this.request = (HttpRequest) msg;
+            HttpRequest request = (HttpRequest) msg;
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
             buf.setLength(0);
             String context = queryStringDecoder.path();
@@ -219,7 +218,7 @@ public class Server {
             } finally {
                 try {
                     ((FullHttpRequest) request).content().release();
-                } catch (Exception ex) {
+                } catch (Exception ignored) {
                 }
 
             }
