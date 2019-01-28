@@ -195,7 +195,10 @@ public class NewAccGroup {
             if(birth > MAX_BIRTH_YEAR || birth < MIN_BIRTH_YEAR)
                 return true;
 
-            if(list == null || list.length > birthYearsAccount[birth-MIN_BIRTH_YEAR].length) {
+            if(birthYearsAccount[birth-MIN_BIRTH_YEAR] == null)
+                return true;
+
+            if(list == null || list.length >= birthYearsAccount[birth-MIN_BIRTH_YEAR].length) {
                 list = birthYearsAccount[birth-MIN_BIRTH_YEAR];
             }
         }

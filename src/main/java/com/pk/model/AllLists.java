@@ -17,7 +17,7 @@ public class AllLists {
     public static int[][] fnameAccounts;//updated
     public static int[][] snameAccounts;//updated
 
-    public static int[][] birthYearsAccount;
+    public static int[][] birthYearsAccount;//updated
 
     public static final List<String> citiesList = new ArrayList<>();//updated
     public static final List<String> countriesList = new ArrayList<>();//updated
@@ -38,6 +38,12 @@ public class AllLists {
     public static int MAX_BIRTH_YEAR = Integer.MAX_VALUE;
     public static int MIN_JOINED_YEAR = Integer.MAX_VALUE;
     public static int MAX_JOINED_YEAR = Integer.MIN_VALUE;
+
+    public static int OLD_MIN_BIRTH_YEAR = Integer.MAX_VALUE;
+    public static int OLD_MAX_BIRTH_YEAR = Integer.MAX_VALUE;
+    public static int OLD_MIN_JOINED_YEAR = Integer.MAX_VALUE;
+    public static int OLD_MAX_JOINED_YEAR = Integer.MIN_VALUE;
+
 
     public static List<Short>[] countryCityList; //лист городов в стране
 

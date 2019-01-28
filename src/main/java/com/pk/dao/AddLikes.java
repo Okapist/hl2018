@@ -33,10 +33,13 @@ public class AddLikes {
                     return false;
             }
 
+/*
             for (int i = 0; i < likes.size(); ++i) {
                 int[] like = likes.get(i);
                 PostLists.newLikes.add(like);
             }
+*/
+
             return true;
         }
         return false;

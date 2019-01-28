@@ -8,7 +8,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.*;
 
-import static com.pk.model.AllLists.usedEmailDomain;
+import static com.pk.model.AllLists.*;
+import static com.pk.model.AllLists.MIN_JOINED_YEAR;
 
 public class EditAccount {
 
@@ -73,8 +74,12 @@ public class EditAccount {
             account.emailDomain = domainIndex;
         }
 
-        if(jsonAccount.getEmail() == null && !Runner.isWarm)
+        if(jsonAccount.getEmail() == null && !Runner.isWarm) {
             removeRecommendFilter(account);
+        }
+
+        if(!Runner.isWarm)
+            removeGroupFilter(account);
 
         if (jsonAccount.getFname() != null) {
 
@@ -183,50 +188,18 @@ public class EditAccount {
             }
         }
 
-        if(!Runner.isWarm)
+        if(!Runner.isWarm) {
             createRecommendFilter(account);
-
+            updateGroupFilter(account);
+        }
         return HttpResponseStatus.ACCEPTED;
     }
 
     private boolean addLikes(int id, List<int[]> likes) {
 
-        if (likes != null) {
-
-            Collections.sort(likes, (p1, p2) -> {
-                return Integer.compare(p2[0], p1[0]);
-            });
-
-            List<int[]> clearList = new ArrayList<>();
-            int prevLikeId = Integer.MIN_VALUE;
-            int totalSame = 0;
-            long totalTs = 0;
-            for (int[] like : likes) {
-                if (like[0] != prevLikeId) {
-                    if (totalSame != 0) {
-
-                        clearList.get(clearList.size()-1)[1] = (int)((clearList.get(clearList.size()-1)[1] + totalTs) / (totalSame+1));
-                        totalSame = 0;
-                        totalTs = 0;
-                    }
-                    clearList.add(like);
-                    prevLikeId = like[0];
-                } else {
-                    ++totalSame;
-                    totalTs += like[0];
-                }
-            }
-
-            for (int i = 0; i < clearList.size()*2; i+=2) {
-                int[] like = clearList.get(i/2);
-                int likeId = like[0];
-
-                if(likeId >= AllLists.allAccounts.length || AllLists.allAccounts[likeId] == null)
-                    return false;
-            }
-
-            for (int i = 0; i < clearList.size()*2; i+=2) {
-                int[] like = clearList.get(i/2);
+      /*  if (likes != null) {
+            for (int i = 0; i < likes.size(); ++i) {
+                int[] like = likes.get(i);
                 int likeId = like[0];
                 int likeTs = like[1];
                 int[] postLike = new int[3];
@@ -235,11 +208,9 @@ public class EditAccount {
                 postLike[2] = likeTs;
                 PostLists.newLikes.add(postLike);
             }
-
-        }
+        }*/
         return true;
     }
-
 
     private void removeRecommendFilter(Account account) {
         if (account == null || account.interestsArray == null)
@@ -326,16 +297,72 @@ public class EditAccount {
                     int[] newList = AllLists.recommendInteresFilter[premiumIndex][statusIndex][countryIndex].get(cityIndex).get(intId);
 
                     System.arraycopy(oldList,0,newList,0, oldList.length);
-
-/*
-                    for (int i1 = 0; i1 < oldList.length; i1++) {
-                        newList[i1] = oldList[i1];
-                    }
-*/
                     newList[oldList.length] = account.id;
                 }
             }
         }
+    }
+
+    private void removeGroupFilter(Account account) {
+        int countryIndex = account.country;
+        int sexIndex = account.sex ? 1 : 0;
+        int statusIndex = account.status - 1;
+
+        int birth = getYear(account.birth);
+        int joined = getYear(account.joined);
+
+        if(groupFilter[countryIndex] == null) {
+
+            groupFilter[countryIndex] = new HashMap<>();
+            groupFilterBirth[countryIndex] = new HashMap<>();
+            groupFilterJoined[countryIndex] = new HashMap<>();
+        }
+
+        groupFilter[countryIndex].computeIfAbsent(account.city, p-> new short[3][2]);
+        groupFilterBirth[countryIndex].computeIfAbsent(account.city, p-> new short[3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1]);
+        groupFilterJoined[countryIndex].computeIfAbsent(account.city, p-> new short[3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1]);
+
+        --groupFilter[countryIndex].get(account.city)[statusIndex][sexIndex];
+
+        if(birth >= MIN_BIRTH_YEAR && birth <= MAX_BIRTH_YEAR)
+            --groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
+
+        if(joined >= MIN_JOINED_YEAR && joined<=MAX_JOINED_YEAR)
+            --groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
+    }
+
+    private void updateGroupFilter(Account account) {
+        int countryIndex = account.country;
+        int sexIndex = account.sex ? 1 : 0;
+        int statusIndex = account.status - 1;
+
+        int birth = getYear(account.birth);
+        int joined = getYear(account.joined);
+
+        if(groupFilter[countryIndex] == null) {
+
+            groupFilter[countryIndex] = new HashMap<>();
+            groupFilterBirth[countryIndex] = new HashMap<>();
+            groupFilterJoined[countryIndex] = new HashMap<>();
+        }
+
+        groupFilter[countryIndex].computeIfAbsent(account.city, p-> new short[3][2]);
+        groupFilterBirth[countryIndex].computeIfAbsent(account.city, p-> new short[3][2][MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1]);
+        groupFilterJoined[countryIndex].computeIfAbsent(account.city, p-> new short[3][2][MAX_JOINED_YEAR - MIN_JOINED_YEAR + 1]);
+
+        ++groupFilter[countryIndex].get(account.city)[statusIndex][sexIndex];
+
+        if(birth >= MIN_BIRTH_YEAR && birth <= MAX_BIRTH_YEAR)
+            ++groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
+
+        if(joined >= MIN_JOINED_YEAR && joined<=MAX_JOINED_YEAR)
+            ++groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
+    }
+
+    Calendar cal = Calendar.getInstance();
+    private int getYear(int timestamp) {
+        cal.setTimeInMillis((long)timestamp*1000);
+        return cal.get(Calendar.YEAR);
     }
 
 }

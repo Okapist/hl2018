@@ -1,6 +1,7 @@
 package com.pk.dao;
 
 import com.pk.Runner;
+import com.pk.model.Account;
 import com.pk.model.AllLists;
 import com.pk.model.PostLists;
 
@@ -52,10 +53,6 @@ public class IndexCalculator {
 
         if(!Runner.isWarm)
             System.out.println("createCountryCityDomainsPhoneCodesAccountArrays complete " + Calendar.getInstance().getTimeInMillis());
-
-        //createRecommendFilter();
-        //if(!Runner.isWarm)
-            //System.out.println("createRecommendFilter complete " + Calendar.getInstance().getTimeInMillis());
 
         if(!Runner.isWarm)
             System.out.println("INDEX RECALC complete " + Calendar.getInstance().getTimeInMillis());
@@ -288,9 +285,6 @@ public class IndexCalculator {
 
         List<List<Integer>> tempIinterestAccounts = new ArrayList<>();
 
-        int minYear = Integer.MAX_VALUE;
-        int maxYear = Integer.MIN_VALUE;
-
         if(isNewCountry || isNewCity) {
             //recalc recommend city country indexes
             for (int premiumIndex = 0; premiumIndex < AllLists.recommendInteresFilter.length; ++premiumIndex) {
@@ -301,7 +295,7 @@ public class IndexCalculator {
                     for (int countryIndex = 0; countryIndex < AllLists.recommendInteresFilter[premiumIndex][statusIndex].length; ++countryIndex) {
 
                         short newCountryIndex;
-                        if(isNewCountry)
+                        if (isNewCountry)
                             newCountryIndex = (short) Collections.binarySearch(countriesList, tempCountryList.get(countryIndex));
                         else
                             newCountryIndex = (short) countryIndex;
@@ -313,7 +307,7 @@ public class IndexCalculator {
 
                             int newCityOndex;
 
-                            if(isNewCity)
+                            if (isNewCity)
                                 newCityOndex = Collections.binarySearch(citiesList, tempCityList.get(cityIndex));
                             else
                                 newCityOndex = cityIndex;
@@ -325,6 +319,42 @@ public class IndexCalculator {
                     AllLists.recommendInteresFilter[premiumIndex][statusIndex] = newRecommend;
                 }
             }
+
+            //recalc group filter
+            HashMap<Short, short[][]>[] newGroup = new HashMap[countriesList.size()];
+            HashMap<Short, short[][][]>[] newGroupBirth = new HashMap[countriesList.size()];
+            HashMap<Short, short[][][]>[] newGroupJoined = new HashMap[countriesList.size()];
+
+            for (int countryIndex = 0; countryIndex < AllLists.groupFilter.length; ++countryIndex) {
+
+                short newCountryIndex;
+                if (isNewCountry)
+                    newCountryIndex = (short) Collections.binarySearch(countriesList, tempCountryList.get(countryIndex));
+                else
+                    newCountryIndex = (short) countryIndex;
+
+                newGroup[newCountryIndex] = new HashMap<>();
+                newGroupBirth[newCountryIndex] = new HashMap<>();
+                newGroupJoined[newCountryIndex] = new HashMap<>();
+
+                for (Short cityIndex : AllLists.groupFilter[countryIndex].keySet()) {
+
+                    int newCityOndex;
+
+                    if (isNewCity)
+                        newCityOndex = Collections.binarySearch(citiesList, tempCityList.get(cityIndex));
+                    else
+                        newCityOndex = cityIndex;
+
+                    newGroup[newCountryIndex].put((short) newCityOndex, AllLists.groupFilter[countryIndex].get(cityIndex));
+                    newGroupBirth[newCountryIndex].put((short) newCityOndex, AllLists.groupFilterBirth[countryIndex].get(cityIndex));
+                    newGroupJoined[newCountryIndex].put((short) newCityOndex, AllLists.groupFilterJoined[countryIndex].get(cityIndex));
+                }
+            }
+
+            AllLists.groupFilter = newGroup;
+            AllLists.groupFilterBirth = newGroupBirth;
+            AllLists.groupFilterJoined = newGroupJoined;
         }
 
 
@@ -362,12 +392,6 @@ public class IndexCalculator {
                 tempFnames[account.fname].add(account.id);
                 tempSnames[account.sname].add(account.id);
 
-                minYear = Math.min(minYear, getYear(account.birth));
-                maxYear = Math.max(maxYear, getYear(account.birth));
-
-                MIN_JOINED_YEAR = Math.min(MIN_JOINED_YEAR, getYear(account.joined));
-                MAX_JOINED_YEAR = Math.max(MAX_JOINED_YEAR, getYear(account.joined));
-
                 tempBirthYears.computeIfAbsent(getYear(account.birth), p -> new ArrayList<>());
                 tempBirthYears.get(getYear(account.birth)).add(account.id);
 
@@ -389,16 +413,11 @@ public class IndexCalculator {
             }
         }
 
-        final int finalMaxYear = maxYear;
-        final int finalMinYear = minYear;
-
         Thread t = new Thread(() -> {
-            birthYearsAccount = new int[finalMaxYear - finalMinYear + 1][];
+            birthYearsAccount = new int[MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1][];
             for (int year : tempBirthYears.keySet()) {
-                birthYearsAccount[year - finalMinYear] = tempBirthYears.get(year).stream().mapToInt(Integer::intValue).toArray();
+                birthYearsAccount[year - MIN_BIRTH_YEAR] = tempBirthYears.get(year).stream().mapToInt(Integer::intValue).toArray();
             }
-            MIN_BIRTH_YEAR = finalMinYear;
-            MAX_BIRTH_YEAR = finalMaxYear;
 
             fnameAccounts = new int[tempFnames.length][];
             snameAccounts = new int[tempSnames.length][];

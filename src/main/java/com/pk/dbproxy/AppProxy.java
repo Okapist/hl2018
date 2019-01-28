@@ -687,12 +687,15 @@ public class AppProxy {
             temp.get(getYear(account.birth)).add(account.id);
         }
 
+        MIN_JOINED_YEAR -= 2;
+        MAX_JOINED_YEAR += 2;
+
         AllLists.birthYearsAccount = new int[maxYear-minYear+1][];
         for(int year : temp.keySet()) {
             AllLists.birthYearsAccount[year - minYear] = temp.get(year).stream().mapToInt(Integer::intValue).toArray();
         }
-        MIN_BIRTH_YEAR = minYear;
-        MAX_BIRTH_YEAR = maxYear;
+        MIN_BIRTH_YEAR = minYear-2;
+        MAX_BIRTH_YEAR = maxYear+2;
     }
 
     public void commitInterests() {
