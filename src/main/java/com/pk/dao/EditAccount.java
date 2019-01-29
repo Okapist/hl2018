@@ -312,6 +312,12 @@ public class EditAccount {
 
         if(joined >= MIN_JOINED_YEAR && joined<=MAX_JOINED_YEAR)
             --groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
+
+        if(account.interestsArray != null) {
+            for (int interestId : account.interestsArray) {
+                --groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city][interestId];
+            }
+        }
     }
 
     private void updateGroupFilter(Account account) {
@@ -336,10 +342,20 @@ public class EditAccount {
         ++groupFilter[countryIndex].get(account.city)[statusIndex][sexIndex];
 
         if(birth >= MIN_BIRTH_YEAR && birth <= MAX_BIRTH_YEAR)
-            ++groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
+            ++groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth - MIN_BIRTH_YEAR];
 
         if(joined >= MIN_JOINED_YEAR && joined<=MAX_JOINED_YEAR)
             ++groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
+
+        if(birth >= MIN_BIRTH_YEAR && birth <= MAX_BIRTH_YEAR && account.interestsArray != null) {
+            for (int interestId : account.interestsArray) {
+
+                if(groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city] == null)
+                    groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city] = new short[interestsById.size() + 1];
+
+                ++groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city][interestId];
+            }
+        }
     }
 
     private final Calendar cal = Calendar.getInstance();

@@ -26,16 +26,15 @@ public class Runner {
             } catch (Exception ex) {
                 System.out.println("START WINDOWS LOAD");
                 //loader.load("d:/hl/bigdata/", new AppProxy());
-                loader.load("d:/hl/data/", new AppProxy());
+                //loader.load("d:/hl/data/", new AppProxy());
                 //loader.load("C:\\JavaProjects\\external\\hl\\bigdata\\", new AppProxy());
-                //loader.load("C:\\JavaProjects\\external\\hl\\data\\", new AppProxy());
+                loader.load("C:\\JavaProjects\\external\\hl\\data\\", new AppProxy());
                 System.out.println("END WINDOWS LOAD");
             }
             loader = null;
         }
         System.gc();
         System.out.println("LAST GC CALLED");
-
 
         Warmer warmer = new Warmer();
         warmer.warmIndexes();
@@ -47,7 +46,6 @@ public class Runner {
         Runner.isWarm = false;
         System.gc();
         System.out.println("WARM END. READY " + Calendar.getInstance().getTimeInMillis());
-
 
         Server server = new Server();
         System.out.println("SERVER STARTED");

@@ -40,8 +40,8 @@ public class NewRecommend {
         //store in reverse order to remove extra
         PriorityQueue<Account> heap = new PriorityQueue<>(limit*3, (p2, p1) -> {
 
-            boolean p1Premium = p1.premiumStart != 0 && p1.premiumEnd != 0 && p1.premiumStart < Runner.curDate && p1.premiumEnd > Runner.curDate;
-            boolean p2Premium = p2.premiumStart != 0 && p2.premiumEnd != 0 && p2.premiumStart < Runner.curDate && p2.premiumEnd > Runner.curDate;
+            boolean p1Premium = p1.premiumStart < Runner.curDate && p1.premiumEnd > Runner.curDate;
+            boolean p2Premium = p2.premiumStart < Runner.curDate && p2.premiumEnd > Runner.curDate;
 
             if (p1Premium != p2Premium) {
                 return p1Premium ? 1 : -1;
@@ -75,6 +75,8 @@ public class NewRecommend {
         final int toAddCountry = searchCountry > 0 ? searchCountry : 1;
         final Set<Integer> alreadyAdded = new HashSet<>(50);
 
+        final PriorityQueue<Integer> addedIndexes = new PriorityQueue<>();
+
         while (true) {
             final HashMap<Integer, HashMap<Integer, int[]>>[] toSearch = AllLists.recommendInteresFilter[premium][status];
             final int endCountry = searchCountry == 0 ? toSearch.length - 1 : searchCountry;
@@ -95,7 +97,20 @@ public class NewRecommend {
                                         Account possible = AllLists.allAccounts[p];
                                         if (possible != null && possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
                                             alreadyAdded.add(possible.id);
-                                            heap.add(possible);
+
+                                            if(heap.size() >= limit) {
+                                                int curIndex = calcCommomIndex(possible, baseAccount);
+                                                if(curIndex >= addedIndexes.peek()) {
+                                                    if(curIndex > addedIndexes.peek()) {
+                                                        addedIndexes.poll();
+                                                    }
+                                                    addedIndexes.add(curIndex);
+                                                    heap.add(possible);
+                                                }
+                                            } else {
+                                                heap.add(possible);
+                                                addedIndexes.add(calcCommomIndex(possible, baseAccount));
+                                            }
                                         }
                                     }
                                 }
@@ -122,7 +137,19 @@ public class NewRecommend {
                                             Account possible = AllLists.allAccounts[p];
                                             if (possible != null && possible.sex != baseAccount.sex && !alreadyAdded.contains(possible.id)) {
                                                 alreadyAdded.add(possible.id);
-                                                heap.add(possible);
+                                                if(heap.size() >= limit) {
+                                                    int curIndex = calcCommomIndex(possible, baseAccount);
+                                                    if(curIndex >= addedIndexes.peek()) {
+                                                        if(curIndex > addedIndexes.peek()) {
+                                                            addedIndexes.poll();
+                                                        }
+                                                        addedIndexes.add(curIndex);
+                                                        heap.add(possible);
+                                                    }
+                                                } else {
+                                                    heap.add(possible);
+                                                    addedIndexes.add(calcCommomIndex(possible, baseAccount));
+                                                }
                                             }
                                         }
                                     }
@@ -205,5 +232,26 @@ public class NewRecommend {
             }
             buf.append("}");
         }
+    }
+
+    private int calcCommomIndex(Account possible, Account base) {
+
+        int index = (Integer.MAX_VALUE - Math.abs(possible.birth - base.birth)) >> 9;
+
+        int common = 0;
+
+        for (int intId : base.interestsArray) {
+            if (possible.interests.contains(intId)) {
+                ++common;
+            }
+        }
+        boolean isPremium = possible.premiumStart < Runner.curDate && possible.premiumEnd > Runner.curDate;
+
+        index |= common << (32-9);
+        index |= (3-possible.status) << (32-4);
+        if(isPremium)
+            index |= 1 << 30;
+
+         return index;
     }
 }

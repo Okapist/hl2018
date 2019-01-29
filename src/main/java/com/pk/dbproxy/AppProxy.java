@@ -392,7 +392,7 @@ public class AppProxy {
         groupFilterBirth = new HashMap[countriesList.size()];
         groupFilterJoined = new HashMap[countriesList.size()];
 
-        groupFilterBirthCityInterests = new short[MAX_BIRTH_YEAR-MIN_BIRTH_YEAR+1][citiesList.size()][interestsById.size()+1];
+        groupFilterBirthCityInterests = new short[MAX_BIRTH_YEAR-MIN_BIRTH_YEAR+1][citiesList.size()][];
 
         for (com.pk.model.Account account : allAccounts) {
             if (account == null)
@@ -419,7 +419,11 @@ public class AppProxy {
             ++groupFilterBirth[countryIndex].get(account.city)[statusIndex][sexIndex][birth-MIN_BIRTH_YEAR];
             ++groupFilterJoined[countryIndex].get(account.city)[statusIndex][sexIndex][joined-MIN_JOINED_YEAR];
 
-            if(account.city !=0 && account.birth !=0 && account.interestsArray != null) {
+            if(account.birth !=0 && account.interestsArray != null) {
+                if(groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city] == null) {
+                    groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city] = new short[interestsById.size()+1];
+                }
+
                 for(int interesId : account.interestsArray) {
                     ++groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city][interesId];
                 }
@@ -689,12 +693,13 @@ public class AppProxy {
         MIN_JOINED_YEAR -= 2;
         MAX_JOINED_YEAR += 2;
 
-        AllLists.birthYearsAccount = new int[maxYear-minYear+1][];
-        for(int year : temp.keySet()) {
-            AllLists.birthYearsAccount[year - minYear] = temp.get(year).stream().mapToInt(Integer::intValue).toArray();
-        }
         MIN_BIRTH_YEAR = minYear-2;
         MAX_BIRTH_YEAR = maxYear+2;
+
+        AllLists.birthYearsAccount = new int[MAX_BIRTH_YEAR-MIN_BIRTH_YEAR+1][];
+        for(int year : temp.keySet()) {
+            AllLists.birthYearsAccount[year - MIN_BIRTH_YEAR] = temp.get(year).stream().mapToInt(Integer::intValue).toArray();
+        }
     }
 
     public void commitInterests() {

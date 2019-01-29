@@ -54,7 +54,7 @@ public class NewAccGroup {
 
         //bicycle for birth city interests
         if(likes==null && joined==null && sex==null && status==null && country==null &&
-            groupCountry==false && groupSex==false && groupStatus==false) {
+            groupCountry==false && groupSex==false && groupStatus==false && (groupInterests || interests != null)) {
 
             int birthYear = Integer.MAX_VALUE;
             if (birth != null) {
@@ -340,8 +340,8 @@ public class NewAccGroup {
                         if (p1[1] != p2[1])
                             return p1[1] - p2[1];
 
-                        if (p1[2] != p2[2])
-                            return p1[2] - p2[2];
+                        if (p1[2]!= 0 && p2[2] != 0 && AllLists.interestsById.get(p1[2]).compareTo(AllLists.interestsById.get(p2[2])) != 0)
+                            return AllLists.interestsById.get(p1[2]).compareTo(AllLists.interestsById.get(p2[2]));
 
                         return 0;
                     });
@@ -354,8 +354,8 @@ public class NewAccGroup {
                         if (p1[1] != p2[1])
                             return p1[1] - p2[1];
 
-                        if (p1[2] != p2[2])
-                            return p1[2] - p2[2];
+                        if (p1[2]!= 0 && p2[2] != 0 && AllLists.interestsById.get(p1[2]).compareTo(AllLists.interestsById.get(p2[2])) != 0)
+                            return AllLists.interestsById.get(p1[2]).compareTo(AllLists.interestsById.get(p2[2]));
 
                         return 0;
                     });
@@ -363,10 +363,10 @@ public class NewAccGroup {
 
         int curCity = city==null?0:city;
         int curYear = birthYear==Integer.MAX_VALUE?0:birthYear-MIN_BIRTH_YEAR;
-        int curInterest =  interests==null?0:AllLists.interests.get(interests);
+        int curInterest = interests==null?0:AllLists.interests.get(interests);
 
         int lastCity = city==null?citiesList.size()-1:city;
-        int lastInterest = interests==null?interestsById.size()-1:AllLists.interests.get(interests);
+        int lastInterest = interests==null?interestsById.size():AllLists.interests.get(interests);
         int lastYear = birthYear==Integer.MAX_VALUE?MAX_BIRTH_YEAR-MIN_BIRTH_YEAR-1:birthYear-MIN_BIRTH_YEAR;
 
         int startInterest = curInterest;
@@ -376,12 +376,17 @@ public class NewAccGroup {
         int curSum = 0;
         while (true) {
 
-            if (groupFilterBirthCityInterests[curYear][curCity][curInterest] != 0) {
+            if (groupFilterBirthCityInterests[curYear][curCity] != null) {
                 curSum += groupFilterBirthCityInterests[curYear][curCity][curInterest];
             }
 
             if(curYear < lastYear) {
                 ++curYear;
+
+                while(curYear < lastYear && groupFilterBirthCityInterests[curYear][curCity] == null)
+                    ++curYear;
+
+                continue;
             }
 
             if (!groupInterests && curInterest < lastInterest) {
@@ -396,6 +401,9 @@ public class NewAccGroup {
                 ++curCity;
 
                 curYear = startYear;
+
+                while(curCity < lastCity && groupFilterBirthCityInterests[curYear][curCity] == null)
+                    ++curCity;
 
                 if (!groupInterests)
                     curInterest = startInterest;

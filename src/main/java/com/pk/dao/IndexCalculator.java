@@ -345,9 +345,27 @@ public class IndexCalculator {
                 }
             }
 
+            //[birth][city][interes] = count
+            short[][][] newGroupFilterBirthCityInterests = new short[MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1][citiesList.size()][];
+
+
+            for (int i = 0; i < newGroupFilterBirthCityInterests.length; ++i) {
+                for (int cityIndex = 0; cityIndex < groupFilterBirthCityInterests[i].length; ++cityIndex) {
+                    int newCityIndex;
+
+                    if (isNewCity && cityIndex > 0)
+                        newCityIndex = Collections.binarySearch(citiesList, tempCityList.get(cityIndex));
+                    else
+                        newCityIndex = cityIndex;
+
+                    newGroupFilterBirthCityInterests[i][newCityIndex] = groupFilterBirthCityInterests[i][cityIndex];
+                }
+            }
+
             AllLists.groupFilter = newGroup;
             AllLists.groupFilterBirth = newGroupBirth;
             AllLists.groupFilterJoined = newGroupJoined;
+            AllLists.groupFilterBirthCityInterests = newGroupFilterBirthCityInterests;
         }
 
 
