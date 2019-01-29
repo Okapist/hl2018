@@ -393,6 +393,7 @@ public class AppProxy {
         groupFilterJoined = new HashMap[countriesList.size()];
 
         groupFilterBirthCityInterests = new short[MAX_BIRTH_YEAR-MIN_BIRTH_YEAR+1][citiesList.size()][];
+        groupFilterBirthCountryInterests = new short[MAX_BIRTH_YEAR-MIN_BIRTH_YEAR+1][countriesList.size()][];
 
         for (com.pk.model.Account account : allAccounts) {
             if (account == null)
@@ -424,8 +425,13 @@ public class AppProxy {
                     groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city] = new short[interestsById.size()+1];
                 }
 
+                if(groupFilterBirthCountryInterests[birth-MIN_BIRTH_YEAR][account.country] == null) {
+                    groupFilterBirthCountryInterests[birth-MIN_BIRTH_YEAR][account.country] = new short[interestsById.size()+1];
+                }
+
                 for(int interesId : account.interestsArray) {
                     ++groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city][interesId];
+                    ++groupFilterBirthCountryInterests[birth-MIN_BIRTH_YEAR][account.country][interesId];
                 }
             }
         }

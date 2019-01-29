@@ -69,6 +69,25 @@ public class NewAccGroup {
             return true;
         }
 
+
+        //bicycle for birth country interests
+        if(likes==null && joined==null && sex==null && status==null && city==null &&
+                groupCity==false && groupSex==false && groupStatus==false && (groupInterests || interests != null)) {
+
+            int birthYear = Integer.MAX_VALUE;
+            if (birth != null) {
+                birthYear = birth;
+                if (birthYear > MAX_BIRTH_YEAR)
+                    return true;
+                if (birthYear < MIN_BIRTH_YEAR)
+                    return true;
+            }
+
+            buildBirthCountryInterestAnwer(birthYear, country, interests, groupCountry, groupInterests, limit, buf, order);
+            return true;
+        }
+
+
         //new code based on new groupFilter no filter for now
         if (likes == null && interests == null && !groupInterests && ((birth == null && joined == null) ||
                 (birth != null && joined == null) ||
@@ -445,6 +464,157 @@ public class NewAccGroup {
 
         buildCityInteresAnwer(groupData, limit, groupCity, groupInterests, buf);
     }
+
+    private void buildBirthCountryInterestAnwer(int birthYear, Short country, String interests, boolean groupCountry, boolean groupInterests,
+                                             int limit, StringBuilder buf, boolean order) {
+
+        TreeSet<int[]> groupData;
+        if (order) {
+            groupData = new TreeSet<>(
+                    (p1, p2) -> {
+                        if (p1[0] != p2[0])
+                            return p1[0] - p2[0];
+
+                        if (p1[1] != p2[1])
+                            return p1[1] - p2[1];
+
+                        if (p1[2]!= 0 && p2[2] != 0 && AllLists.interestsById.get(p1[2]).compareTo(AllLists.interestsById.get(p2[2])) != 0)
+                            return AllLists.interestsById.get(p1[2]).compareTo(AllLists.interestsById.get(p2[2]));
+
+                        return 0;
+                    });
+        } else {
+            groupData = new TreeSet<>(
+                    (p2, p1) -> {
+                        if (p1[0] != p2[0])
+                            return p1[0] - p2[0];
+
+                        if (p1[1] != p2[1])
+                            return p1[1] - p2[1];
+
+                        if (p1[2]!= 0 && p2[2] != 0 && AllLists.interestsById.get(p1[2]).compareTo(AllLists.interestsById.get(p2[2])) != 0)
+                            return AllLists.interestsById.get(p1[2]).compareTo(AllLists.interestsById.get(p2[2]));
+
+                        return 0;
+                    });
+        }
+
+        int curCountry = country==null?0:country;
+        int curYear = birthYear==Integer.MAX_VALUE?0:birthYear-MIN_BIRTH_YEAR;
+        int curInterest = interests==null?0:AllLists.interests.get(interests);
+
+        int lastCountry = country==null?countriesList.size()-1:country;
+        int lastInterest = interests==null?interestsById.size():AllLists.interests.get(interests);
+        int lastYear = birthYear==Integer.MAX_VALUE?MAX_BIRTH_YEAR-MIN_BIRTH_YEAR-1:birthYear-MIN_BIRTH_YEAR;
+
+        int startInterest = curInterest;
+        int startYear = curYear;
+        int startCountry = curCountry;
+
+        int curSum = 0;
+        while (true) {
+
+            if (groupFilterBirthCountryInterests[curYear][curCountry] != null) {
+                curSum += groupFilterBirthCountryInterests[curYear][curCountry][curInterest];
+            }
+
+            if(curYear < lastYear) {
+                ++curYear;
+
+                while(curYear < lastYear && groupFilterBirthCountryInterests[curYear][curCountry] == null)
+                    ++curYear;
+
+                continue;
+            }
+
+            if (!groupInterests && curInterest < lastInterest) {
+                ++curInterest;
+
+                curYear = startYear;
+
+                continue;
+            }
+
+            if (!groupCountry && curCountry < lastCountry) {
+                ++curCountry;
+
+                curYear = startYear;
+
+                while(curCountry < lastCountry && groupFilterBirthCountryInterests[curYear][curCountry] == null)
+                    ++curCountry;
+
+                if (!groupInterests)
+                    curInterest = startInterest;
+                continue;
+            }
+
+            if (curSum > 0) {
+                int[] valToInsert = new int[3];
+                valToInsert[0] = curSum;
+                valToInsert[1] = groupCountry ? curCountry : 0;
+                valToInsert[2] = groupInterests ? curInterest : 0;
+                groupData.add(valToInsert);
+                curSum = 0;
+            }
+
+            if (groupInterests && curInterest < lastInterest) {
+                ++curInterest;
+
+                if (!groupCountry)
+                    curCountry = startCountry;
+
+                curYear = startYear;
+
+                continue;
+            }
+
+            if (groupCountry && curCountry < lastCountry) {
+                ++curCountry;
+
+                if (!groupInterests)
+                    curInterest = startInterest;
+
+                curYear = startYear;
+
+                continue;
+            }
+            break;
+        }
+
+        buildCountryInteresAnwer(groupData, limit, groupCountry, groupInterests, buf);
+    }
+
+    private void buildCountryInteresAnwer(TreeSet<int[]> groups, int limit, boolean groupCountry, boolean groupInterests, StringBuilder buf) {
+        int pointer = 0;
+        boolean isFirst = true;
+        while (!groups.isEmpty() && pointer < limit) {
+
+            int[] group = groups.pollFirst();
+            if (isFirst) {
+                buf.append("{\"count\":");
+                isFirst = false;
+            } else
+                buf.append(",{\"count\":");
+
+            buf.append(group[0]);
+
+            if (groupCountry && group[1] != 0) {
+                buf.append(",\"country\":\"");
+                buf.append(AllLists.countriesList.get(group[1]));
+                buf.append("\"");
+            }
+            if (groupInterests && group[2] != 0) {
+                buf.append(",\"interests\":\"");
+                buf.append(AllLists.interestsById.get(group[2]));
+                buf.append("\"");
+            }
+
+            buf.append("}");
+            ++pointer;
+        }
+    }
+
+
 
     private void buildCityInteresAnwer(TreeSet<int[]> groups, int limit, boolean groupCity, boolean groupInterests, StringBuilder buf) {
         int pointer = 0;

@@ -62,6 +62,10 @@ public class AllLists {
     //[birth][city][interes] = count
     public static short[][][] groupFilterBirthCityInterests;
 
+    //bicycle
+    //[birth][country][interes] = count
+    public static short[][][] groupFilterBirthCountryInterests;
+
     public static final int[][][] emailLowBorder = new int[26][26][26];//updated
     public static final int[][][] emailHightBorder = new int[26][26][26];//updated
 
