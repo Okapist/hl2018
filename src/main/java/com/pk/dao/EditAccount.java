@@ -316,7 +316,7 @@ public class EditAccount {
         if(account.interestsArray != null) {
             for (int interestId : account.interestsArray) {
                 --groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city][interestId];
-                --groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.country][interestId];
+                --groupFilterBirthCountryInterests[birth-MIN_BIRTH_YEAR][account.country][interestId];
             }
         }
     }
@@ -358,7 +358,7 @@ public class EditAccount {
                     groupFilterBirthCountryInterests[birth-MIN_BIRTH_YEAR][account.country] = new short[interestsById.size() + 1];
 
                 ++groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.city][interestId];
-                ++groupFilterBirthCityInterests[birth-MIN_BIRTH_YEAR][account.country][interestId];
+                ++groupFilterBirthCountryInterests[birth-MIN_BIRTH_YEAR][account.country][interestId];
             }
         }    }
 

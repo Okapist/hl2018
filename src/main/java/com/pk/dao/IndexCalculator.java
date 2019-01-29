@@ -363,8 +363,8 @@ public class IndexCalculator {
 
             //[birth][country][interes] = count
             short[][][] newGroupFilterBirthCountryInterests = new short[MAX_BIRTH_YEAR - MIN_BIRTH_YEAR + 1][countriesList.size()][];
-            if(isNewCountry) {
-                for (int i = 0; i < newGroupFilterBirthCityInterests.length; ++i) {
+            //if(isNewCountry) {
+                for (int i = 0; i < newGroupFilterBirthCountryInterests.length; ++i) {
                     for (int countryIndex = 0; countryIndex < groupFilterBirthCountryInterests[i].length; ++countryIndex) {
                         int newCountryIndex;
 
@@ -373,16 +373,16 @@ public class IndexCalculator {
                         else
                             newCountryIndex = countryIndex;
 
-                        newGroupFilterBirthCityInterests[i][newCountryIndex] = groupFilterBirthCountryInterests[i][countryIndex];
+                        newGroupFilterBirthCountryInterests[i][newCountryIndex] = groupFilterBirthCountryInterests[i][countryIndex];
                     }
                 }
-            }
+            //}
 
             AllLists.groupFilter = newGroup;
             AllLists.groupFilterBirth = newGroupBirth;
             AllLists.groupFilterJoined = newGroupJoined;
             AllLists.groupFilterBirthCityInterests = newGroupFilterBirthCityInterests;
-            if(isNewCountry)
+            //if(isNewCountry)
                 AllLists.groupFilterBirthCountryInterests = newGroupFilterBirthCountryInterests;
 
         }
