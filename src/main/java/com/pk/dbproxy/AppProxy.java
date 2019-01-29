@@ -297,7 +297,7 @@ public class AppProxy {
                 int likeTs = like.getTs();
 
                 if(AllLists.likesAccounts.get(jsonAccount.getId()) == null) {
-                    AllLists.likesAccounts.set(jsonAccount.getId(), new int[clearList.size()*2]);
+                    AllLists.likesAccounts.set(jsonAccount.getId(), new int[Math.max((int)(clearList.size()*2*1.1), clearList.size()*2 + 2)]);
                 }
 
                 AllLists.likesAccounts.get(jsonAccount.getId())[i] = likeId;
@@ -772,7 +772,7 @@ public class AppProxy {
             if(temp == null)
                 continue;
 
-            int[] commitedLikes = new int[temp.size()];
+            int[] commitedLikes = new int[Math.max((int)(temp.size() * 1.1), temp.size()+2)];
             AllLists.likesTO[i] = commitedLikes;
             for(int j=0; j<temp.size(); ++j) {
                 commitedLikes[j] = temp.get(j);

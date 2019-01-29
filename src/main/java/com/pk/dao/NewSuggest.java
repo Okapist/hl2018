@@ -32,27 +32,42 @@ public class NewSuggest {
         HashMap<Integer, Float> commonLike = new HashMap<>(50);
         for (int i = 0; i < baseLikes.length; i += 2) {
             int likeId = baseLikes[i];
+            if(likeId == 0)
+                break;
+
             int likeTs = baseLikes[i + 1];
-            if (likeId == 0)
-                continue;
             int[] tmp = AllLists.likesTO[likeId];
             for (int accountId : tmp) {
 
-                if (country != null) {
-                    if (AllLists.allAccounts[accountId].country == 0 ||
+                if(accountId == 0)
+                    break;
+
+                if (country != null) { //todo: check possible bug with likes
+                    if (AllLists.allAccounts[accountId]==null || AllLists.allAccounts[accountId].country == 0 ||
                             AllLists.allAccounts[accountId].country != country)
                         continue;
                 }
                 if (city != null) {
-                    if (AllLists.allAccounts[accountId].city == 0 ||
+                    if (AllLists.allAccounts[accountId]==null || AllLists.allAccounts[accountId].city == 0 ||
                             AllLists.allAccounts[accountId].city != city)
                         continue;
                 }
 
                 int[] otherLikesArray = AllLists.likesAccounts.get(accountId);
+                if(otherLikesArray == null)
+                    continue;
+
                 float diff = 0;
                 for (int j = 0; j < otherLikesArray.length; j += 2) {
+
+                    if(j+1 == otherLikesArray.length)
+                        break;
+
                     int otherLikeId = otherLikesArray[j];
+
+                    if(otherLikeId == 0)
+                        break;
+
                     int otherLikeTs = otherLikesArray[j + 1];
                     if (otherLikeId != likeId)
                         continue;
@@ -84,6 +99,9 @@ public class NewSuggest {
                     break;
 
                 int likeId = searchLikes[i];
+
+                if(likeId ==0)
+                    break;
 
                 Account cur = AllLists.allAccounts[likeId];
                 if(cur.id < 1)

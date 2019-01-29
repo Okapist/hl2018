@@ -27,7 +27,7 @@ public class EditAccount {
         }
 
         if(likes != null) {
-            if(!addLikesHelper(likes))
+            if(!addLikesHelper(account, likes, true))
                 return HttpResponseStatus.BAD_REQUEST;
         }
 
@@ -189,6 +189,7 @@ public class EditAccount {
         }
 
         if(!Runner.isWarm) {
+            addLikesHelper(account, likes, false);
             createRecommendFilter(account);
             updateGroupFilter(account);
         }
@@ -368,18 +369,84 @@ public class EditAccount {
         return cal.get(Calendar.YEAR);
     }
 
-    private boolean addLikesHelper(List<int[]> likes) {
+
+    private boolean addLikesHelper(Account account, List<int[]> likes, boolean onlyCheck) {
 
         if (likes != null) {
+            if(onlyCheck) {
+                for (int i = 0; i < likes.size(); ++i) {
+                    int[] like = likes.get(i);
+                    int likeToId = like[0];
 
-            for (int i = 0; i < likes.size(); ++i) {
-                int[] like = likes.get(i);
-                int likeToId = like[0];
+                    if (likeToId >= AllLists.allAccounts.length || AllLists.allAccounts[likeToId] == null)
+                        return false;
 
-                if(likeToId >= AllLists.allAccounts.length || AllLists.allAccounts[likeToId] == null)
-                    return false;
-                if(like[1] <= 0)
-                    return false;
+                    if (like[1] <= 0)
+                        return false;
+                }
+            } else {
+
+                while (likesAccounts.size() <= account.id)
+                    likesAccounts.add(null);
+
+                int[] accLikes = likesAccounts.get(account.id);
+                int startPos = Integer.MAX_VALUE;
+                if (accLikes == null) {
+                    likesAccounts.set(account.id, new int[likes.size() * 2]);
+                    accLikes = likesAccounts.get(account.id);
+                    startPos = 0;
+                } else {
+                    for (int i = accLikes.length - 1; i >= 0; --i) {
+                        if (accLikes[i] != 0) {
+                            startPos = i + 1;
+                            break;
+                        }
+                    }
+                    if (startPos == Integer.MAX_VALUE)
+                        startPos = 0;
+                }
+                if (accLikes.length - startPos < likes.size() * 2) {
+                    int newReqSize = likes.size() * 2 - (accLikes.length - startPos) + accLikes.length;
+                    int[] newAccLikes = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
+                    System.arraycopy(accLikes, 0, newAccLikes, 0, accLikes.length);
+                    likesAccounts.set(account.id, newAccLikes);
+                }
+
+                for (int i = 0; i < likes.size(); ++i) {
+                    likesAccounts.get(account.id)[startPos] = likes.get(i)[0];
+                    ++startPos;
+                    likesAccounts.get(account.id)[startPos] = likes.get(i)[1];
+                    ++startPos;
+
+
+                    if (likes.get(i)[0] >= likesTO.length)
+                        return false;
+                    int[] lTo = likesTO[likes.get(i)[0]];
+
+                    int startToPos = Integer.MAX_VALUE;
+                    if (lTo == null) {
+                        likesTO[likes.get(i)[0]] = new int[likes.size()];
+                        lTo = likesTO[likes.get(i)[0]];
+                        startToPos = 0;
+                    } else {
+                        for (int j = lTo.length - 1; j >= 0; --j) {
+                            if (lTo[j] != 0) {
+                                startToPos = j + 1;
+                                break;
+                            }
+                        }
+                        if (startToPos == Integer.MAX_VALUE)
+                            startToPos = 0;
+                    }
+                    if (lTo.length - startToPos < likes.size()) {
+                        int newReqSize = likes.size() - (lTo.length - startToPos) + lTo.length;
+                        int[] newlTo = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
+                        System.arraycopy(lTo, 0, newlTo, 0, lTo.length);
+                        likesTO[likes.get(i)[0]] = newlTo;
+                    }
+
+                    likesTO[likes.get(i)[0]][startToPos] = likes.get(i)[0];
+                }
             }
             return true;
         }
