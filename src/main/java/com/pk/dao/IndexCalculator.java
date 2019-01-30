@@ -1,7 +1,6 @@
 package com.pk.dao;
 
 import com.pk.Runner;
-import com.pk.model.Account;
 import com.pk.model.AllLists;
 import com.pk.model.PostLists;
 
@@ -399,7 +398,6 @@ public class IndexCalculator {
 
         }
 
-
         HashMap<Integer, Integer> tempId = new HashMap<>();
 
         for (com.pk.model.Account account : allAccounts) {
@@ -411,17 +409,15 @@ public class IndexCalculator {
                 if (isNewCity && account.city > 0)
                     account.city = (short) Collections.binarySearch(citiesList, tempCityList.get(account.city));
 
-                if (account.email > 0) {
-                    int temp = account.email;
-                    account.email = Collections.binarySearch(allEmailList, tempEmailList.get(account.email));
+                try {
+                    if (account.email > 0) {
+                        account.email = Collections.binarySearch(allEmailList, tempEmailList.get(account.email));
 
-                    if(account.email == 29999) {
-                        int i =0;
+                        if (isNewEmailDomain)
+                            account.emailDomain = Collections.binarySearch(domainList, tempDomainList.get(account.emailDomain), Utils::compareCharArr);
                     }
+                } catch (Exception ignored) {
 
-
-                    if (isNewEmailDomain)
-                        account.emailDomain = Collections.binarySearch(domainList, tempDomainList.get(account.emailDomain), Utils::compareCharArr);
                 }
 
                 if (account.fname > 0)
@@ -525,28 +521,8 @@ public class IndexCalculator {
     private void sortLikes() {
 
         for(int i : PostLists.likesFromSort) {
-
-            int[] toSort = AllLists.likesAccounts.get(i);
-            List<int[]> temp = new ArrayList<>();
-
-            for(int j=0; j<toSort.length; j+=2) {
-                if(toSort[j] == 0)
-                    break;
-                temp.add(new int[] {toSort[j], toSort[j+1]});
-            }
-
-            temp.sort((p1,p2) -> {
-                return p2[0] - p1[0];
-            });
-
-            AllLists.likesAccounts.set(i, new int[temp.size()*2]);
-
-            for(int j=0; j<temp.size(); ++j) {
-                AllLists.likesAccounts.get(i)[j*2] = temp.get(j)[0];
-                AllLists.likesAccounts.get(i)[j*2 + 1] = temp.get(j)[1];
-            }
+            sort(AllLists.likesAccounts.get(i),0, lastlikesAccountsPointers[i]-1);
         }
-
 
         for(int i : PostLists.likesToSort) {
             if(likesTO[i] == null)
@@ -562,6 +538,60 @@ public class IndexCalculator {
                 }
             }
             Arrays.sort(likesTO[i], 0, endSortPos);
+        }
+    }
+
+
+    int partition(int arr[], int low, int high)
+    {
+        int pivot = arr[high];
+        int i = (low-2); // index of smaller element
+        for (int j=low; j<high; j+=2)
+        {
+            // If current element is smaller than or
+            // equal to pivot
+            if (arr[j] >= pivot)
+            {
+                i+=2;
+
+                // swap arr[i] and arr[j]
+                int temp = arr[i];
+                int temp1 = arr[i+1];
+                arr[i] = arr[j];
+                arr[i+1] = arr[j+1];
+                arr[j] = temp;
+                arr[j+1] = temp1;
+            }
+        }
+
+        // swap arr[i+1] and arr[high] (or pivot)
+        int temp = arr[i+2];
+        int temp1 = arr[i+3];
+        arr[i+2] = arr[high];
+        arr[i+3] = arr[high+1];
+        arr[high] = temp;
+        arr[high+1] = temp1;
+
+        return i+2;
+    }
+
+
+    /* The main function that implements QuickSort()
+      arr[] --> Array to be sorted,
+      low  --> Starting index,
+      high  --> Ending index */
+    public void sort(int arr[], int low, int high)
+    {
+        if (low < high)
+        {
+            /* pi is partitioning index, arr[pi] is
+              now at right place */
+            int pi = partition(arr, low, high);
+
+            // Recursively sort elements before
+            // partition and after partition
+            sort(arr, low, pi-2);
+            sort(arr, pi+2, high);
         }
     }
 

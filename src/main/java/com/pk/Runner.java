@@ -26,9 +26,9 @@ public class Runner {
             } catch (Exception ex) {
                 System.out.println("START WINDOWS LOAD");
                 //loader.load("d:/hl/bigdata/", new AppProxy());
-                //loader.load("d:/hl/data/", new AppProxy());
+                loader.load("d:/hl/data/", new AppProxy());
                 //loader.load("C:\\JavaProjects\\external\\hl\\bigdata\\", new AppProxy());
-                loader.load("C:\\JavaProjects\\external\\hl\\data\\", new AppProxy());
+                //loader.load("C:\\JavaProjects\\external\\hl\\data\\", new AppProxy());
                 System.out.println("END WINDOWS LOAD");
             }
             loader = null;
@@ -39,7 +39,7 @@ public class Runner {
         Warmer warmer = new Warmer();
         Runner.isWarm = true;
         warmer.warmIndexes();
-        //warmer.warmGet();
+        warmer.warmGet();
         Runner.isWarm = true;
         warmer.warmPost();
         Runner.isWarm = true;
