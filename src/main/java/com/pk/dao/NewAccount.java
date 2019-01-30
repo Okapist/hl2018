@@ -333,7 +333,7 @@ public class NewAccount {
 
                     PostLists.likesToSort.add(likes.get(i)[0]);
                     ++AllLists.lastLikeToPointers[likes.get(i)[0]];
-                    lastlikesAccountsPointers[account.id] += 2;
+                    lastlikesAccountsPointers[account.id] = lastlikesAccountsPointers[account.id]==0?1:lastlikesAccountsPointers[account.id]+2;
                 }
             }
             return true;

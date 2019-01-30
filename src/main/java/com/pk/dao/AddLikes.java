@@ -98,7 +98,7 @@ public class AddLikes {
                 likesTO[likeToId][startToPos] = likeFromId;
                 PostLists.likesToSort.add(likeToId);
                 ++lastLikeToPointers[likeToId];
-                lastlikesAccountsPointers[likeFromId] += 2;
+                lastlikesAccountsPointers[likeFromId] = lastlikesAccountsPointers[likeFromId]==0?1:lastlikesAccountsPointers[likeFromId]+2;
             }
 
             return true;
