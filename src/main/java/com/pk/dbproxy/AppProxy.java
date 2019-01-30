@@ -165,7 +165,7 @@ public class AppProxy {
             addLikes(jsonAccount);
         }
 
-        while (AllLists.likesAccounts.size() <= 1_000_000) {
+        while (AllLists.likesAccounts.size() <= 1_400_000) {
             AllLists.likesAccounts.add(null);
         }
 

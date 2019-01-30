@@ -509,11 +509,6 @@ public class IndexCalculator {
         PostLists.newEmails.clear();
         //PostLists.newEmails = null;
 
-
-        //PostLists.newLikes.clear();
-        //if(!Runner.isWarm)
-            //PostLists.newLikes = null;
-
         PostLists.likesToSort.clear();
         PostLists.likesFromSort.clear();
 
@@ -528,6 +523,30 @@ public class IndexCalculator {
     }
 
     private void sortLikes() {
+
+        for(int i : PostLists.likesFromSort) {
+
+            int[] toSort = AllLists.likesAccounts.get(i);
+            List<int[]> temp = new ArrayList<>();
+
+            for(int j=0; j<toSort.length; j+=2) {
+                if(toSort[j] == 0)
+                    break;
+                temp.add(new int[] {toSort[j], toSort[j+1]});
+            }
+
+            temp.sort((p1,p2) -> {
+                return p2[0] - p1[0];
+            });
+
+            AllLists.likesAccounts.set(i, new int[temp.size()*2]);
+
+            for(int j=1; j<temp.size(); ++j) {
+                AllLists.likesAccounts.get(i)[j*2] = temp.get(j)[0];
+                AllLists.likesAccounts.get(i)[j*2 + 1] = temp.get(j)[1];
+            }
+        }
+
 
         for(int i : PostLists.likesToSort) {
             if(likesTO[i] == null)

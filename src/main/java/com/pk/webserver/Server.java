@@ -31,7 +31,6 @@ public class Server {
     
 */
     
-    //public final static AtomicInteger connections = new AtomicInteger();
     private final static AtomicBoolean anyPostCalled = new AtomicBoolean(false);
 
     private static volatile int oldPhase = 0;
@@ -50,12 +49,12 @@ public class Server {
         final Thread phaseChangeThread = new Thread(this::phaseChangeMonitor);
         phaseChangeThread.start();
 
-        NioEventLoopGroup bossGroup = new NioEventLoopGroup();
-        NioEventLoopGroup workerGroup = new NioEventLoopGroup(5);
+        EpollEventLoopGroup bossGroup = new EpollEventLoopGroup();
+        EpollEventLoopGroup workerGroup = new EpollEventLoopGroup(5);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(EpollServerSocketChannel.class)
                     .childHandler(new ServerInitializer())
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);

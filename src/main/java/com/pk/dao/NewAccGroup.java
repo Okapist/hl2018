@@ -252,6 +252,8 @@ public class NewAccGroup {
             list = AllLists.likesTO[likeId];
             searchLikesSet = new HashSet<>(AllLists.likesTO[likeId].length);
             for (int like : AllLists.likesTO[likeId]) {
+                if(like == 0)
+                    break;
                 searchLikesSet.add(like);
             }
         }

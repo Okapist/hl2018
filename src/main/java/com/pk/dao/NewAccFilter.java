@@ -446,7 +446,7 @@ public class NewAccFilter {
 
                 likesArr.add(likeId);
                 int tempStart = 0;
-                int tempEnd = AllLists.likesTO[likeId].length;
+                int tempEnd = AllLists.lastLikeToPointers[likeId] + 1;
                 if (tempEnd - tempStart < filterSize) {
                     filterStartIndex = 0;
                     filterEndIndex = tempEnd;
@@ -790,6 +790,9 @@ public class NewAccFilter {
                 for (Integer likeInt : likesArr) {
                     boolean founded = false;
                     for (int likeId : accLikes) {
+                        if(likeId == 0)
+                            break;
+
                         if (likeInt == likeId) {
                             founded = true;
                             break;
