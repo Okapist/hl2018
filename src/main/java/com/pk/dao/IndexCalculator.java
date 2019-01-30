@@ -541,7 +541,7 @@ public class IndexCalculator {
 
             AllLists.likesAccounts.set(i, new int[temp.size()*2]);
 
-            for(int j=1; j<temp.size(); ++j) {
+            for(int j=0; j<temp.size(); ++j) {
                 AllLists.likesAccounts.get(i)[j*2] = temp.get(j)[0];
                 AllLists.likesAccounts.get(i)[j*2 + 1] = temp.get(j)[1];
             }
