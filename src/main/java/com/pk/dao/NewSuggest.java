@@ -32,8 +32,8 @@ public class NewSuggest {
         HashMap<Integer, Float> commonLike = new HashMap<>(50);
         for (int i = 0; i < baseLikes.length; i += 2) {
             int likeId = baseLikes[i];
-            if(likeId == 0)
-                break;
+            if(likeId == 0 || likeId>= AllLists.likesTO.length)
+                continue;
 
             int likeTs = baseLikes[i + 1];
             int[] tmp = AllLists.likesTO[likeId];
@@ -100,8 +100,8 @@ public class NewSuggest {
 
                 int likeId = searchLikes[i];
 
-                if(likeId ==0)
-                    break;
+                if(likeId ==0 || likeId >= AllLists.allAccounts.length)
+                    continue;
 
                 Account cur = AllLists.allAccounts[likeId];
                 if(cur.id < 1)

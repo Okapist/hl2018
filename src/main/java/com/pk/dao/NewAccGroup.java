@@ -332,7 +332,7 @@ public class NewAccGroup {
             }
 
             if (isLikes && listList == null) {
-                if (!searchLikesSet.contains(possible.id)) {
+                if (searchLikesSet != null && !searchLikesSet.contains(possible.id)) {
                     continue;
                 }
             }

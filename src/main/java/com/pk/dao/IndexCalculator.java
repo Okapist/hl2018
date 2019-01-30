@@ -28,6 +28,14 @@ public class IndexCalculator {
         });
         t.start();
 
+        Thread t1 = new Thread(() -> {
+            sortLikes();
+            //System.gc();
+            if(!Runner.isWarm)
+                System.out.println("sort from to likes complete " + Calendar.getInstance().getTimeInMillis());
+        });
+        t1.start();
+
         addNewEmailAndDomains();
         //System.gc();
 
@@ -235,7 +243,11 @@ public class IndexCalculator {
 
     private void addNewEmailAndDomains() {
 
-        AllLists.allEmailList.addAll(PostLists.newEmails);
+        for(String ttt: PostLists.newEmails) {
+            if(!"".equals(ttt))
+                AllLists.allEmailList.add(ttt);
+        }
+
 
         for(String ttt: PostLists.newEmailDomains) {
             if(!"".equals(ttt))
@@ -400,7 +412,13 @@ public class IndexCalculator {
                     account.city = (short) Collections.binarySearch(citiesList, tempCityList.get(account.city));
 
                 if (account.email > 0) {
+                    int temp = account.email;
                     account.email = Collections.binarySearch(allEmailList, tempEmailList.get(account.email));
+
+                    if(account.email == 29999) {
+                        int i =0;
+                    }
+
 
                     if (isNewEmailDomain)
                         account.emailDomain = Collections.binarySearch(domainList, tempDomainList.get(account.emailDomain), Utils::compareCharArr);
@@ -492,9 +510,12 @@ public class IndexCalculator {
         //PostLists.newEmails = null;
 
 
-        PostLists.newLikes.clear();
+        //PostLists.newLikes.clear();
         //if(!Runner.isWarm)
             //PostLists.newLikes = null;
+
+        PostLists.likesToSort.clear();
+        PostLists.likesFromSort.clear();
 
         if(!Runner.isWarm)
             AllLists.usedEmailDomain = null;
@@ -505,4 +526,24 @@ public class IndexCalculator {
         cal.setTimeInMillis((long)timestamp*1000);
         return cal.get(Calendar.YEAR);
     }
+
+    private void sortLikes() {
+
+        for(int i : PostLists.likesToSort) {
+            if(likesTO[i] == null)
+                continue;
+
+            int[] arrToSort = likesTO[i];
+
+            int endSortPos = arrToSort.length-1;
+            for (int j = arrToSort.length - 1; j >= 0; --j) {
+                if (arrToSort[j] != 0) {
+                    endSortPos = j + 1;
+                    break;
+                }
+            }
+            Arrays.sort(likesTO[i], 0, endSortPos);
+        }
+    }
+
 }

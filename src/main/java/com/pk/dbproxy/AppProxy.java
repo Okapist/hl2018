@@ -164,6 +164,11 @@ public class AppProxy {
             }
             addLikes(jsonAccount);
         }
+
+        while (AllLists.likesAccounts.size() <= 1_000_000) {
+            AllLists.likesAccounts.add(null);
+        }
+
     }
 
     public void buildCountryCityList() {
@@ -312,6 +317,7 @@ public class AppProxy {
 
                 tempLikesTo.get(likeId).add(jsonAccount.getId());
             }
+            AllLists.lastlikesAccountsPointers[jsonAccount.getId()] = clearList.size() * 2 - 1;
         }
     }
 
@@ -777,6 +783,7 @@ public class AppProxy {
             for(int j=0; j<temp.size(); ++j) {
                 commitedLikes[j] = temp.get(j);
             }
+            AllLists.lastLikeToPointers[i] = temp.size()-1;
         }
 
         tempLikesTo.clear();

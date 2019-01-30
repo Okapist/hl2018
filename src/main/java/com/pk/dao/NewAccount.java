@@ -52,6 +52,9 @@ public class NewAccount {
         if (Arrays.binarySearch(usedEmailDomain, hash) > -1 || PostLists.usedEmailDomain.contains(hash))
             return HttpResponseStatus.BAD_REQUEST;
 
+        if(!Runner.isWarm)
+            allAccounts[account.id] = account;
+
         PostLists.usedEmailDomain.add(hash);
 
         account.email = emailIndex;
@@ -285,26 +288,18 @@ public class NewAccount {
                     likesAccounts.add(null);
 
                 int[] accLikes = likesAccounts.get(account.id);
-                int startPos = Integer.MAX_VALUE;
-                if (accLikes == null) {
-                    likesAccounts.set(account.id, new int[likes.size() * 2]);
-                    accLikes = likesAccounts.get(account.id);
+                int startPos = lastlikesAccountsPointers[account.id] + 1;
+
+                if(accLikes == null) {
                     startPos = 0;
+                    likesAccounts.set(account.id, new int[(int)(likes.size() * 2 * 1.2)]);
                 } else {
-                    for (int i = accLikes.length - 1; i >= 0; --i) {
-                        if (accLikes[i] != 0) {
-                            startPos = i + 1;
-                            break;
-                        }
+                    if (accLikes.length - startPos < likes.size() * 2) {
+                        int newReqSize = likes.size() * 2 - (accLikes.length - startPos) + accLikes.length;
+                        int[] newAccLikes = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
+                        System.arraycopy(accLikes, 0, newAccLikes, 0, accLikes.length);
+                        likesAccounts.set(account.id, newAccLikes);
                     }
-                    if (startPos == Integer.MAX_VALUE)
-                        startPos = 0;
-                }
-                if (accLikes.length - startPos < likes.size() * 2) {
-                    int newReqSize = likes.size() * 2 - (accLikes.length - startPos) + accLikes.length;
-                    int[] newAccLikes = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
-                    System.arraycopy(accLikes, 0, newAccLikes, 0, accLikes.length);
-                    likesAccounts.set(account.id, newAccLikes);
                 }
 
                 for (int i = 0; i < likes.size(); ++i) {
@@ -313,34 +308,32 @@ public class NewAccount {
                     likesAccounts.get(account.id)[startPos] = likes.get(i)[1];
                     ++startPos;
 
+                    PostLists.likesFromSort.add(account.id);
 
                     if (likes.get(i)[0] >= likesTO.length)
                         return false;
+
                     int[] lTo = likesTO[likes.get(i)[0]];
 
-                    int startToPos = Integer.MAX_VALUE;
-                    if (lTo == null) {
-                        likesTO[likes.get(i)[0]] = new int[likes.size()];
-                        lTo = likesTO[likes.get(i)[0]];
+                    int startToPos = AllLists.lastLikeToPointers[likes.get(i)[0]] + 1;
+
+                    if(lTo == null) {
                         startToPos = 0;
+                        likesTO[likes.get(i)[0]] = new int[4];
                     } else {
-                        for (int j = lTo.length - 1; j >= 0; --j) {
-                            if (lTo[j] != 0) {
-                                startToPos = j + 1;
-                                break;
-                            }
+                        if (lTo.length - startToPos < likes.size()) {
+                            int newReqSize = 2 - (lTo.length - startToPos) + lTo.length;
+                            int[] newlTo = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
+                            System.arraycopy(lTo, 0, newlTo, 0, lTo.length);
+                            likesTO[likes.get(i)[0]] = newlTo;
                         }
-                        if (startToPos == Integer.MAX_VALUE)
-                            startToPos = 0;
-                    }
-                    if (lTo.length - startToPos < likes.size()) {
-                        int newReqSize = likes.size() - (lTo.length - startToPos) + lTo.length;
-                        int[] newlTo = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
-                        System.arraycopy(lTo, 0, newlTo, 0, lTo.length);
-                        likesTO[likes.get(i)[0]] = newlTo;
                     }
 
-                    likesTO[likes.get(i)[0]][startToPos] = likes.get(i)[0];
+                    likesTO[likes.get(i)[0]][startToPos] = account.id;
+
+                    PostLists.likesToSort.add(likes.get(i)[0]);
+                    ++AllLists.lastLikeToPointers[likes.get(i)[0]];
+                    lastlikesAccountsPointers[account.id] += 2;
                 }
             }
             return true;

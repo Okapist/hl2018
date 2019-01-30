@@ -20,7 +20,8 @@ public class PostLists {
 
     public static final Set<Integer> usedEmailDomain = new HashSet<>();
 
-    public static final List<int[]> newLikes = new ArrayList<>();
+    public static Set<Integer> likesToSort = new HashSet<>(1000);
+    public static Set<Integer> likesFromSort = new HashSet(1000);
 
     static {
         fnames.add("");

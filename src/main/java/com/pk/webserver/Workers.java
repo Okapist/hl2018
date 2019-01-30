@@ -574,6 +574,9 @@ class Workers {
                                         break;
                                 }
                             }
+                            if(like[0] == 0 || like[1]==0)
+                                return HttpResponseStatus.BAD_REQUEST;
+
                             likes.add(like);
                         }
                         break;
@@ -715,6 +718,9 @@ class Workers {
                                         break;
                                 }
                             }
+                            if(like[0] == 0 || like[1]==0)
+                                return HttpResponseStatus.BAD_REQUEST;
+
                             likes.add(like);
                         }
                         break;
@@ -804,8 +810,8 @@ class Workers {
         try {
             String field = iter.readObject();
             if("likes".equals(field)) {
-                int[] like = new int[3];
                 while (iter.readArray()) {
+                    int[] like = new int[3];
                     for (String field2 = iter.readObject(); field2 != null; field2 = iter.readObject()) {
                         switch (field2) {
                             case "likee":
@@ -831,8 +837,8 @@ class Workers {
             return HttpResponseStatus.BAD_REQUEST;
         }
 
-        if(likeData==null || likeData.size() == 0)
-            return HttpResponseStatus.BAD_REQUEST;
+        if(likeData.size() == 0)
+            return HttpResponseStatus.ACCEPTED;
 
         return al.addLikes(likeData);
     }

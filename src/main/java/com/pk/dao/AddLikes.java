@@ -1,23 +1,28 @@
 package com.pk.dao;
 
+import com.pk.Runner;
 import com.pk.model.AllLists;
+import com.pk.model.PostLists;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.List;
 
-import static com.pk.model.AllLists.likesAccounts;
-import static com.pk.model.AllLists.likesTO;
+import static com.pk.model.AllLists.*;
 
 public class AddLikes {
 
     public HttpResponseStatus addLikes(List<int[]> data) {
 
-        boolean res = addLikesHelper(data);
+        if(!Runner.isWarm) {
+            boolean res = addLikesHelper(data);
 
-        if(res)
+            if (res)
+                return HttpResponseStatus.ACCEPTED;
+            else
+                return HttpResponseStatus.BAD_REQUEST;
+        } else {
             return HttpResponseStatus.ACCEPTED;
-        else
-            return HttpResponseStatus.BAD_REQUEST;
+        }
     }
 
     private boolean addLikesHelper(List<int[]> allLikes) {
@@ -40,26 +45,18 @@ public class AddLikes {
                     likesAccounts.add(null);
 
                 int[] accLikes = likesAccounts.get(likeFromId);
-                int startPos = Integer.MAX_VALUE;
-                if (accLikes == null) {
+                int startPos = lastlikesAccountsPointers[likeFromId] + 1;
+
+                if(accLikes == null) {
                     likesAccounts.set(likeFromId, new int[4]);
-                    accLikes = likesAccounts.get(likeFromId);
                     startPos = 0;
                 } else {
-                    for (int i1 = accLikes.length - 1; i1 >= 0; --i1) {
-                        if (accLikes[i1] != 0) {
-                            startPos = i1 + 1;
-                            break;
-                        }
+                    if (accLikes.length - startPos < 3) {
+                        int newReqSize = 1 * 2 - (accLikes.length - startPos) + accLikes.length;
+                        int[] newAccLikes = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
+                        System.arraycopy(accLikes, 0, newAccLikes, 0, accLikes.length);
+                        likesAccounts.set(likeFromId, newAccLikes);
                     }
-                    if (startPos == Integer.MAX_VALUE)
-                        startPos = 0;
-                }
-                if (accLikes.length - startPos < 3) {
-                    int newReqSize = 1 * 2 - (accLikes.length - startPos) + accLikes.length;
-                    int[] newAccLikes = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
-                    System.arraycopy(accLikes, 0, newAccLikes, 0, accLikes.length);
-                    likesAccounts.set(likeFromId, newAccLikes);
                 }
 
                 likesAccounts.get(likeFromId)[startPos] = likeToId;
@@ -67,38 +64,33 @@ public class AddLikes {
                 likesAccounts.get(likeFromId)[startPos] = likeTs;
                 ++startPos;
 
+                PostLists.likesFromSort.add(likeFromId);
 
                 if (likeToId >= likesTO.length)
                     return false;
                 int[] lTo = likesTO[likeToId];
 
-                int startToPos = Integer.MAX_VALUE;
-                if (lTo == null) {
-                    likesTO[likeToId] = new int[2];
-                    lTo = likesTO[likeToId];
+                int startToPos = lastLikeToPointers[likeToId] + 1;
+                if(lTo == null) {
                     startToPos = 0;
+                    likesTO[likeToId] = new int[4];
                 } else {
-                    for (int j = lTo.length - 1; j >= 0; --j) {
-                        if (lTo[j] != 0) {
-                            startToPos = j + 1;
-                            break;
-                        }
+                    if (lTo.length - startToPos < 1) {
+                        int newReqSize = 1 - (lTo.length - startToPos) + lTo.length;
+                        int[] newlTo = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
+                        System.arraycopy(lTo, 0, newlTo, 0, lTo.length);
+                        likesTO[likeToId] = newlTo;
                     }
-                    if (startToPos == Integer.MAX_VALUE)
-                        startToPos = 0;
-                }
-                if (lTo.length - startToPos < 1) {
-                    int newReqSize = 1 - (lTo.length - startToPos) + lTo.length;
-                    int[] newlTo = new int[Math.max((int) (newReqSize * 1.1), newReqSize + 2)];
-                    System.arraycopy(lTo, 0, newlTo, 0, lTo.length);
-                    likesTO[likeToId] = newlTo;
                 }
 
                 likesTO[likeToId][startToPos] = likeFromId;
+                PostLists.likesToSort.add(likeToId);
+                ++lastLikeToPointers[likeToId];
+                lastlikesAccountsPointers[likeFromId] += 2;
             }
 
             return true;
         }
-        return false;
+        return true;
     }
 }

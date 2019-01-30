@@ -442,7 +442,7 @@ public class NewAccFilter {
                 if (likeId >= AllLists.likesTO.length)
                     return;
                 if (AllLists.likesTO[likeId] == null)
-                    continue;
+                    return;
 
                 likesArr.add(likeId);
                 int tempStart = 0;
