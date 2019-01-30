@@ -32,14 +32,26 @@ public class AddLikes {
                 int[] like = allLikes.get(i);
                 int likeFromId = like[0];
                 int likeToId = like[1];
-                int likeTs =  like[2];
+                int likeTs = like[2];
+
+                if (likeFromId >= AllLists.allAccounts.length || AllLists.allAccounts[likeFromId] == null)
+                    return false;
 
                 if (likeToId >= AllLists.allAccounts.length || AllLists.allAccounts[likeToId] == null)
                     return false;
 
-                if (like[1] <= 0)
+                if (likeTs <= 0)
                     return false;
+            }
+        }
 
+        if (allLikes != null) {
+            for (int i = 0; i < allLikes.size(); ++i) {
+
+                int[] like = allLikes.get(i);
+                int likeFromId = like[0];
+                int likeToId = like[1];
+                int likeTs = like[2];
 
                 while (likesAccounts.size() <= likeFromId)
                     likesAccounts.add(null);
