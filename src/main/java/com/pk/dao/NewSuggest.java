@@ -40,7 +40,7 @@ public class NewSuggest {
             for (int accountId : tmp) {
 
                 if(accountId == 0)
-                    break;
+                    continue;
 
                 if (country != null) { //todo: check possible bug with likes
                     if (AllLists.allAccounts[accountId]==null || AllLists.allAccounts[accountId].country == 0 ||
