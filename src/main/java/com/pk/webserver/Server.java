@@ -41,7 +41,7 @@ public class Server {
         phaseChangeThread.start();
 
         EpollEventLoopGroup bossGroup = new EpollEventLoopGroup();
-        EpollEventLoopGroup workerGroup = new EpollEventLoopGroup(4);
+        EpollEventLoopGroup workerGroup = new EpollEventLoopGroup(3);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
