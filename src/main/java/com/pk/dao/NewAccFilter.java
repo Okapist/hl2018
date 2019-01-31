@@ -446,7 +446,7 @@ public class NewAccFilter {
                         orFilter = null;
                         filterArr = AllLists.interestAccounts[interest];
                         filterSize = tempEnd - tempStart;
-                        isInterestFilter = true;
+                        isInterestFilter = (interests.size() == 1);
                     }
                 }
             } else {

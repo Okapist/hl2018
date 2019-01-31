@@ -22,15 +22,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class Server {
 
-/*
-
-    NioEventLoopGroup → EpollEventLoopGroup
-    NioEventLoop → EpollEventLoop
-    NioServerSocketChannel → EpollServerSocketChannel
-    NioSocketChannel → EpollSocketChannel
-    
-*/
-    
     private final static AtomicBoolean anyPostCalled = new AtomicBoolean(false);
 
     private static volatile int oldPhase = 0;
