@@ -385,79 +385,6 @@ public class NewAccFilter {
             }
         }
 
-        if (interests != null) {
-            if (interestsAll != null && (interestsAll || interests.size() == 1)) {
-                for (int interest : interestsInt) {
-                    if (interest < 0 || interest >= AllLists.interestAccounts.length)
-                        return;
-
-                    int tempStart = 0;
-                    if (AllLists.interestAccounts == null || interest >= interestAccounts.length || AllLists.interestAccounts[interest] == null)
-                        continue;
-
-                    int tempEnd = AllLists.interestAccounts[interest].length;
-                    if (tempEnd - tempStart < filterSize) {
-                        filterStartIndex = 0;
-                        filterEndIndex = tempEnd;
-                        filterList = null;
-                        orFilter = null;
-                        filterArr = AllLists.interestAccounts[interest];
-                        filterSize = tempEnd - tempStart;
-                    }
-                }
-            } else {
-                if (interestsAll != null && !interestsAll) {
-                    int tempFilterSize = 0;
-                    for (int anInterestsInt : interestsInt) {
-                        if (AllLists.interestAccounts == null || anInterestsInt >= interestAccounts.length || AllLists.interestAccounts[anInterestsInt] == null)
-                            continue;
-
-                        tempFilterSize += AllLists.interestAccounts[anInterestsInt].length;
-                    }
-                    if (tempFilterSize < filterSize) {
-                        orFilter = new int[interestsInt.length][];
-                        orPointers = new int[interestsInt.length];
-
-                        for (int i = 0; i < interestsInt.length; i++) {
-                            if (AllLists.interestAccounts == null || interestsInt[i] >= interestAccounts.length || AllLists.interestAccounts[interestsInt[i]] == null)
-                                continue;
-
-                            filterList = null;
-                            filterArr = null;
-                            orFilter[i] = AllLists.interestAccounts[interestsInt[i]];
-                            orMayContainDup = true;
-                            orPointers[i] = orFilter[i].length - 1;
-                            filterSize = tempFilterSize;
-                        }
-                    }
-                }
-            }
-        }
-
-        List<Integer> likesArr = null;
-        if (likes != null) {
-            likesArr = new ArrayList<>();
-            for (String like : likes) {
-                int likeId = Integer.parseInt(like);
-                if (likeId >= AllLists.likesTO.length)
-                    return;
-                if (AllLists.likesTO[likeId] == null)
-                    return;
-
-                likesArr.add(likeId);
-                int tempStart = 0;
-                int tempEnd = AllLists.lastLikeToPointers[likeId] + 1;
-                if (tempEnd - tempStart < filterSize) {
-                    filterStartIndex = 0;
-                    filterEndIndex = tempEnd;
-                    filterList = null;
-                    orFilter = null;
-                    filterArr = AllLists.likesTO[likeId];
-                    filterSize = tempEnd - tempStart;
-                }
-            }
-        }
-
         if (premiumNow != null || premiumNewer != null) {
             ansPremium = true;
             if (premiumNow != null && premiumNow) {
@@ -496,6 +423,85 @@ public class NewAccFilter {
                         orFilter = null;
                         filterSize = tempEnd - tempStart;
                     }
+                }
+            }
+        }
+
+        boolean isInterestFilter = false;
+        if (interests != null) {
+            if (interestsAll != null && (interestsAll || interests.size() == 1)) {
+                for (int interest : interestsInt) {
+                    if (interest < 0 || interest >= AllLists.interestAccounts.length)
+                        return;
+
+                    int tempStart = 0;
+                    if (AllLists.interestAccounts == null || interest >= interestAccounts.length || AllLists.interestAccounts[interest] == null)
+                        continue;
+
+                    int tempEnd = AllLists.interestAccounts[interest].length;
+                    if (tempEnd - tempStart < filterSize) {
+                        filterStartIndex = 0;
+                        filterEndIndex = tempEnd;
+                        filterList = null;
+                        orFilter = null;
+                        filterArr = AllLists.interestAccounts[interest];
+                        filterSize = tempEnd - tempStart;
+                        isInterestFilter = true;
+                    }
+                }
+            } else {
+                if (interestsAll != null && !interestsAll) {
+                    int tempFilterSize = 0;
+                    for (int anInterestsInt : interestsInt) {
+                        if (AllLists.interestAccounts == null || anInterestsInt >= interestAccounts.length || AllLists.interestAccounts[anInterestsInt] == null)
+                            continue;
+
+                        tempFilterSize += AllLists.interestAccounts[anInterestsInt].length;
+                    }
+                    if (tempFilterSize < filterSize) {
+                        orFilter = new int[interestsInt.length][];
+                        orPointers = new int[interestsInt.length];
+
+                        for (int i = 0; i < interestsInt.length; i++) {
+                            if (AllLists.interestAccounts == null || interestsInt[i] >= interestAccounts.length || AllLists.interestAccounts[interestsInt[i]] == null)
+                                continue;
+
+                            filterList = null;
+                            filterArr = null;
+                            orFilter[i] = AllLists.interestAccounts[interestsInt[i]];
+                            orMayContainDup = true;
+                            orPointers[i] = orFilter[i].length - 1;
+                            filterSize = tempFilterSize;
+                            isInterestFilter = true;
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        Set<Integer> likesArr = null;
+        if (likes != null) {
+            likesArr = new HashSet<>();
+            for (String like : likes) {
+                int likeId = Integer.parseInt(like);
+                if (likeId >= AllLists.likesTO.length)
+                    return;
+                if (AllLists.likesTO[likeId] == null)
+                    return;
+
+                likesArr.add(likeId);
+                int tempStart = 0;
+                int tempEnd = AllLists.lastLikeToPointers[likeId] + 1;
+                if (tempEnd - tempStart < filterSize) {
+                    filterStartIndex = 0;
+                    filterEndIndex = tempEnd;
+                    filterList = null;
+                    orFilter = null;
+                    filterArr = AllLists.likesTO[likeId];
+                    filterSize = tempEnd - tempStart;
+                    isInterestFilter = false;
                 }
             }
         }
@@ -748,7 +754,7 @@ public class NewAccFilter {
                 }
             }
 
-            if (isInterests) {
+            if (isInterests && !isInterestFilter) {
                 if (interestsAll != null && (interestsAll || interests.size() == 1)) {
                     boolean totalContinue = false;
                     for (int interest : interestsInt) {
@@ -779,31 +785,25 @@ public class NewAccFilter {
                     continue;
                 }
 
-                if (possibleId >= AllLists.likesAccounts.size())
-                    continue;
-
                 int[] accLikes = AllLists.likesAccounts.get(possible.id);
                 if (accLikes == null)
                     continue;
 
-                boolean likeNotFounded = false;
-                for (Integer likeInt : likesArr) {
-                    boolean founded = false;
-                    for (int likeId : accLikes) {
-                        if(likeId == 0)
-                            break;
+                boolean likeFounded = false;
+                int foundedCount = 0;
+                for (int likeId : accLikes) {
+                    if(likeId == 0)
+                        continue;
 
-                        if (likeInt == likeId) {
-                            founded = true;
-                            break;
-                        }
-                    }
-                    if (!founded) {
-                        likeNotFounded = true;
+                    if(likesArr.contains(likeId))
+                        ++foundedCount;
+
+                    if(foundedCount == likesArr.size()) {
+                        likeFounded = true;
                         break;
                     }
                 }
-                if(likeNotFounded)
+                if(!likeFounded)
                     continue;
             }
 
