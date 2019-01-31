@@ -35,7 +35,7 @@ public class Runner {
         }
         System.gc();
         System.out.println("LAST GC CALLED");
-/*
+
         Warmer warmer = new Warmer();
         Runner.isWarm = true;
         warmer.warmIndexes();
@@ -45,7 +45,7 @@ public class Runner {
         Runner.isWarm = true;
         new IndexCalculator().clearTempData();
         warmer = null;
-*/
+
         Runner.isWarm = false;
         System.gc();
         System.out.println("WARM END. READY " + Calendar.getInstance().getTimeInMillis());
